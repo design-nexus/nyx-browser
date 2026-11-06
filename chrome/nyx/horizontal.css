@@ -1,0 +1,355 @@
+/* The horizontal layout: toolbar row, then one row of tabs, then the page. */
+:root[nyx-tabs-horizontal] {
+  & #browser {
+    flex-direction: column !important;
+  }
+
+  & #navigator-toolbox {
+    display: grid !important;
+    grid-template-columns: max-content minmax(0, 1fr);
+    grid-template-rows: auto 36px;
+    align-items: center !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    height: auto !important;
+    flex: none !important;
+    padding: 4px 8px 0 !important;
+    --zen-sidebar-width: 100% !important;
+  }
+
+  & #zen-sidebar-splitter {
+    display: none !important;
+  }
+
+  /* Row 1: buttons and the address bar */
+  & #zen-sidebar-top-buttons {
+    grid-column: 1;
+    grid-row: 1;
+    width: auto !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+  }
+
+  & #zen-sidebar-top-buttons-customization-target {
+    flex: none !important;
+    width: auto !important;
+  }
+
+  & #zen-sidebar-top-buttons-separator {
+    flex: none !important;
+    width: 8px !important;
+    min-width: 8px !important;
+  }
+
+  & #nav-bar {
+    grid-column: 2;
+    grid-row: 1;
+    width: auto !important;
+    min-width: 0 !important;
+  }
+
+  /* Row 2: tabs */
+  & #titlebar {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    width: 100% !important;
+    height: 36px !important;
+    min-height: 36px !important;
+    flex-direction: row !important;
+  }
+
+  & #TabsToolbar {
+    flex: 1 1 0 !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    height: 100% !important;
+    flex-direction: row !important;
+  }
+
+  & #TabsToolbar .toolbar-items,
+  & #TabsToolbar-customization-target {
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    height: 100% !important;
+    flex-direction: row !important;
+    align-items: center !important;
+  }
+
+  & #TabsToolbar-customization-target > toolbarspring,
+  & #nav-bar-customization-target > toolbarspring {
+    display: none !important;
+  }
+
+  & #nav-bar-customization-target,
+  & #urlbar-container {
+    flex: 1 1 0 !important;
+    width: auto !important;
+    max-width: none !important;
+    min-width: 0 !important;
+  }
+
+  & .zen-tab-group-start {
+    width: 0 !important;
+    min-width: 0 !important;
+    height: 0 !important;
+  }
+
+  & #tabbrowser-tabs {
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    width: auto !important;
+    height: 36px !important;
+    min-height: 0 !important;
+    max-height: 36px !important;
+    margin: 0 !important;
+    flex-direction: row !important;
+    align-items: stretch !important;
+  }
+
+  & #zen-essentials {
+    position: static !important;
+    display: flex !important;
+    flex: 0 0 auto !important;
+    width: fit-content !important;
+    min-width: 0 !important;
+    height: 100% !important;
+  }
+
+  & .zen-essentials-container {
+    position: static !important;
+    display: flex !important;
+    flex-direction: row !important;
+    width: fit-content !important;
+    min-width: 0 !important;
+    height: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    transform: none !important;
+  }
+
+  & .zen-essentials-container > .tabbrowser-tab {
+    width: 32px !important;
+    max-width: 32px !important;
+    min-width: 32px !important;
+    height: 32px !important;
+  }
+
+  & #zen-tabs-wrapper {
+    position: relative !important;
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    height: 100% !important;
+    width: auto !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+  }
+
+  & #tabbrowser-arrowscrollbox {
+    width: 100% !important;
+    min-width: 0 !important;
+    height: 100% !important;
+  }
+
+  & zen-workspace {
+    flex-direction: row !important;
+    align-items: stretch !important;
+    width: 100% !important;
+    height: 100% !important;
+    top: 0 !important;
+    left: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* The workspace name becomes a chip at the start of the row */
+  & .zen-current-workspace-indicator {
+    flex: 0 0 auto !important;
+    width: fit-content !important;
+    max-width: 180px !important;
+    min-width: 0 !important;
+    height: 100% !important;
+    margin: 0 !important;
+    padding: 0 8px !important;
+    align-items: center !important;
+    flex-direction: row !important;
+  }
+
+  & .workspace-arrowscrollbox {
+    flex: 1 1 0 !important;
+    width: auto !important;
+    min-width: 0 !important;
+    height: 100% !important;
+    max-height: none !important;
+    overflow: hidden !important;
+  }
+
+  & .workspace-arrowscrollbox::part(scrollbox) {
+    height: 100% !important;
+    min-height: 0 !important;
+    max-height: 100% !important;
+    overflow-y: hidden !important;
+    align-items: center !important;
+    padding: 0 !important;
+  }
+
+  & .zen-workspace-pinned-tabs-section,
+  & .zen-workspace-normal-tabs-section {
+    flex-direction: row !important;
+    align-items: center !important;
+    width: auto !important;
+    min-width: 0 !important;
+    height: 100% !important;
+    flex: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    transform: none !important;
+  }
+
+  & .zen-workspace-normal-tabs-section {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+  }
+
+  & .pinned-tabs-container-separator,
+  & .zen-workspace-empty-space,
+  & #zen-sidebar-foot-buttons {
+    display: none !important;
+  }
+
+  & #tabbrowser-arrowscrollbox-periphery {
+    flex: none !important;
+    width: 32px !important;
+    height: 100% !important;
+    margin: 0 !important;
+    order: 999;
+  }
+
+  & #tabbrowser-tabs .tabbrowser-tab {
+    flex: 1 1 200px !important;
+    min-width: 76px !important;
+    max-width: 200px !important;
+    width: 200px !important;
+    height: 32px !important;
+    margin: 0 1px !important;
+    padding: 0 !important;
+  }
+
+  & #tabbrowser-tabs .tabbrowser-tab[pinned]:not([zen-essential]) {
+    flex: none !important;
+    width: 36px !important;
+    min-width: 36px !important;
+    max-width: 36px !important;
+  }
+
+  & #tabbrowser-tabs .tabbrowser-tab[pinned]:not([zen-essential]) .tab-label-container {
+    display: none !important;
+  }
+
+  & #tabbrowser-tabs .tabbrowser-tab[zen-empty-tab] {
+    display: none !important;
+  }
+
+  & #tabbrowser-tabs :is(tab-group, zen-folder) {
+    display: flex !important;
+    flex-direction: row !important;
+    flex: none !important;
+    align-items: center !important;
+    width: auto !important;
+    height: 100% !important;
+    margin: 0 !important;
+  }
+
+  & #tabbrowser-tabs :is(tab-group, zen-folder) > .tab-group-container {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    height: 100% !important;
+    width: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  & #tabbrowser-tabs zen-folder[collapsed] > .tab-group-container {
+    display: none !important;
+  }
+
+  & #tabbrowser-tabs :is(tab-group, zen-folder) .tabbrowser-tab {
+    flex: none !important;
+    margin-inline-start: 1px !important;
+  }
+
+  & #tabbrowser-tabs tab-group:not([split-view-group]) .tabbrowser-tab:not([pinned]) {
+    width: 160px !important;
+  }
+
+  & .tab-group-label-container {
+    width: auto !important;
+    flex: none !important;
+    height: 32px !important;
+  }
+
+  & #zen-appcontent-wrapper {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    width: 100% !important;
+  }
+
+  & #zen-tabbox-wrapper {
+    margin-inline: 8px !important;
+  }
+
+  /* A tab's drop marker stands between tabs instead of lying between rows */
+  & #zen-drag-indicator[orientation="vertical"] {
+    position: fixed !important;
+    left: var(--nyx-drop-x) !important;
+    top: var(--nyx-drop-y) !important;
+    width: 2px !important;
+    height: var(--nyx-drop-h) !important;
+    transform: none !important;
+    border-radius: 2px;
+    z-index: 100;
+
+    &::before {
+      display: none !important;
+    }
+  }
+
+  /* Compact mode: the rows slide away upward, leaving a thin strip to hover */
+  &[zen-compact-mode="true"] #navigator-toolbox {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: auto !important;
+    width: 100% !important;
+    height: auto !important;
+    max-width: none !important;
+    z-index: 10 !important;
+    padding: 4px 8px !important;
+    translate: 0 calc(-100% + 5px) !important;
+    transition: translate 0.15s ease !important;
+    background: var(--zen-dialog-background, Canvas);
+
+    /* Zen moves the buttons and address bar into #titlebar in compact mode */
+    & #titlebar {
+      display: grid !important;
+      grid-template-columns: max-content minmax(0, 1fr);
+      grid-template-rows: auto 36px;
+      align-items: center;
+      height: auto !important;
+      min-height: 0 !important;
+    }
+
+    & #TabsToolbar {
+      grid-column: 1 / -1;
+      grid-row: 2;
+      height: 36px !important;
+    }
+
+    &:is([zen-has-hover], [zen-user-show], [has-popup-menu], [movingtab], :focus-within) {
+      translate: 0 0 !important;
+    }
+  }
+}
