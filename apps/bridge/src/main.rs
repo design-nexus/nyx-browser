@@ -134,7 +134,7 @@ fn check_allowed(op: &Op, file: &Path) -> Result<(), Refusal> {
         Err(error) if error.kind() == std::io::ErrorKind::NotFound => true,
         Err(_) => false,
     };
-    if allowed { Ok(()) } else { Err(Refusal::denied("This is turned off in Settings, under Browser.")) }
+    if allowed { Ok(()) } else { Err(Refusal::denied("This is turned off in Settings.")) }
 }
 
 fn run(op: Op) -> Result<Value, Refusal> {

@@ -3,7 +3,7 @@
 A Zen release (pinned in `upstream.toml`, unmodified) plus a chrome layer, extension and
 native host. No Zen source fork. Source patches are a last resort.
 
-Commands: `cargo test --locked`; `cargo build --locked`; `tools/setup-runtime.sh`; `tests/tabs.py`; `tests/look.py`
+Commands: `cargo test --locked`; `cargo build --locked`; `tools/setup-runtime.sh`; `tests/tabs.py`; `tests/look.py`; `tests/integration.py`
 
 - `chrome/autoconfig/` runs at startup from the private runtime; `chrome/nyx/` is the layer
   it loads into each window.

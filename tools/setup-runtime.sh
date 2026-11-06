@@ -22,10 +22,9 @@ if [[ ! -x "$runtime/zen/zen-bin" ]]; then
 fi
 
 install -m 644 "$src/chrome/autoconfig/nyx-autoconfig.js" "$runtime/zen/defaults/pref/nyx-autoconfig.js"
-install -m 644 "$src/chrome/autoconfig/nyx.cfg" "$runtime/zen/nyx.cfg"
+sed "s/@TESTED_VERSION@/$version/" "$src/chrome/autoconfig/nyx.cfg" >"$runtime/zen/nyx.cfg"
 rm -rf "$runtime/zen/nyx"
 cp -r "$src/chrome/nyx" "$runtime/zen/nyx"
-printf '%s\n' "$version" >"$runtime/zen/nyx/tested-version"
 
 # The browser's own extensions, which chrome/nyx/addons.js installs as built-in add-ons.
 rm -rf "$runtime/zen/browser/extensions"

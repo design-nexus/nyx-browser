@@ -262,7 +262,32 @@ def customizing(shots):
             check(d["rows"] == ("vertical" if vertical else "horizontal"), "customizing changed the orientation", d)
 
 
-TESTS = [theme_files, security_indicator, sidebar_modes, appearance_panel, customizing]
+def untested_release(shots):
+    """On a Zen release the layer wasn't tested on, it steps back: tabs stay usable and vertical."""
+    cfg = Browser({}).runtime / "nyx.cfg"
+    saved = cfg.read_text()
+    version = next(line.split('"')[1] for line in saved.splitlines() if "const TESTED" in line)
+    cfg.write_text(saved.replace(f'"{version}"', '"0.0-not-this-one"'))
+    try:
+        with Browser({"zen.tabs.vertical": False}, tokens=tokens("catppuccin-mocha"), width=1800, height=1100) as b:
+            d = b.js(r"""
+                return {
+                  orient: gBrowser.tabContainer.getAttribute("orient"),
+                  horizontalLayout: document.documentElement.hasAttribute("nyx-tabs-horizontal"),
+                  patched: !!ZenDragAndDrop.prototype._nyxPatched,
+                  themed: getComputedStyle(document.documentElement).getPropertyValue("--nyx-tile") !== "",
+                  button: !!document.getElementById("nyx-appearance-button"),
+                  tabs: gBrowser.tabs.length,
+                };
+            """)
+    finally:
+        cfg.write_text(saved)
+    check(d["orient"] == "vertical" and not d["horizontalLayout"], "an untested release kept horizontal tabs", d)
+    check(not d["patched"], "an untested release still overrode Zen's internals", d)
+    check(d["themed"] and d["tabs"] >= 1, "an untested release didn't still open with the theme", d)
+
+
+TESTS = [theme_files, security_indicator, sidebar_modes, appearance_panel, customizing, untested_release]
 
 
 def main():

@@ -64,6 +64,15 @@ them:**
   through Zen's own calls, not by dragging.
 - **Private windows, right-to-left layouts and trackpad gestures.**
 
+## Cost
+
+Median of 3 headless starts on Zen 1.24b, after a first start on each new profile:
+
+| | First paint | Session restored |
+| --- | --- | --- |
+| Zen as released | 669 ms | 752 ms |
+| With the chrome layer | 676 ms | 778 ms |
+
 ## Upkeep
 
 The override points are Zen internals, and a Zen release can move them. Each upgrade should
