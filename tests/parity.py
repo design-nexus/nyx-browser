@@ -293,6 +293,24 @@ def shortcuts_button(b, horizontal):
     check(d["keys"] > 0 or any("CKS" in c for c in d["shown"]), "F1 Shortcuts didn't reach the shortcuts page", d)
 
 
+def new_tab_page(b, horizontal):
+    """Ctrl+T and the New tab button open the dashboard, as a real tab."""
+    d = b.js_async(r"""
+        const done = arguments[arguments.length - 1];
+        const read = () => ({ url: gBrowser.selectedBrowser.currentURI.spec, tabs: gBrowser.tabs.length, floating: gURLBar.hasAttribute("breakout-extend") && gURLBar.hasAttribute("zen-floating-urlbar") });
+        const before = gBrowser.tabs.length;
+        document.getElementById("cmd_newNavigatorTab").doCommand();
+        setTimeout(() => {
+          const key = read();
+          gZenWorkspaces.activeWorkspaceElement.querySelector("#tabs-newtab-button").doCommand();
+          setTimeout(() => done({ before, key, button: read() }), 1200);
+        }, 1200);
+    """, timeout=15)
+    for way in ("key", "button"):
+        check(d[way]["url"].endswith("/newtab.html"), f"opening a new tab by {way} didn't show the dashboard", d)
+    check(d["button"]["tabs"] == d["before"] + 2, "new tabs weren't opened", d)
+
+
 def foot_workspaces(b, horizontal):
     if horizontal:
         return
@@ -379,7 +397,7 @@ def popups(b, horizontal):
         check(d[name]["state"] in ("open", "showing"), f"the {name} button didn't open its panel", d)
 
 
-TESTS = [top_bar, narrow_window, page_fills_below_header, settings_button, address_bar, qr_dialog, collapse_button, hidden_mode, sidebar_parts, shortcuts_button, folder_add, foot_workspaces, workspace_menu, popups]
+TESTS = [new_tab_page, top_bar, narrow_window, page_fills_below_header, settings_button, address_bar, qr_dialog, collapse_button, hidden_mode, sidebar_parts, shortcuts_button, folder_add, foot_workspaces, workspace_menu, popups]
 
 
 def main():
