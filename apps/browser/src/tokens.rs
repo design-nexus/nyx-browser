@@ -4,11 +4,11 @@ use std::fmt::Write;
 
 use nyx_theme::{Suite, Theme};
 
-/// The stylesheet for `theme` at the suite's density and text size.
-pub fn css(theme: &Theme, suite: &Suite) -> String {
+/// The stylesheet for `theme` at `density` and the suite's text size.
+pub fn css(theme: &Theme, suite: &Suite, density: &str) -> String {
     let p = &theme.palette;
     let l = &theme.look;
-    let (header, nav, control) = match suite.density.as_str() {
+    let (header, nav, control) = match density {
         "compact" => (42, 30, 30),
         "relaxed" => (50, 38, 34),
         _ => (46, 34, 32),

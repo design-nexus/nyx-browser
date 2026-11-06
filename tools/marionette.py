@@ -38,8 +38,9 @@ class ScriptError(RuntimeError):
 class Browser:
     """One headless browser with a scratch profile. Use as a context manager."""
 
-    def __init__(self, prefs=None, runtime=DEFAULT_RUNTIME, width=1440, height=900, port=2829, home=None, tokens=None):
+    def __init__(self, prefs=None, runtime=DEFAULT_RUNTIME, width=1440, height=900, port=2829, home=None, tokens=None, env=None):
         self.tokens = tokens
+        self.extra_env = env or {}
         self.prefs = {**BASE_PREFS, **(prefs or {}), "marionette.port": port}
         self.runtime = Path(runtime)
         self.size = (width, height)
@@ -78,6 +79,7 @@ class Browser:
             "MOZ_HEADLESS_HEIGHT": str(self.size[1]),
             "MOZ_DISABLE_AUTO_SAFE_MODE": "1",
             "MOZ_REMOTE_ALLOW_SYSTEM_ACCESS": "1",
+            **self.extra_env,
         }
         self.proc = subprocess.Popen(
             [str(self.runtime / "zen-bin"), "--marionette", "--no-remote", "--profile", str(self.profile)],
@@ -141,6 +143,10 @@ class Browser:
             {"script": script, "args": list(args), "scriptTimeout": timeout * 1000},
             timeout=timeout + 5,
         )["value"]
+
+    def call(self, name, params, timeout=60):
+        """A Marionette command by name."""
+        return self._call(name, params, timeout)
 
     def screenshot(self, path):
         data = self._call("WebDriver:TakeScreenshot", {"full": False})["value"]

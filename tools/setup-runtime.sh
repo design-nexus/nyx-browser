@@ -26,4 +26,13 @@ install -m 644 "$src/chrome/autoconfig/nyx.cfg" "$runtime/zen/nyx.cfg"
 rm -rf "$runtime/zen/nyx"
 cp -r "$src/chrome/nyx" "$runtime/zen/nyx"
 printf '%s\n' "$version" >"$runtime/zen/nyx/tested-version"
+
+# The browser's own extensions, which chrome/nyx/addons.js installs as built-in add-ons.
+rm -rf "$runtime/zen/browser/extensions"
+cp -r "$src/extension" "$runtime/zen/nyx/extension"
+passwords="${XDG_DATA_HOME:-$HOME/.local/share}/nyx-passwords/browser/nyx-passwords-firefox.xpi"
+if [[ -f "$passwords" ]]; then
+  mkdir -p "$runtime/zen/nyx/passwords"
+  unzip -q -o "$passwords" -d "$runtime/zen/nyx/passwords"
+fi
 printf '%s\n' "$runtime/zen"

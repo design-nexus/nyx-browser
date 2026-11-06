@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>New tab</title>
+<link rel="stylesheet" href="shared.css">
+<link rel="stylesheet" href="newtab.css">
+</head>
+<body>
+<button id="customize" class="icon-button" type="button" title="Customize this page" aria-label="Customize this page" aria-expanded="false"><span class="icon" style="--icon: url(icons/edit.svg)"></span></button>
+<div id="options" hidden>
+  <label><input type="checkbox" id="show-favorites"> Favorite sites</label>
+  <label><input type="checkbox" id="show-recent"> Recent</label>
+</div>
+<main>
+  <form id="search" role="search">
+    <span class="icon" style="--icon: url(icons/search.svg)"></span>
+    <input id="query" type="search" placeholder="Search or enter address" aria-label="Search or enter address" autocomplete="off" autofocus>
+  </form>
+  <section id="favorites" aria-label="Favorite sites"></section>
+  <section id="recent-box" aria-labelledby="recent-title">
+    <h2 class="group" id="recent-title">Recent</h2>
+    <div id="recent"></div>
+  </section>
+</main>
+<script src="theme.js"></script>
+<script src="newtab.js"></script>
+</body>
+</html>

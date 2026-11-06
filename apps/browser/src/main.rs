@@ -1,5 +1,6 @@
 //! Starts the private Zen runtime on its own profile and keeps its theme file current.
 
+mod appearance;
 mod tokens;
 
 use std::path::{Path, PathBuf};
@@ -59,7 +60,9 @@ fn main() -> ExitCode {
 
 fn current_tokens() -> String {
     let suite = nyx_theme::read_suite().unwrap_or_default();
-    tokens::css(&nyx_theme::suite_theme(ACCENT_APP), &suite)
+    let choice = appearance::Choice::read(&config_home().join("nyx-browser/appearance.json"));
+    let (theme, density) = choice.apply(nyx_theme::suite_theme(ACCENT_APP), &suite, ACCENT_APP);
+    tokens::css(&theme, &suite, &density)
 }
 
 fn pinned_version() -> &'static str {
@@ -90,6 +93,10 @@ fn home() -> PathBuf {
 
 fn data_home() -> PathBuf {
     std::env::var_os("XDG_DATA_HOME").map(PathBuf::from).unwrap_or_else(|| home().join(".local/share"))
+}
+
+fn config_home() -> PathBuf {
+    std::env::var_os("XDG_CONFIG_HOME").map(PathBuf::from).unwrap_or_else(|| home().join(".config"))
 }
 
 fn state_home() -> PathBuf {

@@ -221,6 +221,38 @@
   color: var(--nyx-text) !important;
 }
 
+/* The site's security state is always visible and comes first. Zen removes Firefox's security
+   icon on ordinary pages, collapses what's left until hover in single-toolbar mode, and moves it
+   to the end otherwise. */
+#urlbar .identity-box-button {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+#urlbar #identity-box {
+  order: -2 !important;
+  visibility: visible !important;
+}
+
+#urlbar #identity-box > #identity-icon-box {
+  display: flex !important;
+  order: -1;
+  padding: 4px !important;
+}
+
+#identity-icon {
+  -moz-context-properties: fill, fill-opacity !important;
+  fill-opacity: 1 !important;
+}
+
+#identity-box:is(.verifiedDomain, .verifiedIdentity, .mixedActiveBlocked) #identity-icon {
+  fill: var(--nyx-success) !important;
+}
+
+#identity-box:is(.notSecure, .notSecureText, .mixedActiveContent, .mixedDisplayContent, .certUserOverridden, .certErrorPage, .httpsOnlyErrorPage) #identity-icon {
+  fill: var(--nyx-warning) !important;
+}
+
 /* Tabs */
 #tabbrowser-tabs .tabbrowser-tab {
   --tab-min-height: var(--nyx-nav) !important;
@@ -329,6 +361,227 @@ panel {
   --panel-border-radius: var(--nyx-radius-dialog) !important;
   --panel-shadow-margin: 8px;
   font-family: var(--nyx-font) !important;
+}
+
+/* Frosted menus are an option, and solid by default */
+:root[nyx-frosted] :is(menupopup, panel) {
+  --panel-background: color-mix(in srgb, var(--nyx-popover) 74%, transparent) !important;
+  --arrowpanel-background: color-mix(in srgb, var(--nyx-popover) 74%, transparent) !important;
+  --menu-background-color: color-mix(in srgb, var(--nyx-popover) 74%, transparent) !important;
+}
+
+/* Split view: the focused pane carries a thin accent line */
+.browserSidebarContainer.deck-selected[zen-split="true"],
+.browserSidebarContainer[zen-split-active],
+#tabbrowser-tabpanels[zen-split-view] .browserSidebarContainer.deck-selected {
+  outline: 1.5px solid color-mix(in srgb, var(--nyx-accent) 70%, transparent) !important;
+  outline-offset: -1.5px !important;
+}
+
+.zen-split-view-splitter,
+.zen-view-splitter-header {
+  background: transparent !important;
+}
+
+/* Workspace selector */
+.zen-workspace-button,
+.zen-current-workspace-indicator {
+  border-radius: var(--nyx-radius-small) !important;
+}
+
+.zen-workspace-button[active="true"],
+#zen-workspaces-button .subviewbutton[active="true"] {
+  background: var(--nyx-selected-bg) !important;
+  color: var(--nyx-text) !important;
+}
+
+/* Appearance panel */
+#nyx-appearance-body {
+  width: 340px;
+  padding: 8px;
+  color: var(--nyx-text);
+  font: 13px var(--nyx-font);
+
+  & button {
+    font: inherit;
+    color: inherit;
+    background: none;
+    border: 0;
+    margin: 0;
+    appearance: none;
+  }
+
+  & button:focus-visible {
+    outline: 2px solid var(--nyx-accent);
+    outline-offset: 1px;
+  }
+}
+
+.nyx-pop-head {
+  padding: 6px 8px 8px;
+  font-weight: 600;
+}
+
+.nyx-opt {
+  padding: 8px;
+}
+
+.nyx-opt-label {
+  display: flex;
+  align-items: center;
+  margin-bottom: 6px;
+  font-weight: 500;
+
+  & small {
+    margin-inline-start: auto;
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--nyx-dim);
+  }
+}
+
+.nyx-seg {
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: var(--nyx-radius-small);
+  background: var(--nyx-tile);
+
+  & button {
+    flex: 1;
+    height: 28px;
+    padding: 0 4px;
+    border-radius: 5px;
+    color: var(--nyx-dim);
+    font-size: 12.5px;
+
+    &:hover {
+      color: var(--nyx-text);
+    }
+
+    &.nyx-on {
+      background: var(--nyx-raised);
+      color: var(--nyx-text);
+    }
+  }
+
+  &.nyx-disabled {
+    opacity: 0.5;
+  }
+}
+
+.nyx-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+#nyx-appearance-body .nyx-swatch {
+  display: block;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border-radius: 50%;
+
+  &.nyx-on {
+    box-shadow: 0 0 0 2px var(--nyx-popover), 0 0 0 4px var(--nyx-text);
+  }
+}
+
+#nyx-appearance-body .nyx-swatch-default { background: var(--nyx-accent); }
+#nyx-appearance-body .nyx-swatch-blue { background: var(--nyx-swatch-blue); }
+#nyx-appearance-body .nyx-swatch-violet { background: var(--nyx-swatch-violet); }
+#nyx-appearance-body .nyx-swatch-pink { background: var(--nyx-swatch-pink); }
+#nyx-appearance-body .nyx-swatch-red { background: var(--nyx-swatch-red); }
+#nyx-appearance-body .nyx-swatch-coral { background: var(--nyx-swatch-coral); }
+#nyx-appearance-body .nyx-swatch-amber { background: var(--nyx-swatch-amber); }
+#nyx-appearance-body .nyx-swatch-green { background: var(--nyx-swatch-green); }
+#nyx-appearance-body .nyx-swatch-teal { background: var(--nyx-swatch-teal); }
+#nyx-appearance-body .nyx-swatch-graphite { background: var(--nyx-swatch-graphite); }
+
+#nyx-appearance-body .nyx-switch-row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 8px;
+  border-radius: var(--nyx-radius-small);
+  text-align: start;
+
+  &:hover {
+    background: var(--nyx-hover-bg);
+  }
+}
+
+.nyx-switch {
+  position: relative;
+  flex: none;
+  width: 36px;
+  height: 20px;
+  margin-inline-start: auto;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--nyx-text) 18%, var(--nyx-bg));
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--nyx-text);
+  }
+
+  &.nyx-on {
+    background: var(--nyx-accent);
+
+    &::after {
+      left: 18px;
+      background: var(--nyx-on-accent);
+    }
+  }
+}
+
+.nyx-line {
+  height: 1px;
+  margin: 6px 8px;
+  background: var(--nyx-border);
+}
+
+#nyx-appearance-body .nyx-row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: var(--nyx-nav);
+  padding: 4px 8px;
+  border-radius: var(--nyx-radius-small);
+  text-align: start;
+
+  &:hover {
+    background: var(--nyx-hover-bg);
+  }
+}
+
+#nyx-appearance-button {
+  list-style-image: url("resource://nyx/icons/settings.svg");
+}
+
+#nyx-share-button {
+  list-style-image: url("resource://nyx/icons/share.svg");
+}
+
+#nyx-capture-button {
+  list-style-image: url("resource://nyx/icons/capture.svg");
+}
+
+#nyx-assistant-button {
+  list-style-image: url("resource://nyx/icons/assistant.svg");
+}
+
+:is(#nyx-appearance-button, #nyx-share-button, #nyx-capture-button, #nyx-assistant-button) {
+  -moz-context-properties: fill, stroke;
+  stroke: currentColor;
+  fill: none;
 }
 
 @media (prefers-reduced-motion: reduce) {

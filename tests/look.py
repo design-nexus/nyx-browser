@@ -98,14 +98,24 @@ def theme_files(shots):
 
 def security_indicator(shots):
     with Browser({}, tokens=tokens("catppuccin-mocha"), width=1600, height=1000) as b:
-        d = b.js(r"""
-            const box = document.getElementById("identity-box");
-            const icon = document.getElementById("identity-icon");
-            const r = icon.getBoundingClientRect();
-            const s = getComputedStyle(icon);
-            return { w: r.width, h: r.height, visible: s.visibility, opacity: s.opacity, display: getComputedStyle(box).display };
-        """)
-    check(d["w"] >= 12 and d["h"] >= 12 and d["visible"] == "visible" and float(d["opacity"]) > 0.4 and d["display"] != "none", "the security indicator is hidden", d)
+        # On a real page, in both orientations. A new tab page has no site to report on.
+        for vertical in (True, False):
+            b.js(f"Services.prefs.setBoolPref('zen.tabs.vertical', {str(vertical).lower()})")
+            d = b.js_async(r"""
+                const done = arguments[arguments.length - 1];
+                const tab = gBrowser.addTab("data:text/html,<title>Plain</title>page", { triggeringPrincipal: Services.scriptSecurityManager.getSystemPrincipal() });
+                gBrowser.selectedTab = tab;
+                setTimeout(() => {
+                  const box = document.getElementById("identity-box");
+                  const icon = document.getElementById("identity-icon");
+                  const r = icon.getBoundingClientRect();
+                  const s = getComputedStyle(icon);
+                  done({ w: r.width, h: r.height, x: r.x, visible: s.visibility, opacity: s.opacity, display: getComputedStyle(box).display, state: box.className, win: innerWidth });
+                }, 1200);
+            """)
+            check(d["w"] >= 12 and d["h"] >= 12 and d["visible"] == "visible" and float(d["opacity"]) > 0.4 and d["display"] != "none", "the security indicator is hidden", d)
+            check(0 <= d["x"] < d["win"], "the security indicator is off screen", d)
+            check("notSecure" in d["state"], "the page's security state isn't reported", d)
 
 
 MODE = r"""
@@ -160,7 +170,99 @@ def sidebar_modes(shots):
         check(b.js("return gBrowser.tabs.length") == tabs, "changing modes changed the tabs")
 
 
-TESTS = [theme_files, security_indicator, sidebar_modes]
+def appearance_panel(shots):
+    with Browser({}, tokens=tokens("catppuccin-mocha"), width=1800, height=1100) as b:
+        d = b.js(r"""
+            const button = document.getElementById("nyx-appearance-button");
+            const r = button?.getBoundingClientRect();
+            return { exists: !!button, w: r?.width, h: r?.height, area: button?.closest("toolbar")?.id, tip: button?.getAttribute("tooltiptext") };
+        """)
+        check(d["exists"] and d["w"] > 16 and d["h"] > 16, "the settings button isn't in the toolbar", d)
+        check("Ctrl+," in (d["tip"] or ""), "the settings button's tooltip doesn't name its key", d)
+
+        # Open by its shortcut, then press its real controls.
+        click = r"""
+            const done = arguments[arguments.length - 1];
+            (async () => {
+              window.dispatchEvent(new KeyboardEvent("keydown", { key: ",", ctrlKey: true, bubbles: true, cancelable: true }));
+              const panel = document.getElementById("nyx-appearance-panel");
+              await new Promise(r => setTimeout(r, 500));
+              const press = (label, text) => {
+                const group = [...document.querySelectorAll("#nyx-appearance-body .nyx-seg")].find(g => g.getAttribute("aria-label") === label);
+                [...group.querySelectorAll("button")].find(b => b.textContent === text).click();
+              };
+              press("Tabs", "Horizontal");
+              await new Promise(r => setTimeout(r, 900));
+              const horizontal = document.documentElement.hasAttribute("nyx-tabs-horizontal");
+              const disabled = [...document.querySelectorAll("#nyx-appearance-body .nyx-seg")].find(g => g.getAttribute("aria-label") === "Sidebar").classList.contains("nyx-disabled");
+              press("Tabs", "Vertical");
+              await new Promise(r => setTimeout(r, 900));
+              press("Sidebar", "Compact");
+              press("Theme", "Light");
+              press("Density", "Relaxed");
+              document.querySelector("#nyx-appearance-body .nyx-swatch-green").click();
+              document.querySelector("#nyx-appearance-body .nyx-switch-row").click();
+              await new Promise(r => setTimeout(r, 700));
+              done({
+                state: panel?.state, horizontal, disabled,
+                vertical: !document.documentElement.hasAttribute("nyx-tabs-horizontal"),
+                sidebar: Services.prefs.getStringPref("nyx.sidebar.mode"),
+                frosted: document.documentElement.hasAttribute("nyx-frosted"),
+                file: await IOUtils.readJSON(NyxAppearance.file),
+                checked: [...document.querySelectorAll("#nyx-appearance-body [aria-checked=true]")].map(e => e.textContent),
+              });
+            })();
+        """
+        d = b.js_async(click)
+        check(d["horizontal"] and d["vertical"], "the Tabs control didn't switch orientation", d)
+        check(d["disabled"], "Sidebar stayed enabled with horizontal tabs", d)
+        check(d["sidebar"] == "compact", "the Sidebar control didn't change the mode", d)
+        check(d["frosted"], "the Frosted control didn't apply", d)
+        check(d["file"] == {"theme": "nyx-light", "accent": "green", "density": "relaxed"}, "the choices weren't saved", d)
+        check("Light" in d["checked"] and "Relaxed" in d["checked"], "controls don't report their state", d)
+
+        # The launcher turns the panel's file into the theme, end to end.
+        env = {**os.environ, "XDG_CONFIG_HOME": str(b.home / ".config")}
+        made = subprocess.check_output([str(ROOT / "target/debug/nyx-browser"), "--print-tokens"], env=env, text=True)
+        check(value(made, "bg") == value(tokens("nyx-light"), "bg"), "the launcher ignored the chosen theme", made[:200])
+        check(value(made, "accent") == value(made, "swatch-green"), "the launcher ignored the chosen accent", made[:400])
+        check(value(made, "header") == "50px", "the launcher ignored the chosen density", made[:600])
+
+
+def customizing(shots):
+    """Firefox's toolbar customization opens and closes in both orientations."""
+    for vertical in (True, False):
+        with Browser({"zen.tabs.vertical": vertical}, tokens=tokens("catppuccin-mocha"), width=1800, height=1100) as b:
+            d = b.js_async(r"""
+                const done = arguments[arguments.length - 1];
+                (async () => {
+                  const events = t => new Promise(r => window.addEventListener(t, r, { once: true }));
+                  const entered = events("customizationready");
+                  gCustomizeMode.enter();
+                  await entered;
+                  const customizing = document.documentElement.hasAttribute("customizing");
+                  const palette = !!document.getElementById("customization-palette");
+                  const { CustomizableUI } = ChromeUtils.importESModule("moz-src:///browser/components/customizableui/CustomizableUI.sys.mjs");
+                  const before = CustomizableUI.getPlacementOfWidget("nyx-appearance-button");
+                  CustomizableUI.removeWidgetFromArea("nyx-appearance-button");
+                  const removed = CustomizableUI.getPlacementOfWidget("nyx-appearance-button");
+                  CustomizableUI.addWidgetToArea("nyx-appearance-button", before.area);
+                  const left = events("aftercustomization");
+                  gCustomizeMode.exit();
+                  await left;
+                  await new Promise(r => setTimeout(r, 800));
+                  const rows = gBrowser.tabContainer.getAttribute("orient");
+                  done({ customizing, palette, before, removed, rows, ended: !document.documentElement.hasAttribute("customizing"),
+                         tabs: gBrowser.tabs.length });
+                })().catch(e => done({ error: String(e) }));
+            """, timeout=40)
+            check("error" not in d, "customizing threw", d)
+            check(d["customizing"] and d["palette"] and d["ended"], "customization didn't open and close", d)
+            check(d["removed"] is None and d["before"], "buttons can't be removed", d)
+            check(d["rows"] == ("vertical" if vertical else "horizontal"), "customizing changed the orientation", d)
+
+
+TESTS = [theme_files, security_indicator, sidebar_modes, appearance_panel, customizing]
 
 
 def main():
