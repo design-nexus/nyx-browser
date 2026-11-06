@@ -73,8 +73,26 @@ async function showRecent(show) {
   }
 }
 
+/** Shows what Weather last fetched. With no Weather app or no reading yet, the card stays away. */
+async function showWeather(show) {
+  const card = document.getElementById("weather");
+  card.hidden = true;
+  if (!show) {
+    return;
+  }
+  try {
+    const { text, details } = await browser.runtime.sendMessage({ to: "background", action: "weather" });
+    document.getElementById("weather-now").textContent = text;
+    // The place and the day's range; the rest is more than this card needs.
+    document.getElementById("weather-details").textContent = (details || "").split("\n").filter(line => !/^(Wind|Temperature)/.test(line)).join("\n");
+    card.hidden = false;
+  } catch {
+    // Nothing to show.
+  }
+}
+
 async function start() {
-  const stored = await browser.storage.local.get({ showFavorites: true, showRecent: true });
+  const stored = await browser.storage.local.get({ showFavorites: true, showRecent: true, showWeather: true });
   const favorites = document.getElementById("show-favorites");
   const recent = document.getElementById("show-recent");
   favorites.checked = stored.showFavorites;
@@ -86,6 +104,12 @@ async function start() {
   recent.addEventListener("change", () => {
     browser.storage.local.set({ showRecent: recent.checked });
     showRecent(recent.checked);
+  });
+  const weather = document.getElementById("show-weather");
+  weather.checked = stored.showWeather;
+  weather.addEventListener("change", () => {
+    browser.storage.local.set({ showWeather: weather.checked });
+    showWeather(weather.checked);
   });
   const customize = document.getElementById("customize");
   customize.addEventListener("click", () => {
@@ -105,7 +129,7 @@ async function start() {
       await browser.search.query({ text, disposition: "CURRENT_TAB" });
     }
   });
-  await Promise.allSettled([showFavorites(stored.showFavorites), showRecent(stored.showRecent)]);
+  await Promise.allSettled([showFavorites(stored.showFavorites), showRecent(stored.showRecent), showWeather(stored.showWeather)]);
 }
 
 start();

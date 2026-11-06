@@ -32,6 +32,7 @@ pub enum Op {
     CaptureText {},
     CaptureOpen { data: String },
     AssistantAsk { question: String, page_url: String, page_title: String, page_text: String },
+    WeatherCached {},
 }
 
 /// The group a user can turn off in Settings.
@@ -46,7 +47,7 @@ pub enum Group {
 impl Op {
     pub fn group(&self) -> Group {
         match self {
-            Op::Hello {} | Op::Theme {} => Group::Always,
+            Op::Hello {} | Op::Theme {} | Op::WeatherCached {} => Group::Always,
             Op::SharePage { .. } | Op::ShareText { .. } | Op::ShareImage { .. } | Op::ShareDownload { .. } => Group::Share,
             Op::CaptureRegion {} | Op::CaptureText {} | Op::CaptureOpen { .. } => Group::Capture,
             Op::AssistantAsk { .. } => Group::Assistant,
@@ -66,6 +67,7 @@ impl Op {
             Op::CaptureText {} => "capture_text",
             Op::CaptureOpen { .. } => "capture_open",
             Op::AssistantAsk { .. } => "assistant_ask",
+            Op::WeatherCached {} => "weather_cached",
         }
     }
 
@@ -91,7 +93,12 @@ impl Op {
                 check_len(page_title, MAX_TITLE, "The page title is too long.")?;
                 check_len(page_text, MAX_PAGE_TEXT, "The page is too long to read.")
             }
-            Op::Hello {} | Op::Theme {} | Op::ShareDownload { .. } | Op::CaptureRegion {} | Op::CaptureText {} => Ok(()),
+            Op::Hello {}
+            | Op::Theme {}
+            | Op::ShareDownload { .. }
+            | Op::CaptureRegion {}
+            | Op::CaptureText {}
+            | Op::WeatherCached {} => Ok(()),
         }
     }
 }

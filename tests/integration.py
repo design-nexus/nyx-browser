@@ -109,6 +109,9 @@ class Rig:
         stub = self.bin / "nyx-capture"
         stub.write_text(f'#!/bin/sh\nprintf "%s\\n" "$*" >> "{self.capture_log}"\n')
         stub.chmod(0o755)
+        weather = self.bin / "nyx-weather"
+        weather.write_text('#!/bin/sh\nprintf \'{"text":"Rain 11","tooltip":"Calera\\\\nHigh: 71\\\\nWind: 3 mph"}\\n\'\n')
+        weather.chmod(0o755)
         self.web = socketserver.TCPServer(("127.0.0.1", 0), Quiet)
         threading.Thread(target=self.web.serve_forever, daemon=True).start()
         self.url = f"http://127.0.0.1:{self.web.server_address[1]}/page"
@@ -217,6 +220,9 @@ def test_new_tab_and_theme(rig):
         b.write_tokens(TOKENS.replace("#123456", "#654321"))
         wait(lambda: b.js(read, "--nyx-bg") == "#654321", "a theme change to reach the new tab page", timeout=6)
         check(b.js("return !!document.getElementById('search') && !!document.getElementById('favorites')"), "the page's parts are missing")
+        wait(lambda: not b.js("return document.getElementById('weather').hidden"), "the weather card")
+        card = b.js("return { now: document.getElementById('weather-now').textContent, details: document.getElementById('weather-details').textContent }")
+        check(card["now"] == "Rain 11" and "Calera" in card["details"] and "Wind" not in card["details"], "the weather card is wrong", card)
         check(b.js("return document.querySelectorAll('iframe, script[src^=http]').length") == 0, "the page loads something from the network")
     finally:
         b.call("Marionette:SetContext", {"value": "chrome"})

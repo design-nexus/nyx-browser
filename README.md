@@ -26,8 +26,11 @@ The installer downloads one Zen release, about 113 MB, and checks it against the
 - **Appearance:** follows your Nyx theme and accent as they change, or set a theme, accent and
   density just for Browser. The settings button or <kbd>Ctrl</kbd>+<kbd>,</kbd> opens it.
 - **New tab page:** search, your most visited sites and recent pages. No news or sponsored content.
-- **Security:** the address bar always shows a page's security state, including a warning on a page
-  that isn't secure.
+- **Address bar:** always shows a page's security state, including a warning on a page that isn't
+  secure. A star adds a favorite, and the button beside it shows a QR code for the page.
+- **Workspaces and folders:** the sidebar has a workspace menu and tab search, a Folders section, and
+  workspace icons at its foot. <kbd>Ctrl</kbd>+<kbd>B</kbd> collapses the sidebar, and <kbd>F1</kbd>
+  lists the shortcuts.
 - **Firefox extensions:** installed and signed the usual way.
 
 ## With other Nyx apps
@@ -59,13 +62,16 @@ started by a browser. See [docs/SECURITY.md](docs/SECURITY.md).
   update itself. On any other release it falls back to vertical tabs. Run
   `tools/bump-upstream.sh VERSION` to move to a new release.
 - Automatic sidebar mode is set by the focused window, because the sidebar's settings are shared
-  between windows.
+  between windows. Using the sidebar button or <kbd>Ctrl</kbd>+<kbd>B</kbd> turns Automatic off until
+  you choose it again in Appearance.
+- There are no window buttons, so a floating window closes with the keyboard.
+- Buttons stay in the top bar however narrow the window gets, with no overflow menu.
 - With horizontal tabs, a drop on a folder's own label depends on the pointer's height in the row.
 
 ## Development
 
 ```sh
 cargo test --locked && cargo build --locked && tools/setup-runtime.sh
-tests/tabs.py && tests/look.py && tests/integration.py
+tests/tabs.py && tests/look.py && tests/parity.py && tests/integration.py
 ./install.sh && tests/launcher.py
 ```

@@ -140,15 +140,7 @@
   font-size: 13.5px;
   font-weight: 600;
   color: var(--nyx-accent);
-  margin-inline-end: 8px;
-}
-
-/* The icon rail has room for one button */
-:root[nyx-sidebar="compact"]:not([nyx-tabs-horizontal]) #zen-sidebar-top-buttons-customization-target {
-  &::before,
-  &::after {
-    display: none;
-  }
+  margin-inline-end: 12px;
 }
 
 /* Header buttons are soft tiles */

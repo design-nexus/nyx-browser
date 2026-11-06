@@ -174,6 +174,7 @@ fn run(op: Op) -> Result<Value, Refusal> {
             let file = file.to_str().ok_or_else(|| Refusal::unavailable("The screenshot couldn't be saved."))?.to_string();
             start_capture(&["--file", &file])
         }
+        Op::WeatherCached {} => weather_cached(),
         Op::AssistantAsk { question, page_url, page_title, page_text } => {
             let nonce = random_hex();
             let message = assistant::prompt(&question, &page_url, &page_title, &page_text, &nonce);
@@ -181,6 +182,44 @@ fn run(op: Op) -> Result<Value, Refusal> {
             Ok(json!({"text": text}))
         }
     }
+}
+
+/// What Weather last fetched. It's read from Weather's cache and makes no request of its own.
+fn weather_cached() -> Result<Value, Refusal> {
+    let unavailable = || Refusal::unavailable("There's no weather to show.");
+    let mut child = Command::new("nyx-weather")
+        .arg("--waybar-cached")
+        .stdin(Stdio::null())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::null())
+        .spawn()
+        .map_err(|_| unavailable())?;
+    let deadline = std::time::Instant::now() + std::time::Duration::from_secs(5);
+    loop {
+        match child.try_wait() {
+            Ok(Some(_)) => break,
+            Ok(None) if std::time::Instant::now() < deadline => std::thread::sleep(std::time::Duration::from_millis(50)),
+            _ => {
+                let _ = child.kill();
+                let _ = child.wait();
+                return Err(unavailable());
+            }
+        }
+    }
+    let mut output = String::new();
+    child.stdout.take().ok_or_else(unavailable)?.take(64 * 1024).read_to_string(&mut output).map_err(|_| unavailable())?;
+    parse_weather(&output).ok_or_else(unavailable)
+}
+
+/// The short reading and its details, as plain strings. Anything else in the output is ignored.
+fn parse_weather(output: &str) -> Option<Value> {
+    let weather: Value = serde_json::from_str(output.trim()).ok()?;
+    let text = weather.get("text")?.as_str()?.trim();
+    if text.is_empty() {
+        return None;
+    }
+    let details = weather.get("tooltip").and_then(Value::as_str).unwrap_or_default();
+    Some(json!({"text": text, "details": details}))
 }
 
 fn share_failed() -> Refusal {
@@ -274,6 +313,17 @@ mod tests {
         assert_eq!(reply["code"], "invalid");
         assert_eq!(handle(b"garbage")["id"], Value::Null);
         assert_eq!(handle(br#"{"id":4,"op":"share_page","url":"file:///etc/passwd","title":""}"#)["code"], "invalid");
+    }
+
+    #[test]
+    fn reads_weather_output() {
+        let reply = parse_weather(r#"{"alt":"x","text":"⛅ 63°","tooltip":"Calera\nHigh: 71°"}"#).unwrap();
+        assert_eq!(reply["text"], "⛅ 63°");
+        assert_eq!(reply["details"], "Calera\nHigh: 71°");
+        assert!(reply.get("alt").is_none());
+        assert!(parse_weather("not json").is_none());
+        assert!(parse_weather(r#"{"text":"  "}"#).is_none());
+        assert!(parse_weather("{}").is_none());
     }
 
     #[test]

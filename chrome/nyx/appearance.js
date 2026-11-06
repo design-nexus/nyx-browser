@@ -166,7 +166,7 @@
       tooltiptext: "Settings (Ctrl+,)",
       defaultArea: window.CustomizableUI.AREA_NAVBAR,
       onCommand(event) {
-        event.target.ownerGlobal.NyxAppearance.open(event.target);
+        event.target.ownerDocument.defaultView.NyxAppearance.open(event.target);
       },
     });
   }

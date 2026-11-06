@@ -182,6 +182,8 @@ browser.runtime.onMessage.addListener((message, sender) => {
   switch (message.action) {
     case "theme":
       return call("theme");
+    case "weather":
+      return call("weather_cached");
     case "panel-request": {
       const request = panelRequest;
       panelRequest = null;
