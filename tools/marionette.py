@@ -38,7 +38,8 @@ class ScriptError(RuntimeError):
 class Browser:
     """One headless browser with a scratch profile. Use as a context manager."""
 
-    def __init__(self, prefs=None, runtime=DEFAULT_RUNTIME, width=1440, height=900, port=2829, home=None):
+    def __init__(self, prefs=None, runtime=DEFAULT_RUNTIME, width=1440, height=900, port=2829, home=None, tokens=None):
+        self.tokens = tokens
         self.prefs = {**BASE_PREFS, **(prefs or {}), "marionette.port": port}
         self.runtime = Path(runtime)
         self.size = (width, height)
@@ -63,6 +64,8 @@ class Browser:
         self.profile.mkdir(parents=True, exist_ok=True)
         lines = [f"user_pref({json.dumps(k)}, {json.dumps(v)});" for k, v in self.prefs.items()]
         (self.profile / "user.js").write_text("\n".join(lines) + "\n")
+        if self.tokens is not None:
+            self.write_tokens(self.tokens)
         env = {
             **os.environ,
             "HOME": str(self.home),
@@ -86,6 +89,14 @@ class Browser:
         self._call("WebDriver:NewSession", {"capabilities": {"alwaysMatch": {"acceptInsecureCerts": True}}})
         self._call("Marionette:SetContext", {"value": "chrome"})
         self.wait_ready()
+
+    def write_tokens(self, css):
+        """What the launcher does: replace the theme file atomically."""
+        path = self.home / ".local/state/nyx-browser/tokens.css"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        temporary = path.with_suffix(".tmp")
+        temporary.write_text(css)
+        temporary.replace(path)
 
     def stop(self):
         if self.sock:

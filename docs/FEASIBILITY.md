@@ -4,8 +4,9 @@ Tested on Zen 1.24b (Gecko 159), official Linux x86_64 build, unmodified.
 
 ## Result
 
-Horizontal tabs work without patching Zen's source. `tests/tabs.py` passes all 16 tests in
-each orientation, 32 of 32.
+Horizontal tabs work without patching Zen's source. `tests/tabs.py` passes every test with
+horizontal tabs, with vertical tabs in the expanded sidebar, and with vertical tabs in the
+icon rail.
 
 | Test | What it does |
 | --- | --- |
@@ -18,7 +19,7 @@ each orientation, 32 of 32.
 | `split_view` | Split, switch away, come back |
 | `overflow` | 30 tabs: selecting brings a tab into view; a wheel scrolls the row, not vertically |
 | `essentials` | Add and remove |
-| `keyboard_and_lifecycle` | Ctrl+Tab order, open, close, reopen closed |
+| `keyboard_and_lifecycle` | Move to the next tab, open, close, reopen closed |
 | `drag_into_folder` | Drop a tab on a tab inside a folder |
 | `drag_between_sections` | Drag into and out of the pinned section |
 | `compact_mode` | The rows slide away, the page fills the window, hovering brings them back |
@@ -68,6 +69,6 @@ them:**
 The override points are Zen internals, and a Zen release can move them. Each upgrade should
 raise `upstream.toml` only after `tests/tabs.py` passes against the new release.
 
-A fresh profile logs `SessionStartup.sys.mjs: initialState.savedGroups is undefined`. It
-appears in every run, including the first, and session restore still passes. Its cause hasn't
-been investigated.
+Runs have logged `SessionStartup.sys.mjs: initialState.savedGroups is undefined` while session
+restore still passes. Its cause hasn't been investigated, and it hasn't been compared against
+Zen without the chrome layer.

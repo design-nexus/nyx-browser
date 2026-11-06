@@ -22,6 +22,18 @@
     display: none !important;
   }
 
+  /* The menu button belongs at the row's far end */
+  & #PanelUI-button {
+    position: absolute !important;
+    top: 7px;
+    inset-inline-end: 8px;
+    z-index: 2;
+  }
+
+  & #nav-bar {
+    margin-inline-end: 38px !important;
+  }
+
   /* Row 1: buttons and the address bar */
   & #zen-sidebar-top-buttons {
     grid-column: 1;
@@ -227,6 +239,7 @@
   }
 
   & #tabbrowser-tabs .tabbrowser-tab {
+    --tab-min-height: 30px !important;
     flex: 1 1 200px !important;
     min-width: 76px !important;
     max-width: 200px !important;

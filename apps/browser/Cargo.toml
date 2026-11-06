@@ -1,0 +1,10 @@
+[package]
+name = "nyx-browser"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+
+[dependencies]
+nyx-theme = { git = "https://github.com/design-nexus/nyx-design.git", rev = "84f5f97cd7ad78c00c5f3707913d7189e060f912" }

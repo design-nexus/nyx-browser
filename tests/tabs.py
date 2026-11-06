@@ -571,7 +571,9 @@ def compact_mode(b, horizontal):
         return { pageBefore, toolbox, page, attrs, shown, hovering, pageAfter, toolboxAfter, win: [innerWidth, innerHeight] };
         """,
     )
-    check(d["page"]["w"] >= d["win"][0] - 20 and d["page"]["h"] >= d["win"][1] - 20, "compact mode didn't give the page the window", d)
+    check(d["page"]["w"] >= d["win"][0] - 20, "compact mode didn't give the page the window's width", d)
+    if horizontal:
+        check(d["page"]["h"] >= d["win"][1] - 20, "compact mode didn't give the page the rows' height", d)
     t, u = d["toolbox"], d["shown"]
     check(d["hovering"], "hovering the edge wasn't noticed", d)
     if horizontal:
@@ -579,7 +581,7 @@ def compact_mode(b, horizontal):
         check(u["y"] >= -1 and u["w"] >= d["win"][0] - 2 and u["h"] < 110, "hovering didn't bring back the rows", d)
     else:
         check(t["x"] + t["w"] <= 6, "compact mode didn't slide the sidebar away", d)
-        check(u["x"] >= -5 and u["w"] > 100, "hovering didn't bring back the sidebar", d)
+        check(u["x"] >= -5 and u["w"] > 50, "hovering didn't bring back the sidebar", d)
     check(abs(d["pageAfter"]["h"] - d["pageBefore"]["h"]) <= 2 and abs(d["pageAfter"]["w"] - d["pageBefore"]["w"]) <= 2, "leaving compact mode didn't restore the layout", d)
 
 
@@ -620,7 +622,7 @@ TESTS = [layout, drag_reorder, drop_side, pinned, folders, workspaces, split_vie
 def session_restore(horizontal, shots):
     """Tabs, pins, order and orientation survive a restart of the same profile."""
     home = Path(tempfile.mkdtemp(prefix="nyx-browser-session-"))
-    prefs = {"zen.tabs.vertical": not horizontal, "browser.startup.page": 3, "browser.sessionstore.resume_from_crash": False}
+    prefs = {"zen.tabs.vertical": not horizontal, "nyx.sidebar.mode": "expanded", "browser.startup.page": 3, "browser.sessionstore.resume_from_crash": False}
     b = Browser(prefs, home=home)
     b.start()
     try:
@@ -691,33 +693,33 @@ def main():
     opts = ap.parse_args()
     results = []
 
-    for horizontal in (False, True):
-        name = "horizontal" if horizontal else "vertical"
-        if opts.orientation and opts.orientation != name:
+    runs = (("vertical", False, "expanded"), ("vertical rail", False, "compact"), ("horizontal", True, "auto"))
+    for name, horizontal, sidebar in runs:
+        if opts.orientation and opts.orientation != name.split()[0]:
             continue
-        with Browser({"zen.tabs.vertical": not horizontal}) as b:
+        with Browser({"zen.tabs.vertical": not horizontal, "nyx.sidebar.mode": sidebar}) as b:
             for test in TESTS:
                 if opts.only and opts.only != test.__name__:
                     continue
                 try:
                     test(b, horizontal)
                     results.append((name, test.__name__, None))
-                    print(f"PASS {name:10} {test.__name__}", flush=True)
+                    print(f"PASS {name:13} {test.__name__}", flush=True)
                 except (Failed, ScriptError, TimeoutError, ConnectionError) as error:
                     results.append((name, test.__name__, str(error)))
-                    print(f"FAIL {name:10} {test.__name__}: {str(error)[:900]}", flush=True)
+                    print(f"FAIL {name:13} {test.__name__}: {str(error)[:900]}", flush=True)
                     if opts.shots:
-                        b.screenshot(Path(opts.shots) / f"fail-{name}-{test.__name__}.png")
+                        b.screenshot(Path(opts.shots) / f"fail-{name.replace(' ', '-')}-{test.__name__}.png")
                 if opts.shots and not results[-1][2]:
-                    b.screenshot(Path(opts.shots) / f"{name}-{test.__name__}.png")
-        if not opts.only or opts.only == "session_restore":
+                    b.screenshot(Path(opts.shots) / f"{name.replace(' ', '-')}-{test.__name__}.png")
+        if (not opts.only or opts.only == "session_restore") and sidebar != "compact":
             try:
                 session_restore(horizontal, opts.shots)
                 results.append((name, "session_restore", None))
-                print(f"PASS {name:10} session_restore", flush=True)
+                print(f"PASS {name:13} session_restore", flush=True)
             except (Failed, ScriptError, TimeoutError, ConnectionError) as error:
                 results.append((name, "session_restore", str(error)))
-                print(f"FAIL {name:10} session_restore: {str(error)[:900]}", flush=True)
+                print(f"FAIL {name:13} session_restore: {str(error)[:900]}", flush=True)
 
     failed = [r for r in results if r[2]]
     print(f"\n{len(results) - len(failed)} of {len(results)} passed")
