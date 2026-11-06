@@ -221,6 +221,17 @@ def test_new_tab_and_theme(rig):
         wait(lambda: b.js(read, "--nyx-bg") == "#654321", "a theme change to reach the new tab page", timeout=6)
         check(b.js("return !!document.getElementById('search') && !!document.getElementById('favorites')"), "the page's parts are missing")
         wait(lambda: not b.js("return document.getElementById('weather').hidden"), "the weather card")
+        # Icons are checked by what they draw: an icon that loads and has a size can still be blank.
+        icons = b.js(r"""
+            return [...document.querySelectorAll(".icon")].filter(e => e.getBoundingClientRect().width > 0).map(e => {
+              const r = e.getBoundingClientRect();
+              const clone = new XMLSerializer().serializeToString(e);
+              return { w: r.width, h: r.height, stroke: getComputedStyle(e).stroke, fill: getComputedStyle(e).fill, path: e.querySelector("path")?.getTotalLength() ?? 0, clone: clone.length };
+            });
+        """)
+        check(len(icons) >= 3, "the page's icons are missing", icons)
+        for icon in icons:
+            check(icon["path"] > 5 and icon["stroke"] not in ("none", "rgba(0, 0, 0, 0)"), "an icon draws nothing", icon)
         card = b.js("return { now: document.getElementById('weather-now').textContent, details: document.getElementById('weather-details').textContent }")
         check(card["now"] == "Rain 11" and "Calera" in card["details"] and "Wind" not in card["details"], "the weather card is wrong", card)
         check(b.js("return document.querySelectorAll('iframe, script[src^=http]').length") == 0, "the page loads something from the network")
