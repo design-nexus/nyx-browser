@@ -9,4 +9,4 @@ repository.workspace = true
 [dependencies]
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-nyx-theme = { git = "https://github.com/design-nexus/nyx-design.git", rev = "84f5f97cd7ad78c00c5f3707913d7189e060f912" }
+nyx-theme = { git = "https://github.com/design-nexus/nyx-design.git", rev = "40db521bab468d54f18f65c6aabd7fc8533d6a4d" }
