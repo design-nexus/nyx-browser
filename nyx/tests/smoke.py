@@ -57,7 +57,8 @@ def main():
         check("error" not in d, "the checks ran", d.get("error"))
         if "error" in d:
             return
-        check(d["name"] == "Nyx-Browser" and d["vendor"] == "Design Nexus", "the application is Browser's", d)
+        # The vendor stays Firefox's (browser/moz.configure implies it), as in Zen; it isn't shown.
+        check(d["name"] == "Nyx-Browser", "the application is Browser's", d["name"])
         check(d["brand"] == "Browser", "the brand name is Browser", d["brand"])
         check(d["updater"] is False, "there's no in-app updater", d["updater"])
         check(d["profileRoot"] == str(b.home / ".config/nyx-browser"), "profiles live in $XDG_CONFIG_HOME/nyx-browser", d["profileRoot"])

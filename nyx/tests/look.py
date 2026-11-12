@@ -207,7 +207,7 @@ def appearance_panel(shots):
                 state: panel?.state, horizontal, disabled,
                 vertical: !document.documentElement.hasAttribute("nyx-tabs-horizontal"),
                 sidebar: Services.prefs.getStringPref("nyx.sidebar.mode"),
-                frosted: document.documentElement.hasAttribute("nyx-frosted"),
+                frosted: Services.prefs.getBoolPref("nyx.effects.frosted", false),
                 file: await IOUtils.readJSON(NyxAppearance.file),
                 checked: [...document.querySelectorAll("#nyx-appearance-body [aria-checked=true]")].map(e => e.textContent),
               });

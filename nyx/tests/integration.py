@@ -23,14 +23,29 @@ import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+REPO = ROOT.parent
 sys.path.insert(0, str(ROOT / "tools"))
 from marionette import Browser  # noqa: E402
 
 BRIDGE = ROOT / "target/debug/nyx-browser-bridge"
+EXTENSION = REPO / "src/nyx/extension"
 EXTENSION_ID = "nyx-integration@design-nexus.github.io"
 HOST = "io.github.design_nexus.nyx.browser"
 KEYSET = "ext-keyset-id-nyx-integration_design-nexus_github_io"
 TOKENS = ":root {\n  --nyx-bg: #123456;\n  --nyx-accent: #abcdef;\n}\n"
+
+
+def theme_css(home, theme):
+    """The bridge's stylesheet for a suite set to `theme` under `home`'s config."""
+    config = Path(home) / ".config/nyx"
+    config.mkdir(parents=True, exist_ok=True)
+    (config / "theme.toml").write_text(f'mode = "theme"\ntheme = "{theme}"\n')
+    env = {**os.environ, "HOME": str(home), "XDG_CONFIG_HOME": str(Path(home) / ".config")}
+    return subprocess.check_output([str(BRIDGE), "theme"], env=env, text=True)
+
+
+def css_value(css, name):
+    return next(line.split(":", 1)[1].strip(" ;") for line in css.splitlines() if line.strip().startswith(f"--nyx-{name}:"))
 
 HOSTILE_PAGE = b"""<!doctype html><title>Hostile page</title><body>
 <p>Cedar Spring is the only reliable water.</p>
@@ -219,7 +234,7 @@ def test_bundled(rig):
         EXTENSION_ID,
     )
     check(d["found"] and d["active"], "the extension isn't installed and active", d)
-    manifest = json.loads((ROOT / "extension/manifest.json").read_text())
+    manifest = json.loads((EXTENSION / "manifest.json").read_text())
     for key in ("content_scripts", "web_accessible_resources", "externally_connectable", "host_permissions"):
         check(key not in manifest, f"the manifest gives pages or sites a way in: {key}")
 
@@ -230,6 +245,8 @@ def test_new_tab_and_theme(rig):
     check(host, "no extension host")
     d = b.js("return { url: AboutNewTab.newTabURL }")
     check(d["url"].startswith("moz-extension://"), "the new tab page isn't the extension's", d)
+    light = theme_css(b.home, "nyx-light")
+    bg_light = css_value(light, "bg")
     reached = open_tab(b, d["url"])
     check(reached.endswith("newtab.html"), "the new tab page didn't load", reached)
     handles = b.call("WebDriver:GetWindowHandles", {})
@@ -237,9 +254,11 @@ def test_new_tab_and_theme(rig):
     b.call("Marionette:SetContext", {"value": "content"})
     try:
         read = "return getComputedStyle(document.documentElement).getPropertyValue(arguments[0]).trim()"
-        wait(lambda: b.js(read, "--nyx-bg") == "#123456", "the theme to reach the new tab page")
-        b.write_tokens(TOKENS.replace("#123456", "#654321"))
-        wait(lambda: b.js(read, "--nyx-bg") == "#654321", "a theme change to reach the new tab page", timeout=6)
+        wait(lambda: b.js(read, "--nyx-bg") == bg_light, "the theme to reach the new tab page")
+        dark = theme_css(b.home, "nyx-dark")
+        bg_dark = css_value(dark, "bg")
+        check(bg_dark != bg_light, "light and dark themes share a background")
+        wait(lambda: b.js(read, "--nyx-bg") == bg_dark, "a theme change to reach the new tab page", timeout=6)
         check(b.js("return !!document.getElementById('search') && !!document.getElementById('favorites')"), "the page's parts are missing")
         wait(lambda: not b.js("return document.getElementById('weather').hidden"), "the weather card")
         # Icons are checked by what they draw: an icon that loads and has a size can still be blank.
@@ -455,7 +474,7 @@ def test_panel_shows_answers_as_plain_text(rig):
     check(d["images"] == 0, "an answer became markup", d)
     check(d["text"].startswith("<img"), "an answer was changed", d)
     for name in ("panel.js", "newtab.js", "background.js", "theme.js"):
-        source = (ROOT / "extension" / name).read_text()
+        source = (EXTENSION / name).read_text()
         for risky in ("innerHTML", "outerHTML", "insertAdjacentHTML", "document.write", "eval(", "new Function"):
             check(risky not in source, f"{name} uses {risky}")
 

@@ -1,16 +1,7 @@
 diff --git a/toolkit/moz.configure b/toolkit/moz.configure
-index 7660109..1e0ea51 100644
+index 7660109..850f91f 100644
 --- a/toolkit/moz.configure
 +++ b/toolkit/moz.configure
-@@ -20,7 +20,7 @@ def check_moz_app_id(moz_app_id, build_project):
- 
- project_flag(
-     env="MOZ_APP_VENDOR",
--    default="Zen Team",
-+    default="Design Nexus",
-     nargs=1,
-     help='Used for application.ini\'s "Vendor" field, which also impacts profile location and user-visible fields',
- )
 @@ -34,7 +34,7 @@ project_flag(
  
  project_flag(

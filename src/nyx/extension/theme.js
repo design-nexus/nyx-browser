@@ -38,7 +38,8 @@ async function followTheme() {
     }
   };
   refresh();
-  // The theme can only have changed while the page was out of sight or out of focus.
+  // Appearance and the suite can change while this page stays open and focused.
+  setInterval(refresh, 1000);
   document.addEventListener("visibilitychange", () => document.hidden || refresh());
   window.addEventListener("focus", refresh);
 }
