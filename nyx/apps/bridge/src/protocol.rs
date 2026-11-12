@@ -142,7 +142,7 @@ fn check_len(text: &str, max: usize, message: &str) -> Result<(), Refusal> {
     if text.len() > max { Err(Refusal::invalid(message)) } else { Ok(()) }
 }
 
-fn check_web_url(url: &str) -> Result<(), Refusal> {
+pub fn check_web_url(url: &str) -> Result<(), Refusal> {
     check_len(url, MAX_URL, "The address is too long.")?;
     let lower = url.to_ascii_lowercase();
     let rest = lower.strip_prefix("https://").or_else(|| lower.strip_prefix("http://"));

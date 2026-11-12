@@ -1,11 +1,13 @@
-//! The suite's theme as CSS custom properties for the browser's chrome and new tab page.
+//! The resolved theme as CSS custom properties for the browser's chrome and new tab page:
+//! Theme Engine 2.0's semantic tokens (`--nyx-surface-primary`, `--nyx-motion-normal`, …) and
+//! the shorter names the stylesheets were first written with (`--nyx-bg`, `--nyx-accent`, …).
 
 use std::fmt::Write;
 
-use nyx_theme::{Suite, Theme};
+use nyx_theme_core::{Suite, Theme, Tokens};
 
-/// The stylesheet for `theme` at `density` and the suite's text size.
-pub fn css(theme: &Theme, suite: &Suite, density: &str) -> String {
+/// The stylesheet for `theme` and its `tokens` at `density` and the suite's text size.
+pub fn css(theme: &Theme, tokens: &Tokens, suite: &Suite, density: &str) -> String {
     let p = &theme.palette;
     let l = &theme.look;
     let (header, nav, control) = match density {
@@ -16,9 +18,19 @@ pub fn css(theme: &Theme, suite: &Suite, density: &str) -> String {
     let on_accent = if p.light { "#ffffff" } else { p.bg.as_str() };
     let mut out = String::from(":root {\n");
     let mut put = |name: &str, value: &str| {
-        let _ = writeln!(out, "  --nyx-{name}: {value};");
+        if let Some(value) = clean(value) {
+            let _ = writeln!(out, "  --nyx-{name}: {value};");
+        }
     };
     put("scheme", if p.light { "light" } else { "dark" });
+
+    for (token, value) in tokens.colors.iter().filter(|(t, _)| !matches!(t.as_str(), "accent.primary" | "text.onAccent")) {
+        put(&token.replace('.', "-"), value);
+    }
+    // The accent is Browser's own (Settings, or its Appearance panel), over the theme's.
+    put("accent-primary", &p.accent);
+    put("text-onAccent", on_accent);
+
     put("bg", &p.bg);
     put("panel", &l.panel);
     put("card", &l.card);
@@ -38,10 +50,30 @@ pub fn css(theme: &Theme, suite: &Suite, density: &str) -> String {
     put("shadow", &p.shadow);
     put("hover", &percent(l.hover));
     put("selection", &percent(l.selection));
-    put("radius-small", &format!("{}px", l.shape.radius_small));
-    put("radius-card", &format!("{}px", l.shape.radius_card));
-    put("radius-dialog", &format!("{}px", l.shape.radius_dialog));
-    put("font", &font_stack(l.font.ui.as_deref().unwrap_or("")));
+
+    let g = &tokens.geometry;
+    put("radius-small", &format!("{}px", g.radius_small));
+    put("radius-card", &format!("{}px", g.radius_card));
+    put("radius-dialog", &format!("{}px", g.radius_dialog));
+    put("spacing-unit", &format!("{}px", g.spacing_unit));
+    put("border-width", &format!("{}px", g.border_width));
+    put("focus-width", &format!("{}px", g.focus_width));
+
+    let m = &tokens.motion;
+    put("motion-fast", &format!("{}ms", m.fast));
+    put("motion-normal", &format!("{}ms", m.normal));
+    put("motion-slow", &format!("{}ms", m.slow));
+    put("easing-standard", &m.easing_standard);
+    put("easing-enter", &m.easing_enter);
+    put("easing-exit", &m.easing_exit);
+    put("reduced-motion", if m.reduced { "1" } else { "0" });
+
+    let e = &tokens.effects;
+    put("surface-opacity", &format!("{}", e.surface_opacity.clamp(0.0, 1.0)));
+    put("shadow-intensity", &format!("{}", e.shadow_intensity.clamp(0.0, 1.0)));
+    put("overlay-dim", &format!("{}", e.overlay_dim.clamp(0.0, 1.0)));
+
+    put("font", &font_stack(tokens.typography.ui.as_deref().or(l.font.ui.as_deref()).unwrap_or("")));
     put("text-scale", &format!("{}", suite.text_scale.clamp(0.9, 1.25)));
     put("header", &format!("{header}px"));
     put("nav", &format!("{nav}px"));
@@ -52,6 +84,12 @@ pub fn css(theme: &Theme, suite: &Suite, density: &str) -> String {
     }
     out.push_str("}\n");
     out
+}
+
+/// A value from a theme file the user can edit, or `None` if it could end the declaration.
+fn clean(value: &str) -> Option<&str> {
+    let value = value.trim();
+    (!value.is_empty() && !value.contains([';', '{', '}', '<', '>', '\n', '\\'])).then_some(value)
 }
 
 fn percent(strength: f64) -> String {
@@ -97,5 +135,12 @@ mod tests {
         assert_eq!(percent(0.16), "16%");
         assert_eq!(percent(3.0), "100%");
         assert_eq!(percent(-1.0), "0%");
+    }
+
+    #[test]
+    fn a_value_cant_end_the_rule() {
+        assert_eq!(clean(" #1e1e2e "), Some("#1e1e2e"));
+        assert_eq!(clean("red; } body { display: none"), None);
+        assert_eq!(clean(""), None);
     }
 }

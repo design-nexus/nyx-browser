@@ -1,9 +1,16 @@
 //! The native messaging host: connects the Nyx extension to Share, Capture and Assistant. A
 //! browser starts it and talks on stdin and stdout: a 32-bit native-endian length, then JSON.
 //! Only the fixed operations in `protocol` exist. There's no shell and no way to name a program.
+//!
+//! `nyx-browser-bridge theme [--watch]` is Browser's theme instead; see `theme`. And
+//! `nyx-browser-bridge actions` serves Browser's Nyx actions on D-Bus; see `actions`.
 
+mod actions;
+mod appearance;
 mod assistant;
 mod protocol;
+mod theme;
+mod tokens;
 
 use std::io::{Read, Write};
 use std::path::{Path, PathBuf};
@@ -18,15 +25,20 @@ use serde_json::{Value, json};
 /// The only extension this host answers. Firefox names its caller in the last argument.
 const EXTENSION_ID: &str = "nyx-integration@design-nexus.github.io";
 /// Browsers that may start the host, by executable name.
-const BROWSERS: &[&str] = &["zen-bin", "zen", "firefox", "firefox-bin"];
+const BROWSERS: &[&str] = &["nyx-browser", "nyx-browser-bin", "zen-bin", "zen", "firefox", "firefox-bin"];
 /// Chromium-family and Gecko browsers refuse messages to an extension above this.
 const MAX_REPLY: usize = 1024 * 1024;
 const APP_NAME: &str = "Browser";
 
 static CAPTURES: AtomicU64 = AtomicU64::new(0);
 
-fn main() {
+fn main() -> std::process::ExitCode {
     let args: Vec<String> = std::env::args().skip(1).collect();
+    match args.first().map(String::as_str) {
+        Some("theme") => return theme::run(&args[1..]),
+        Some("actions") => return actions::run(&args[1..]),
+        _ => {}
+    }
     if !caller_allowed(&args) {
         eprintln!("nyx-browser-bridge: refused an unknown extension");
         std::process::exit(1);
@@ -50,6 +62,7 @@ fn main() {
             }
         });
     }
+    std::process::ExitCode::SUCCESS
 }
 
 fn caller_allowed(args: &[String]) -> bool {
@@ -109,10 +122,6 @@ fn config_home() -> PathBuf {
     std::env::var_os("XDG_CONFIG_HOME").map(PathBuf::from).unwrap_or_else(|| home().join(".config"))
 }
 
-fn state_home() -> PathBuf {
-    std::env::var_os("XDG_STATE_HOME").map(PathBuf::from).unwrap_or_else(|| home().join(".local/state"))
-}
-
 fn integrations_file() -> PathBuf {
     config_home().join("nyx-browser/integrations.json")
 }
@@ -140,10 +149,7 @@ fn check_allowed(op: &Op, file: &Path) -> Result<(), Refusal> {
 fn run(op: Op) -> Result<Value, Refusal> {
     match op {
         Op::Hello {} => Ok(json!({"version": env!("CARGO_PKG_VERSION")})),
-        Op::Theme {} => {
-            let tokens = std::fs::read_to_string(state_home().join("nyx-browser/tokens.css")).unwrap_or_default();
-            Ok(json!({"tokens": tokens}))
-        }
+        Op::Theme {} => Ok(json!({"tokens": theme::css()})),
         Op::SharePage { url, .. } => {
             let mut content = Content::new();
             content.url(url);
@@ -178,7 +184,7 @@ fn run(op: Op) -> Result<Value, Refusal> {
         Op::AssistantAsk { question, page_url, page_title, page_text } => {
             let nonce = random_hex();
             let message = assistant::prompt(&question, &page_url, &page_title, &page_text, &nonce);
-            let text = assistant::ask(&assistant::socket(), &format!("browser-{nonce}"), message)?;
+            let text = assistant::ask(&nyx_ai_client::Client::new("nyx-browser"), message)?;
             Ok(json!({"text": text}))
         }
     }
