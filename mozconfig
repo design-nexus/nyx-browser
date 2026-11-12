@@ -1,0 +1,25 @@
+# Nyx Browser. Surfer appends this after configs/common and configs/<os>, so these win.
+
+# The profile lives in $XDG_CONFIG_HOME/nyx-browser. Zen's profile code needs the
+# lowercased basename to match the profile name, or it leaves an empty folder beside it.
+ac_add_options --with-app-basename=Nyx-Browser
+export MOZ_APP_BASENAME=Nyx-Browser
+ac_add_options MOZ_APP_PROFILE=nyx-browser
+ac_add_options MOZ_APP_VENDOR="Design Nexus"
+# The Wayland app ID, matching the desktop entry.
+export MOZ_APP_REMOTINGNAME=io.github.design_nexus.nyx.Browser
+ac_add_options --with-distribution-id=io.github.design_nexus
+
+# Releases come only through this repository's packaging: no in-app updater.
+ac_add_options --disable-updater
+
+export MOZ_SOURCE_REPO=https://github.com/design-nexus/nyx-browser
+
+# Local builds: a release-style build without LTO or PGO, sized for a laptop that's in use.
+if ! test "$ZEN_RELEASE"; then
+  ac_add_options --enable-optimize
+  ac_add_options --disable-debug
+  ac_add_options --disable-debug-symbols
+  ac_add_options --enable-linker=lld
+  mk_add_options MOZ_MAKE_FLAGS="-j${NYX_JOBS:-10}"
+fi

@@ -1,8 +1,8 @@
 {
-  "name": "Zen Browser",
-  "vendor": "Zen OSS Team",
-  "appId": "zen",
-  "binaryName": "zen",
+  "name": "Browser",
+  "vendor": "Design Nexus",
+  "appId": "io.github.design_nexus.nyx.Browser",
+  "binaryName": "nyx-browser",
   "version": {
     "product": "firefox",
     "version": "160.0",
@@ -14,6 +14,15 @@
   },
   "addons": {},
   "brands": {
+    "nyx": {
+      "backgroundColor": "#1e1e2e",
+      "brandShorterName": "Browser",
+      "brandShortName": "Browser",
+      "brandFullName": "Nyx Browser",
+      "release": {
+        "displayVersion": "1.24.2b"
+      }
+    },
     "release": {
       "backgroundColor": "#282A33",
       "brandShorterName": "Zen",
@@ -53,5 +62,5 @@
     ],
     "licenseType": "MPL-2.0"
   },
-  "updateHostname": "updates.zen-browser.app"
+  "updateHostname": ""
 }
