@@ -19,13 +19,6 @@
 - name: nyx.effects.frosted
   value: false
 
-# The new tab page's sections, in order; a section left out is hidden.
-- name: nyx.newtab.sections
-  value: "search,favorites,frequent,recent"
-
-- name: nyx.newtab.background
-  value: none
-
 # The bookmarks bar shows bookmarks as just their icon (the name on hover); folders keep names.
 - name: nyx.bookmarks.icons-only
   value: false

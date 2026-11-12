@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Nyx Integration",
   "description": "Share, Capture and Assistant from the Nyx apps on this computer, and a new tab page.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "browser_specific_settings": {
     "gecko": {
       "id": "nyx-integration@design-nexus.github.io",
@@ -11,7 +11,7 @@
     }
   },
   "background": { "scripts": ["background.js"] },
-  "permissions": ["nativeMessaging", "activeTab", "scripting", "contextMenus", "downloads", "topSites", "history", "tabs", "storage", "search", "notifications"],
+  "permissions": ["nativeMessaging", "activeTab", "scripting", "contextMenus", "downloads", "topSites", "history", "sessions", "tabs", "storage", "search", "notifications"],
   "chrome_url_overrides": { "newtab": "newtab.html" },
   "sidebar_action": {
     "default_title": "Assistant",

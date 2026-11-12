@@ -2,17 +2,18 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-/* Built-in values are Nyx Dark, for the moment before the theme arrives or without a host. */
+/* Built-in values are Catppuccin Mocha, NyxOS's default, for the moment before the theme arrives
+ * or without a host. */
 :root {
-  --nyx-bg: #09090a;
-  --nyx-card: #161617;
-  --nyx-raised: #1d1d1f;
-  --nyx-text: #e8e8ea;
-  --nyx-dim: #9a9aa1;
-  --nyx-tertiary: #7b7b83;
-  --nyx-accent: #5b9cff;
-  --nyx-on-accent: #09090a;
-  --nyx-danger: #ff6b6b;
+  --nyx-bg: #1e1e2e;
+  --nyx-card: #282839;
+  --nyx-raised: #2e2f40;
+  --nyx-text: #cdd6f4;
+  --nyx-dim: #a6adc8;
+  --nyx-tertiary: #7f849c;
+  --nyx-accent: #89b4fa;
+  --nyx-on-accent: #1e1e2e;
+  --nyx-danger: #f38ba8;
   --nyx-hover: 6%;
   --nyx-selection: 16%;
   --nyx-radius-small: 7px;
