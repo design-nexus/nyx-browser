@@ -30,6 +30,8 @@ BROWSER_CHROME_MANIFESTS += [
     "welcome/browser.toml",
     "window_drag/browser.toml",
     "window_sync/browser.toml",
+    # Nyx Browser's own chrome.
+    "nyx/browser.toml",
 ]
 
 DIRS += [
