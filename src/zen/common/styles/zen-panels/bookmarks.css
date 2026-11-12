@@ -1,0 +1,74 @@
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
+#zenEditBookmarkPanelFaviconContainer {
+  border: 1px solid var(--input-border-color);
+  width: var(--zen-bookmark-panel-favicon-container-size);
+  height: var(--zen-bookmark-panel-favicon-container-size);
+  border-radius: var(--zen-border-radius-10);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: var(--zen-space-16);
+  background: var(--zen-bookmark-panel-favicon-container-background);
+}
+
+#editBookmarkPanel::part(content) {
+  display: flex;
+  flex-direction: row;
+}
+
+#zenEditBookmarkPanelFavicon {
+  width: var(--icon-size-medium);
+  height: var(--icon-size-medium);
+}
+
+#editBookmarkPanel .panel-header {
+  min-height: 0;
+  padding-bottom: 0;
+  padding-top: var(--zen-space-16);
+}
+
+#editBMPanel_namePicker {
+  width: -moz-available;
+}
+
+label.editBMPanel_folderRow,
+label.editBMPanel_nameRow {
+  min-width: var(--zen-size-60);
+}
+
+hbox.editBMPanel_folderRow {
+  width: -moz-available;
+}
+
+.zenEditBMPanel_fieldContainer:not(:first-child) {
+  margin-top: var(--zen-space-10);
+}
+
+.zenEditBMPanel_fieldContainer {
+  align-items: center;
+}
+
+#editBookmarkPanelBottomContent {
+  display: none;
+}
+
+:host(:not([native])) #label-box {
+  font-weight: var(--zen-font-weight-medium);
+}
+
+#editBMPanel_folderMenuList::part(icon) {
+  margin-right: var(--zen-space-10);
+}
+
+#editBMPanel_workspaceSummary .workspace-trigger {
+  margin-inline-end: var(--zen-space-16);
+}
+
+/* Bookmarks in toolbar */
+#PersonalToolbar {
+  background: transparent;
+}

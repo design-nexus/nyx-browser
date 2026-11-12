@@ -1,0 +1,13 @@
+diff --git a/browser/base/content/browser-sets.js b/browser/base/content/browser-sets.js
+index d3da8787f466ced22592c4f1a241f68a0dfcd283..e81ca26fad4f422590ab604b0e1e82722976f184 100644
+--- a/browser/base/content/browser-sets.js
++++ b/browser/base/content/browser-sets.js
+@@ -403,6 +403,8 @@ document.addEventListener(
+                 opened: SidebarController._state.launcherExpanded,
+               });
+             });
++          } else {
++            SidebarController.toggle();
+           }
+           break;
+         case "key_gotoHistory":

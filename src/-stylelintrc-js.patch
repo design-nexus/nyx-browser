@@ -1,0 +1,58 @@
+diff --git a/.stylelintrc.js b/.stylelintrc.js
+index ac1558e8a551a9fc790058586d68295ef37a42e3..ca21f8f5f8df94c0711d2cca2bb5571ed5132e95 100644
+--- a/.stylelintrc.js
++++ b/.stylelintrc.js
+@@ -17,6 +17,19 @@ function readFile(filePath) {
+     .filter(p => p && !p.startsWith("#"));
+ }
+ 
++const postcss = require("postcss");
++const zenPreprocessedSyntax = {
++  parse: (css, options) =>
++    postcss.parse(
++      css.toString().replace(/^%.*$/gm, line => `/*${line}*/`),
++      options
++    ),
++  stringify: (node, builder) =>
++    postcss.stringify(node, (text, ...rest) =>
++      builder(/^\/\*%.*\*\/$/.test(text) ? text.slice(2, -2) : text, ...rest)
++    ),
++};
++
+ const ignoreFiles = [
+   ...readFile(
+     path.join(__dirname, "tools", "rewriting", "ThirdPartyPaths.txt")
+@@ -69,7 +82,7 @@ module.exports = {
+     ],
+ 
+     "max-nesting-depth": [
+-      3,
++      6,
+       {
+         ignore: ["blockless-at-rules"],
+       },
+@@ -88,6 +101,7 @@ module.exports = {
+           "overflow-clip-box",
+           "overflow-clip-box-block",
+           "overflow-clip-box-inline",
++          "corner-shape",
+         ],
+       },
+     ],
+@@ -288,6 +302,16 @@ module.exports = {
+   },
+ 
+   overrides: [
++    {
++      files: ["zen/**/*.css"],
++      customSyntax: zenPreprocessedSyntax,
++    },
++    {
++      files: ["zen/boosts/zen-selector.css", "zen/boosts/zen-zap.css"],
++      rules: {
++        "stylelint-plugin-mozilla/use-design-tokens": null,
++      },
++    },
+     {
+       files: "*.scss",
+       customSyntax: "postcss-scss",
