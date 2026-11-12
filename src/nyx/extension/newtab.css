@@ -1,0 +1,344 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+body {
+  overflow: auto;
+  background: var(--nyx-surface, var(--nyx-bg)) var(--picture, none) center / cover no-repeat fixed;
+}
+
+:root[data-background="glow"] body {
+  background-image: radial-gradient(ellipse 70% 55% at 50% 0%, color-mix(in srgb, var(--nyx-accent) 16%, transparent), transparent);
+}
+
+main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 12vh 20px 80px;
+}
+
+.logo {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin-bottom: 18px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--nyx-accent) 16%, transparent);
+  color: var(--nyx-accent);
+
+  & .icon {
+    width: 24px;
+    height: 24px;
+  }
+}
+
+#search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  height: 46px;
+  padding: 0 14px;
+  border-radius: var(--nyx-radius-card);
+  background: var(--nyx-tile);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--nyx-text) 9%, transparent);
+  color: var(--nyx-tertiary);
+
+  &:focus-within {
+    outline: 2px solid var(--nyx-accent);
+  }
+
+  & input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    font-size: 14px;
+    color: var(--nyx-text);
+
+    &::placeholder {
+      color: var(--nyx-tertiary);
+    }
+  }
+
+  & kbd {
+    padding: 2px 6px;
+    border-radius: 5px;
+    background: var(--nyx-bg);
+    font: 11px var(--nyx-font);
+  }
+}
+
+#sections {
+  width: 100%;
+
+  & > section {
+    margin-top: 30px;
+  }
+
+  & .group {
+    margin: 0 0 10px;
+  }
+}
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.site {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--nyx-dim);
+  font-size: 12px;
+  text-decoration: none;
+  cursor: pointer;
+
+  & > span:nth-child(2) {
+    max-width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  &:hover {
+    color: var(--nyx-text);
+
+    & .site-icon {
+      background: var(--nyx-hover-bg);
+    }
+  }
+
+  & .remove {
+    position: absolute;
+    top: -4px;
+    right: 6px;
+    display: none;
+    width: 20px;
+    height: 20px;
+    border: 0;
+    border-radius: 50%;
+    background: var(--nyx-raised);
+    color: var(--nyx-dim);
+    line-height: 18px;
+    cursor: pointer;
+  }
+
+  &:is(:hover, :focus-within) .remove {
+    display: block;
+  }
+}
+
+.site-icon {
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  border-radius: 13px;
+  background: var(--nyx-card);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--nyx-text) 9%, transparent);
+  color: var(--nyx-accent);
+  font-size: 18px;
+  font-weight: 600;
+
+  & img {
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+  }
+}
+
+.site.add .site-icon {
+  background: transparent;
+  box-shadow: none;
+  border: 1px dashed color-mix(in srgb, var(--nyx-text) 18%, transparent);
+  color: var(--nyx-tertiary);
+}
+
+.add-form {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+
+  & input {
+    flex: 1;
+    min-width: 0;
+    height: 32px;
+    padding: 0 10px;
+    border: 0;
+    border-radius: var(--nyx-radius-small);
+    background: var(--nyx-tile);
+    color: var(--nyx-text);
+  }
+
+  & button {
+    height: 32px;
+    padding: 0 14px;
+    border: 0;
+    border-radius: var(--nyx-radius-small);
+    background: var(--nyx-accent);
+    color: var(--nyx-on-accent);
+    font-weight: 500;
+  }
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 36px;
+  padding: 4px 8px;
+  border-radius: var(--nyx-radius-small);
+  color: var(--nyx-text);
+  text-decoration: none;
+
+  &:hover {
+    background: var(--nyx-hover-bg);
+  }
+
+  & .site-icon {
+    flex: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 5px;
+    box-shadow: none;
+    font-size: 11px;
+
+    & img {
+      width: 16px;
+      height: 16px;
+    }
+  }
+
+  & .when {
+    flex: none;
+    color: var(--nyx-tertiary);
+    font-size: 12px;
+  }
+}
+
+.row-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.row-sub {
+  margin-inline-start: 8px;
+  color: var(--nyx-tertiary);
+  font-size: 12px;
+}
+
+#weather {
+  position: fixed;
+  left: 18px;
+  bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--nyx-tertiary);
+  font-size: 12px;
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+#customize {
+  position: fixed;
+  right: 18px;
+  bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 10px;
+  border: 0;
+  border-radius: var(--nyx-radius-small);
+  background: var(--nyx-tile);
+  color: var(--nyx-dim);
+  font-size: 12px;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--nyx-hover-bg);
+    color: var(--nyx-text);
+  }
+}
+
+#options {
+  position: fixed;
+  right: 18px;
+  bottom: 56px;
+  width: 280px;
+  padding: 12px 14px;
+  border-radius: 15px;
+  background: var(--nyx-raised);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--nyx-text) 9%, transparent), 0 18px 48px rgb(0 0 0 / 0.35);
+
+  &[hidden] {
+    display: none;
+  }
+
+  & .group {
+    margin: 8px 0 6px;
+  }
+
+  & ol {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  & li {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    height: 32px;
+
+    & .check {
+      flex: 1;
+    }
+
+    & .icon-button:disabled {
+      opacity: 0.35;
+    }
+  }
+
+  & #backgrounds {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+
+  & input {
+    accent-color: var(--nyx-accent);
+  }
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}

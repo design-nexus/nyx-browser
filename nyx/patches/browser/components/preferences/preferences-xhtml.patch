@@ -1,0 +1,39 @@
+diff --git a/browser/components/preferences/preferences.xhtml b/browser/components/preferences/preferences.xhtml
+index f19d2ad..5559a81 100644
+--- a/browser/components/preferences/preferences.xhtml
++++ b/browser/components/preferences/preferences.xhtml
+@@ -125,6 +125,26 @@
+         iconsrc="chrome://browser/skin/preferences/category-general.svg"
+         data-l10n-id="pane-general-title">
+       </html:moz-page-nav-button>
++      <html:moz-page-nav-button id="category-nyx-appearance"
++        view="paneNyxAppearance"
++        iconsrc="chrome://browser/skin/customize.svg"
++        label="Appearance">
++      </html:moz-page-nav-button>
++      <html:moz-page-nav-button id="category-nyx-tabs"
++        view="paneNyxTabs"
++        iconsrc="chrome://browser/skin/window.svg"
++        label="Tabs &amp; Sidebar">
++      </html:moz-page-nav-button>
++      <html:moz-page-nav-button id="category-nyx-toolbar"
++        view="paneNyxToolbar"
++        iconsrc="chrome://browser/skin/bookmarks-toolbar.svg"
++        label="Toolbar">
++      </html:moz-page-nav-button>
++      <html:moz-page-nav-button id="category-nyx-integrations"
++        view="paneNyxIntegrations"
++        iconsrc="chrome://browser/skin/share.svg"
++        label="Nyx Integrations">
++      </html:moz-page-nav-button>
+       <html:moz-page-nav-button id="category-zen-looks"
+         view="paneZenLooks"
+         iconsrc="chrome://browser/skin/customize.svg"
+@@ -284,6 +304,7 @@
+ #include zenLooksAndFeel.inc.xhtml
+ #include zenTabsManagement.inc.xhtml
+ #include zenMarketplace.inc.xhtml
++#include ../../../nyx/preferences/nyxPanes.inc.xhtml
+         </vbox>
+       </vbox>
+     </vbox>

@@ -1,0 +1,184 @@
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
+
+zen-workspace-creation {
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  width: 100%;
+  padding: var(--zen-space-3) var(--zen-toolbox-padding);
+
+  & .zen-workspace-creation {
+    justify-content: center;
+
+    & .zen-workspace-creation-title {
+      font-size: large;
+      margin-bottom: var(--zen-space-5);
+      text-align: center;
+    }
+
+    & .zen-workspace-creation-label {
+      margin: 0;
+      opacity: var(--zen-opacity-40);
+      text-align: center;
+    }
+
+    & form {
+      --input-background-color: light-dark(rgba(0, 0, 0, 0.05), rgba(255, 255, 255, 0.05));
+
+      display: flex;
+      flex-direction: column;
+      width: calc(100% - var(--zen-size-10));
+      margin: auto;
+      gap: calc(3.2 * var(--space-large));
+      margin-top: calc(0.6 * var(--space-large));
+      height: 100%;
+
+      & .zen-workspace-creation-form {
+        gap: calc(0.6 * var(--space-large));
+      }
+
+      & xul|button {
+        margin: 0;
+        font-weight: normal !important;
+
+        &:not(.footer-button.primary) {
+          border: none;
+        }
+      }
+
+      & .zen-workspace-creation-name-wrapper {
+        padding: var(--zen-space-9) var(--zen-space-6);
+        border-radius: var(--border-radius-medium) !important;
+        margin: 0;
+        background-color: var(--input-background-color);
+        color: var(--input-text-color);
+        gap: var(--zen-space-8);
+        align-items: center;
+        padding-left: var(--zen-space-8);
+
+        & .zen-workspace-creation-icon-label {
+          position: relative;
+          width: var(--size-item-medium);
+          height: var(--icon-size-medium);
+          justify-content: center;
+          align-items: center;
+          cursor: pointer;
+          background: transparent !important;
+          appearance: none;
+          align-content: center;
+          padding: 0;
+          fill-opacity: 0.6;
+
+          & image {
+            position: absolute;
+            width: var(--size-item-small);
+            height: var(--size-item-small);
+            -moz-context-properties: fill-opacity, fill;
+            fill: currentColor;
+          }
+
+          &:not([has-svg-icon="true"]) image {
+            display: none;
+          }
+
+          & label {
+            display: flex;
+            font-size: var(--zen-font-size-12);
+            justify-content: center;
+          }
+
+          &[has-svg-icon="true"] label {
+            display: none;
+          }
+
+          &::before {
+            border: 1px dashed var(--zen-color-contrast-50);
+            border-radius: var(--zen-border-radius-6);
+            width: calc(100% + var(--zen-size-2));
+            height: calc(100% + var(--zen-size-2));
+            content: "";
+            position: absolute;
+            top: calc(-1 * var(--zen-space-2));
+            left: calc(-1 * var(--zen-space-2));
+            pointer-events: none;
+          }
+        }
+
+        & .zen-workspace-creation-name {
+          --input-border-color: transparent;
+          --input-background-color: transparent;
+          padding: 0 !important;
+          width: 100%;
+          outline: none;
+          border-radius: 0;
+        }
+      }
+
+      & .zen-workspace-creation-profile-wrapper {
+        padding: var(--zen-space-4);
+        border-radius: var(--border-radius-medium) !important;
+        margin: 0;
+        background-color: var(--input-background-color);
+        color: var(--input-text-color);
+        gap: var(--zen-space-4);
+        align-items: center;
+        flex-wrap: wrap;
+
+        & .zen-workspace-creation-profile-label {
+          cursor: help;
+        }
+
+        & .zen-workspace-creation-profile {
+          margin: 0;
+          padding: var(--zen-space-6) !important;
+          padding-inline-end: 0;
+          appearance: none;
+          background: var(--zen-color-contrast-10);
+          margin-left: auto;
+          min-width: unset !important;
+          border-radius: var(--zen-border-radius-6);
+
+          &:focus-visible {
+            outline: 2px solid var(--zen-colors-border-contrast);
+            outline-offset: 2px;
+          }
+        }
+      }
+
+      & .zen-workspace-creation-edit-theme-button {
+        border-radius: var(--border-radius-medium) !important;
+        margin: 0;
+        background-color: var(--input-background-color);
+        color: var(--input-text-color);
+        justify-content: center;
+        align-items: center;
+        appearance: none;
+        padding: var(--zen-space-10) !important;
+
+        &:hover {
+          background-color: var(--zen-color-contrast-10);
+        }
+
+        &:focus-visible {
+          outline: 2px solid var(--zen-colors-border-contrast);
+          outline-offset: 2px;
+        }
+      }
+
+      & .zen-workspace-creation-buttons {
+        gap: var(--space-small);
+        margin-top: auto;
+
+        & .zen-workspace-creation-create-button {
+          color: var(--button-text-color-primary) !important;
+          background: var(--color-accent-primary) !important;
+          width: 100%;
+        }
+      }
+    }
+  }
+}

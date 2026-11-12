@@ -1,0 +1,80 @@
+diff --git a/layout/svg/SVGGradientFrame.cpp b/layout/svg/SVGGradientFrame.cpp
+index 82732b73cd1ae0e85bf6e8549ed23308c610f8b6..49675ffe36cc6452e319e436a1fc68b9bfea826c 100644
+--- a/layout/svg/SVGGradientFrame.cpp
++++ b/layout/svg/SVGGradientFrame.cpp
+@@ -229,8 +229,9 @@ class MOZ_STACK_CLASS SVGColorStopInterpolator
+   SVGColorStopInterpolator(
+       gfxPattern* aGradient, const nsTArray<ColorStop>& aStops,
+       const StyleColorInterpolationMethod& aStyleColorInterpolationMethod,
+-      bool aExtend)
+-      : ColorStopInterpolator(aStops, aStyleColorInterpolationMethod, aExtend),
++      bool aExtend, const nsIFrame* aFrame)
++      : ColorStopInterpolator(aStops, aStyleColorInterpolationMethod, aExtend,
++                              aFrame),
+         mGradient(aGradient) {}
+ 
+   void CreateStop(float aPosition, DeviceColor aColor) {
+@@ -270,7 +271,8 @@ already_AddRefed<gfxPattern> SVGGradientFrame::GetPaintServerPattern(
+   if (nStops == 1 || GradientVectorLengthIsZero(gradientUnits)) {
+     // The gradient paints a single colour, using the stop-color of the last
+     // gradient step if there are more than one.
+-    return MakeAndAddRef<gfxPattern>(ToDeviceColor(stops.LastElement().mColor));
++    return MakeAndAddRef<gfxPattern>(
++        ToDeviceColor(stops.LastElement().mColor, aSource));
+   }
+ 
+   // Get the transform list (if there is one). We do this after the returns
+@@ -314,12 +316,13 @@ already_AddRefed<gfxPattern> SVGGradientFrame::GetPaintServerPattern(
+     static constexpr auto interpolationMethod = StyleColorInterpolationMethod{
+         StyleColorSpace::SrgbLinear, StyleHueInterpolationMethod::Shorter};
+     SVGColorStopInterpolator interpolator(gradient, stops, interpolationMethod,
+-                                          false);
++                                          false, aSource);
+     interpolator.CreateStops();
+   } else {
+     // setup standard sRGB stops
+     for (const auto& stop : stops) {
+-      gradient->AddColorStop(stop.mPosition, ToDeviceColor(stop.mColor));
++      gradient->AddColorStop(stop.mPosition,
++                             ToDeviceColor(stop.mColor, aSource));
+     }
+   }
+ 
+@@ -332,8 +335,9 @@ class MOZ_STACK_CLASS SVGWrColorStopInterpolator
+   SVGWrColorStopInterpolator(
+       const nsTArray<ColorStop>& aStops,
+       const StyleColorInterpolationMethod& aStyleColorInterpolationMethod,
+-      nsTArray<wr::GradientStop>& aResult)
+-      : ColorStopInterpolator(aStops, aStyleColorInterpolationMethod, false),
++      const nsIFrame* aFrame, nsTArray<wr::GradientStop>& aResult)
++      : ColorStopInterpolator(aStops, aStyleColorInterpolationMethod, false,
++                              aFrame),
+         mResult(aResult) {}
+ 
+   void CreateStop(float aPosition, DeviceColor aColor) {
+@@ -364,7 +368,8 @@ SVGGradientFrame::GetWebRenderGradient(nsIFrame* aSource,
+     return Some(std::move(result));
+   }
+   if (stops.Length() == 1 || GradientVectorLengthIsZero(gradientUnits)) {
+-    result.mSolidColor.emplace(ToDeviceColor(stops.LastElement().mColor));
++    result.mSolidColor.emplace(
++        ToDeviceColor(stops.LastElement().mColor, aSource));
+     return Some(std::move(result));
+   }
+ 
+@@ -397,13 +402,13 @@ SVGGradientFrame::GetWebRenderGradient(nsIFrame* aSource,
+   if (StyleSVG()->mColorInterpolation == StyleColorInterpolation::Linearrgb) {
+     static constexpr auto interpolationMethod = StyleColorInterpolationMethod{
+         StyleColorSpace::SrgbLinear, StyleHueInterpolationMethod::Shorter};
+-    SVGWrColorStopInterpolator interpolator(stops, interpolationMethod,
++    SVGWrColorStopInterpolator interpolator(stops, interpolationMethod, aSource,
+                                             result.mStops);
+     interpolator.CreateStops();
+   } else {
+     for (const auto& stop : stops) {
+       wr::GradientStop* wrStop = result.mStops.AppendElement();
+-      wrStop->color = wr::ToColorF(ToDeviceColor(stop.mColor));
++      wrStop->color = wr::ToColorF(ToDeviceColor(stop.mColor, aSource));
+       wrStop->offset = stop.mPosition;
+     }
+   }

@@ -1,0 +1,21 @@
+[package]
+name = "nyx-browser-bridge"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+
+[dependencies]
+base64 = "0.22"
+nyx-share-client = { git = "https://github.com/design-nexus/nyx-share.git", rev = "c794002c51c7e75816c36cd6b35bbaedf773bf4d" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+nyx-theme-core = { git = "https://github.com/design-nexus/nyx-design.git", rev = "4b89672c67dfd19e29b169221f0fffd86a6e740a" }
+notify = "8"
+zbus = { version = "5", default-features = false, features = ["blocking-api", "async-io"] }
+nyx-ai-client = { git = "https://github.com/design-nexus/nyx-ai.git", rev = "185369e522e17c3b819ee0ca587010f6e1636f87" }
+tokio = { version = "1", features = ["rt", "time"] }
+
+[dev-dependencies]
+tempfile = "3"

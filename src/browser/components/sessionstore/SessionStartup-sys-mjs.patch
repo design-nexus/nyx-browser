@@ -1,0 +1,63 @@
+diff --git a/browser/components/sessionstore/SessionStartup.sys.mjs b/browser/components/sessionstore/SessionStartup.sys.mjs
+index 05a5fd3d69605ec8c65d84c27657179916c2ac4d..90a8d9f4eb94547cb3dd211dcf63259e710c91bd 100644
+--- a/browser/components/sessionstore/SessionStartup.sys.mjs
++++ b/browser/components/sessionstore/SessionStartup.sys.mjs
+@@ -41,6 +41,7 @@ const lazy = XPCOMUtils.declareLazy({
+     "moz-src:///browser/components/sessionstore/StartupPerformance.sys.mjs",
+   sessionStoreLogger:
+     "moz-src:///browser/components/sessionstore/SessionLogger.sys.mjs",
++  ZenSessionStore: "resource:///modules/zen/ZenSessionManager.sys.mjs",
+ });
+ 
+ const STATE_RUNNING_STR = "running";
+@@ -99,7 +100,7 @@ class _SessionStartup {
+     }
+ 
+     // do not need to initialize anything in auto-started private browsing sessions
+-    if (lazy.PrivateBrowsingUtils.permanentPrivateBrowsing) {
++    if (false) {
+       gOnceInitializedDeferred.resolve();
+       return;
+     }
+@@ -239,6 +240,8 @@ class _SessionStartup {
+       this.#initialState = parsed;
+     }
+ 
++    this.#initialState = lazy.ZenSessionStore.onFileRead(this.#initialState);
++
+     if (this.#initialState == null) {
+       // No valid session found.
+       this.#sessionType = this.NO_SESSION;
+@@ -337,6 +340,8 @@ class _SessionStartup {
+         `Previous shutdown ok? ${this.#previousSessionCrashed}, reason: ${previousSessionCrashedReason}`
+       );
+ 
++      lazy.ZenSessionStore.onCrashCheckpoints(this.#initialState);
++
+       Services.obs.addObserver(this, "sessionstore-windows-restored", true);
+ 
+       if (this.sessionType == this.NO_SESSION) {
+@@ -397,12 +402,7 @@ class _SessionStartup {
+   isAutomaticRestoreEnabled() {
+     if (this.#resumeSessionEnabled === null) {
+       this.#resumeSessionEnabled =
+-        !lazy.PrivateBrowsingUtils.permanentPrivateBrowsing &&
+-        (Services.prefs.getBoolPref(
+-          "browser.sessionstore.resume_session_once"
+-        ) ||
+-          Services.prefs.getIntPref("browser.startup.page") ==
+-            BROWSER_STARTUP_RESUME_SESSION);
++        true;
+     }
+ 
+     return this.#resumeSessionEnabled;
+@@ -415,8 +415,7 @@ class _SessionStartup {
+    */
+   willRestore() {
+     return (
+-      this.sessionType == this.RECOVER_SESSION ||
+-      this.sessionType == this.RESUME_SESSION
++      true
+     );
+   }
+ 

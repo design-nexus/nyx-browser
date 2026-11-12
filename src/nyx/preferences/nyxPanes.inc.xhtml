@@ -1,0 +1,130 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+# Browser's own settings panes, included in about:preferences by nyx/patches. Firefox's Privacy &
+# Security, Search and extension panes stay as they are.
+
+<script type="text/javascript" src="chrome://browser/content/preferences/nyx-settings.js"/>
+
+<html:template id="template-paneNyxAppearance">
+<hbox class="subcategory" hidden="true" data-category="paneNyxAppearance">
+  <html:h1>Appearance</html:h1>
+</hbox>
+
+<groupbox id="nyxThemeGroup" data-category="paneNyxAppearance" hidden="true" class="highlighting-group">
+  <label><html:h2>Theme</html:h2></label>
+  <description class="description-deemphasized">Browser follows your Nyx theme and accent as they change. A theme, accent or density chosen here is for Browser alone.</description>
+  <radiogroup id="nyxTheme" orient="horizontal">
+    <radio value="follow" label="Follow system"/>
+    <radio value="nyx-dark" label="Dark"/>
+    <radio value="nyx-light" label="Light"/>
+  </radiogroup>
+  <hbox align="center">
+    <label control="nyxAccent">Accent</label>
+    <menulist id="nyxAccent">
+      <menupopup>
+        <menuitem value="" label="Theme default"/>
+        <menuitem value="blue" label="Blue"/>
+        <menuitem value="violet" label="Violet"/>
+        <menuitem value="pink" label="Pink"/>
+        <menuitem value="red" label="Red"/>
+        <menuitem value="coral" label="Coral"/>
+        <menuitem value="amber" label="Amber"/>
+        <menuitem value="green" label="Green"/>
+        <menuitem value="teal" label="Teal"/>
+        <menuitem value="graphite" label="Graphite"/>
+      </menupopup>
+    </menulist>
+  </hbox>
+  <hbox align="center">
+    <label control="nyxDensity">Density</label>
+    <menulist id="nyxDensity">
+      <menupopup>
+        <menuitem value="" label="System"/>
+        <menuitem value="compact" label="Compact"/>
+        <menuitem value="balanced" label="Balanced"/>
+        <menuitem value="relaxed" label="Relaxed"/>
+      </menupopup>
+    </menulist>
+  </hbox>
+</groupbox>
+
+<groupbox id="nyxEffectsGroup" data-category="paneNyxAppearance" hidden="true" class="highlighting-group">
+  <label><html:h2>Effects</html:h2></label>
+  <checkbox id="nyxFrosted" label="Frosted menus and panels" preference="nyx.effects.frosted"/>
+  <description class="description-deemphasized">Animations follow the system's reduced-motion setting.</description>
+</groupbox>
+</html:template>
+
+<html:template id="template-paneNyxTabs">
+<hbox class="subcategory" hidden="true" data-category="paneNyxTabs">
+  <html:h1>Tabs &amp; Sidebar</html:h1>
+</hbox>
+
+<groupbox id="nyxTabsGroup" data-category="paneNyxTabs" hidden="true" class="highlighting-group">
+  <label><html:h2>Tabs</html:h2></label>
+  <description class="description-deemphasized">Switches at once; tabs, workspaces and split views stay as they are.</description>
+  <radiogroup id="nyxOrientation" preference="zen.tabs.vertical" orient="horizontal">
+    <radio value="true" label="Vertical"/>
+    <radio value="false" label="Horizontal"/>
+  </radiogroup>
+</groupbox>
+
+<groupbox id="nyxSidebarGroup" data-category="paneNyxTabs" hidden="true" class="highlighting-group">
+  <label><html:h2>Sidebar</html:h2></label>
+  <description class="description-deemphasized">Automatic is expanded from 1400 px wide, an icon rail from 900 px, and hidden below, for each window. The sidebar button and Ctrl+B choose a mode by hand. With horizontal tabs there's no tab sidebar.</description>
+  <radiogroup id="nyxSidebarMode" preference="nyx.sidebar.mode" orient="horizontal">
+    <radio value="auto" label="Automatic"/>
+    <radio value="expanded" label="Expanded"/>
+    <radio value="compact" label="Compact"/>
+    <radio value="hidden" label="Hidden"/>
+  </radiogroup>
+</groupbox>
+</html:template>
+
+<html:template id="template-paneNyxToolbar">
+<hbox class="subcategory" hidden="true" data-category="paneNyxToolbar">
+  <html:h1>Toolbar</html:h1>
+</hbox>
+
+<groupbox id="nyxTopBarGroup" data-category="paneNyxToolbar" hidden="true" class="highlighting-group">
+  <label><html:h2>Top bar</html:h2></label>
+  <description class="description-deemphasized">Choose and arrange its buttons. Those without room go into More tools.</description>
+  <hbox>
+    <button id="nyxCustomize" label="Customize…"/>
+  </hbox>
+  <checkbox id="nyxQrButton" label="Show the QR code button in the address field" preference="nyx.toolbar.qr-button"/>
+</groupbox>
+
+<groupbox id="nyxBookmarksGroup" data-category="paneNyxToolbar" hidden="true" class="highlighting-group">
+  <label><html:h2>Bookmarks bar</html:h2></label>
+  <radiogroup id="nyxBookmarksVisibility" preference="browser.toolbars.bookmarks.visibility" orient="horizontal">
+    <radio value="always" label="Always"/>
+    <radio value="newtab" label="New tab only"/>
+    <radio value="never" label="Never"/>
+  </radiogroup>
+  <checkbox id="nyxBookmarksIconsOnly" label="Icons only" preference="nyx.bookmarks.icons-only"/>
+  <description class="description-deemphasized">Bookmarks show just their icon, with the name on hover; folders keep their names.</description>
+</groupbox>
+</html:template>
+
+<html:template id="template-paneNyxIntegrations">
+<hbox class="subcategory" hidden="true" data-category="paneNyxIntegrations">
+  <html:h1>Nyx Integrations</html:h1>
+</hbox>
+
+<groupbox id="nyxIntegrationsGroup" data-category="paneNyxIntegrations" hidden="true" class="highlighting-group">
+  <label><html:h2>Nyx apps</html:h2></label>
+  <description class="description-deemphasized">Each needs that app installed. Pages can't reach them: they work only from Browser's buttons, menus and shortcuts.</description>
+  <checkbox id="nyxIntegrationShare" label="Share: send a page, selection, image or download to the Share Sheet (Alt+Shift+S)"/>
+  <checkbox id="nyxIntegrationCapture" label="Capture: screenshots of a page, a region, or its text (Alt+Shift+C)"/>
+  <checkbox id="nyxIntegrationAssistant" label="Assistant: ask about a page, which is read only when you allow it (Alt+Shift+A)"/>
+  <description id="nyxIntegrationsUnreadable" class="description-deemphasized" hidden="true">These choices couldn't be read, so all three are off until they're saved again.</description>
+</groupbox>
+
+<groupbox id="nyxPasswordsGroup" data-category="paneNyxIntegrations" hidden="true" class="highlighting-group">
+  <label><html:h2>Passwords</html:h2></label>
+  <description id="nyxPasswordsState" class="description-deemphasized"/>
+</groupbox>
+</html:template>

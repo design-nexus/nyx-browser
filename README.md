@@ -1,77 +1,47 @@
-# Browser
+<!--
+   - This Source Code Form is subject to the terms of the Mozilla Public
+   - License, v. 2.0. If a copy of the MPL was not distributed with this
+   - file, You can obtain one at http://mozilla.org/MPL/2.0/.
+   -->
+<!-- TODO: Get a job -->
+<img src="./docs/assets/zen-dark.svg" width="100px" align="left">
 
-A web browser for [Omarchy](https://omarchy.org), built on the
-[Zen](https://zen-browser.app) release of Firefox. Tabs run down a sidebar or across the top,
-and its colors come from your Nyx theme. It runs a private copy of Zen with its own profile, so
-an installed Zen or Firefox and their profiles aren't touched.
+### `Zen Browser`
 
-## Install
+[![Downloads](https://img.shields.io/github/downloads/zen-browser/desktop/total.svg)](https://github.com/zen-browser/desktop/releases)
+[![Crowdin](https://badges.crowdin.net/zen-browser/localized.svg)](https://crowdin.com/project/zen-browser)
+[![Zen Release builds](https://github.com/zen-browser/desktop/actions/workflows/build.yml/badge.svg?branch=stable)](https://github.com/zen-browser/desktop/actions/workflows/build.yml)
 
-```sh
-curl -fsSL https://raw.githubusercontent.com/design-nexus/nyx-browser/main/install.sh | bash
-```
+Zen is a firefox-based browser with the aim of pushing your productivity to a new level!
 
-Add `bash -s -- --default` in place of `bash` to make it your default browser. To remove it, run
-the same line with `uninstall.sh` in place of `install.sh`. Your profile stays unless you add
-`--purge`.
+<div flex="true">
+  <a href="https://zen-browser.app/download">
+    Download
+  </a>
+  •
+  <a href="https://zen-browser.app">
+    Website
+  </a>
+  •
+  <a href="https://docs.zen-browser.app">
+    Documentation
+  </a>
+  •
+  <a href="https://zen-browser.app/release-notes/latest">
+    Release Notes
+  </a>
+</div>
 
-The installer downloads one Zen release, about 113 MB, and checks it against the SHA-256 in
-`upstream.toml`. Building needs Rust.
+### Contributing
 
-## What it does
+If you'd like to report a bug, please do so on our [GitHub Issues page](https://github.com/zen-browser/desktop/issues/) and for feature requests, you can use [GitHub Discussions](https://github.com/zen-browser/desktop/discussions).
 
-- **Tabs:** vertical or horizontal, switched live without closing anything. Pinned tabs, folders,
-  workspaces and split view work in both.
-- **Sidebar:** expanded, icon rail, hidden, or automatic, which follows the window's width.
-- **Appearance:** follows your Nyx theme and accent as they change, or set a theme, accent and
-  density just for Browser. The settings button or <kbd>Ctrl</kbd>+<kbd>,</kbd> opens it.
-- **New tab page:** search, your most visited sites and recent pages. No news or sponsored content.
-- **Address bar:** always shows a page's security state, including a warning on a page that isn't
-  secure. A star adds a favorite, and the button beside it shows a QR code for the page.
-- **Workspaces and folders:** the sidebar has a workspace menu and tab search, a Folders section, and
-  workspace icons at its foot. <kbd>Ctrl</kbd>+<kbd>B</kbd> collapses the sidebar, and <kbd>F1</kbd>
-  lists the shortcuts.
-- **Firefox extensions:** installed and signed the usual way.
+Zen is an open-source project, and we welcome contributions from the community! Please take a look at the [contribution guidelines](./docs/contribute.md) before getting started!
 
-## With other Nyx apps
+#### Partners
 
-Each one needs that app installed, and can be turned off in Settings.
+Thanks to all the [sponsors](https://zen-browser.app/#sponsors) of Zen for their support and contributions, including:
 
-- **Passwords:** logins, passkeys and masked email from Nyx Passwords. Pair it once from its
-  toolbar button.
-- **Share** (<kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd>): sends a page, selection, image or
-  finished download to the Share Sheet.
-- **Capture** (<kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>C</kbd>): opens a visible or full-page
-  screenshot in Capture. A region and text from a region are in the page's menu.
-- **Assistant** (<kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>A</kbd>): asks the local Assistant about a page
-  in a side panel. It asks before reading each page, and the text stays on this computer.
-
-## Privacy and safety
-
-Pages can't reach these features. The extension adds nothing to pages, and a page's text is only
-read after you ask and allow it. Assistant is called with no tools, and page text is marked as
-untrusted data, so a page can affect the words of an answer but can't make anything happen. The
-native host accepts a fixed list of requests, runs no shell, and answers only this extension when
-started by a browser. See [docs/SECURITY.md](docs/SECURITY.md).
-
-## Limits
-
-- Tests run in a headless browser. Real pointer drags, tearing a tab into a new window and running
-  on a live compositor need checking by hand: see [docs/FEASIBILITY.md](docs/FEASIBILITY.md).
-- It stays on the Zen release pinned in `upstream.toml` until a new one passes the tests, and doesn't
-  update itself. On any other release it falls back to vertical tabs. Run
-  `tools/bump-upstream.sh VERSION` to move to a new release.
-- Automatic sidebar mode is set by the focused window, because the sidebar's settings are shared
-  between windows. Using the sidebar button or <kbd>Ctrl</kbd>+<kbd>B</kbd> turns Automatic off until
-  you choose it again in Appearance.
-- There are no window buttons, so a floating window closes with the keyboard.
-- Buttons stay in the top bar however narrow the window gets, with no overflow menu.
-- With horizontal tabs, a drop on a folder's own label depends on the pointer's height in the row.
-
-## Development
-
-```sh
-cargo test --locked && cargo build --locked && tools/setup-runtime.sh
-tests/tabs.py && tests/look.py && tests/parity.py && tests/integration.py
-./install.sh && tests/launcher.py
-```
+<a href="https://blacksmith.sh">
+  <img src="./docs/assets/blacksmith-yellow.png" width="350px"/>
+</a>

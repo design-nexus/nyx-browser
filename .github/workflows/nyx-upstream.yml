@@ -1,0 +1,55 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+# Watches for Zen releases. A new one becomes a commit on the zen branch and a pull request from
+# upstream/<tag> into main, which nyx-release.yml builds and tests. Nothing merges on its own.
+name: Nyx upstream watch
+
+on:
+  schedule:
+    - cron: "17 */6 * * *"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: A Zen release tag (default the latest)
+        default: ""
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  watch:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Newest Zen release
+        id: zen
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="${{ inputs.tag }}"
+          [[ -n $tag ]] || tag=$(gh api repos/zen-browser/desktop/releases/latest --jq .tag_name)
+          echo "tag=$tag" >>"$GITHUB_OUTPUT"
+          if git ls-remote --exit-code origin "refs/heads/upstream/$tag" >/dev/null \
+             || git log -1 --format=%s origin/zen | grep -qF "Zen $tag ("; then
+            echo "new=false" >>"$GITHUB_OUTPUT"
+          else
+            echo "new=true" >>"$GITHUB_OUTPUT"
+          fi
+
+      - name: Bring it in
+        if: steps.zen.outputs.new == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          nyx/tools/sync-zen.sh "${{ steps.zen.outputs.tag }}" --push
+          gh pr create --base main --head "upstream/${{ steps.zen.outputs.tag }}" \
+            --title "Zen ${{ steps.zen.outputs.tag }}" \
+            --body "Zen [${{ steps.zen.outputs.tag }}](https://github.com/zen-browser/desktop/releases/tag/${{ steps.zen.outputs.tag }}), from the zen branch. Follow nyx/docs/UPDATING.md: resolve any conflicts, run nyx/tools/import.sh and the tests, then merge."

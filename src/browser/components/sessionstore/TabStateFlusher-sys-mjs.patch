@@ -1,0 +1,13 @@
+diff --git a/browser/components/sessionstore/TabStateFlusher.sys.mjs b/browser/components/sessionstore/TabStateFlusher.sys.mjs
+index a17e636ecf2881bc4146587f8a55c4d3c685cead..5a372678c2870459275bb563b1b0ed054f4e67e1 100644
+--- a/browser/components/sessionstore/TabStateFlusher.sys.mjs
++++ b/browser/components/sessionstore/TabStateFlusher.sys.mjs
+@@ -65,7 +65,7 @@ export class TabStateFlusher {
+    */
+   static flushWindow(window) {
+     let promises = [];
+-    for (let browser of window.gBrowser.browsers) {
++    for (let browser of window.gZenWorkspaces.allUsedBrowsers) {
+       if (window.gBrowser.getTabForBrowser(browser).linkedPanel) {
+         promises.push(TabStateFlusher.flush(browser));
+       }

@@ -1,0 +1,29 @@
+diff --git a/browser/components/sessionstore/SessionSaver.sys.mjs b/browser/components/sessionstore/SessionSaver.sys.mjs
+index 325bd818bd2ed3c80e7c5d9772108e70d1180819..ce897b7661c0876f5d752e22ba3372ddd9d8707a 100644
+--- a/browser/components/sessionstore/SessionSaver.sys.mjs
++++ b/browser/components/sessionstore/SessionSaver.sys.mjs
+@@ -42,6 +42,7 @@ const lazy = XPCOMUtils.declareLazy({
+     "moz-src:///browser/components/sessionstore/SessionStore.sys.mjs",
+   sessionStoreLogger:
+     "moz-src:///browser/components/sessionstore/SessionLogger.sys.mjs",
++  ZenSessionStore: "resource:///modules/zen/ZenSessionManager.sys.mjs",
+   // Minimal interval between two save operations (in ms), while the user is
+   // active.
+   intervalWhileActive: {
+@@ -239,7 +240,7 @@ class _SessionSaver {
+     // Cancel any pending timeouts.
+     this.cancel();
+ 
+-    if (lazy.PrivateBrowsingUtils.permanentPrivateBrowsing) {
++    if (false) {
+       // Don't save (or even collect) anything in permanent private
+       // browsing mode
+ 
+@@ -294,6 +295,7 @@ class _SessionSaver {
+     this.#maybeClearCookiesAndStorage(state);
+ 
+     Glean.sessionRestore.collectData.stopAndAccumulate(timerId);
++    lazy.ZenSessionStore.saveState(state);
+     return this.#writeState(state);
+   }
+ 

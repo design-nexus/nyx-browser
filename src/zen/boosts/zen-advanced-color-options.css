@@ -1,0 +1,42 @@
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
+
+#zen-boost-advanced-color-options-panel {
+  --panel-padding: 15px;
+
+  & p {
+    color: var(--zen-boosts-primary-color);
+  }
+
+  & input {
+    width: var(--zen-boosts-color-slider-width);
+    appearance: none !important;
+    height: var(--zen-size-4);
+
+    background-color: var(--zen-boosts-color-slider-track-background);
+    border-radius: var(--zen-border-radius-2);
+
+    margin-top: var(--zen-space-10);
+  }
+
+  &::part(content) {
+    display: flex;
+    flex-direction: column;
+    gap: var(--zen-space-24);
+  }
+}
+
+#zen-boost-advanced-color-options-panel input::-moz-range-thumb {
+  width: var(--zen-size-18);
+  height: var(--zen-size-18);
+  background-color: var(--zen-boosts-color-slider-thumb-background);
+  border: solid 1px var(--zen-boosts-color-slider-thumb-border-color);
+  border-radius: var(--zen-border-radius-round);
+}
+
+#zen-boost-advanced-color-options-panel input::-moz-range-thumb:active {
+  background-color: var(--zen-boosts-color-slider-thumb-active-background);
+}
