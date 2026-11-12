@@ -61,4 +61,7 @@
   );
 
   Services.scriptloader.loadSubScript("chrome://browser/content/zen-components/ZenDragAndDrop.js", this);
+
+  // Nyx Browser's own chrome.
+  Services.scriptloader.loadSubScript("chrome://browser/content/nyx/NyxPreloaded.js", this);
 }

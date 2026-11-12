@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
 /* Applies the suite's theme to this extension's pages: asked of the native host, and remembered
  * so a page paints in the right colors before the host answers. */
 "use strict";
@@ -34,7 +38,9 @@ async function followTheme() {
     }
   };
   refresh();
-  setInterval(refresh, 1000);
+  // The theme can only have changed while the page was out of sight or out of focus.
+  document.addEventListener("visibilitychange", () => document.hidden || refresh());
+  window.addEventListener("focus", refresh);
 }
 
 followTheme();

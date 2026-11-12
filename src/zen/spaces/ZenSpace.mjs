@@ -167,6 +167,10 @@ export class nsZenWorkspace extends MozXULElement {
     this.initializeAttributeInheritance();
 
     this.scrollbox = this.querySelector("arrowscrollbox");
+    // Nyx: a new workspace's tabs lie in a row when tabs are horizontal.
+    if (!Services.prefs.getBoolPref("zen.tabs.vertical", true)) {
+      this.scrollbox.setAttribute("orient", "horizontal");
+    }
     this.scrollbox.smoothScroll = Services.prefs.getBoolPref(
       "zen.startup.smooth-scroll-in-tabs",
       false
@@ -372,9 +376,43 @@ export class nsZenWorkspace extends MozXULElement {
   }
 
   handleEvent(event) {
-    if (this.active) {
-      gBrowser.tabContainer.handleEvent(event);
+    if (!this.active) {
+      return;
     }
+    if (event.type === "wheel" && this.#scrollRow(event)) {
+      return;
+    }
+    gBrowser.tabContainer.handleEvent(event);
+  }
+
+  /**
+   * Nyx: with tabs in a row (zen.tabs.vertical off), a vertical wheel scrolls the row sideways.
+   * Sideways trackpad swipes are left alone: they switch workspaces.
+   *
+   * @param {WheelEvent} event
+   * @returns {boolean} Whether the wheel was used here
+   */
+  #scrollRow(event) {
+    if (
+      Services.prefs.getBoolPref("zen.tabs.vertical", true) ||
+      event.deltaY === 0 ||
+      event.ctrlKey ||
+      event.metaKey ||
+      !this.scrollbox.overflowing ||
+      gZenWorkspaces._swipeManager?.isGestureActive
+    ) {
+      return false;
+    }
+    let delta = event.deltaY;
+    if (event.deltaMode === event.DOM_DELTA_LINE) {
+      delta *= this.scrollbox.lineScrollAmount;
+    } else if (event.deltaMode === event.DOM_DELTA_PAGE) {
+      delta *= this.scrollbox.scrollClientSize;
+    }
+    this.scrollbox.scrollByPixels(delta, true);
+    event.preventDefault();
+    event.stopPropagation();
+    return true;
   }
 
   get workspaceUuid() {

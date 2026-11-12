@@ -22,3 +22,6 @@
 #include ../../../zen/library/jar.inc.mn
 #include ../../../zen/about/jar.inc.mn
 #include ../../../zen/migration/jar.inc.mn
+
+# Nyx Browser
+#include ../../../nyx/jar.inc.mn

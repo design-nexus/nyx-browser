@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
 /* Assistant's side panel. It asks before each read, and answers are shown as plain text: a model
  * that read a hostile page can still write anything, so nothing it says becomes markup or a link. */
 "use strict";

@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
 /* The top bar's order, its sidebar button, and the QR button. The order comes from the toolbar's
  * own placements, so customizing it still works. Zen moves buttons between containers depending
  * on the layout, so each button carries its position as a style instead of relying on where it is
@@ -74,6 +78,7 @@
   }
 
   function applyOrder() {
+    fitSoon();
     const ids = CUI.getWidgetIdsInArea(NAVBAR).filter(id => !CUI.isSpecialWidget(id) && id !== "vertical-spacer");
     const horizontal = !Services.prefs.getBoolPref("zen.tabs.vertical", true);
     const topRow = document.getElementById("zen-sidebar-top-buttons-customization-target");
@@ -110,6 +115,98 @@
   }
 
   const applySoon = () => setTimeout(applyOrder, 0);
+
+  /* ---------- Overflow ----------
+   * Firefox's own overflow measures a container these layouts dissolve, so it stays off (above).
+   * Instead, when the window is too narrow for the address bar to stay usable, the last action
+   * buttons move into More tools at the end of the bar, and come back as room returns. A panel a
+   * moved button opens anchors on More tools, as with Firefox's overflow. */
+  const URLBAR_MIN = 240;
+  const OVERFLOW = "nyx-overflow-button";
+  const FIXED = new Set(["back-button", "forward-button", "stop-reload-button", "urlbar-container", SIDEBAR_BUTTON]);
+
+  function actionButtons() {
+    return CUI.getWidgetIdsInArea(NAVBAR)
+      .filter(id => !CUI.isSpecialWidget(id) && id !== "vertical-spacer" && !FIXED.has(id))
+      .map(id => document.getElementById(id))
+      .filter(node => node?.isConnected && !node.closest("#BrowserToolbarPalette"));
+  }
+
+  function overflowButton() {
+    let button = document.getElementById(OVERFLOW);
+    if (!button) {
+      button = document.createXULElement("toolbarbutton");
+      button.id = OVERFLOW;
+      button.className = "toolbarbutton-1 chromeclass-toolbar-additional";
+      button.setAttribute("type", "menu");
+      button.setAttribute("label", "More tools");
+      button.setAttribute("tooltiptext", "More tools");
+      button.setAttribute("aria-label", "More tools");
+      const menu = document.createXULElement("menupopup");
+      menu.id = `${OVERFLOW}-menu`;
+      menu.addEventListener("popupshowing", fillOverflowMenu);
+      button.append(menu);
+      document.getElementById("PanelUI-button")?.before(button);
+    }
+    return button;
+  }
+
+  function fillOverflowMenu(event) {
+    const menu = event.target;
+    menu.replaceChildren();
+    for (const node of actionButtons().filter(n => n.hasAttribute("nyx-overflowed"))) {
+      const item = document.createXULElement("menuitem");
+      item.setAttribute("label", node.getAttribute("label") || node.getAttribute("tooltiptext") || node.id);
+      const icon = getComputedStyle(node).listStyleImage;
+      if (icon && icon !== "none") {
+        item.classList.add("menuitem-iconic");
+        item.style.listStyleImage = icon;
+      }
+      item.addEventListener("command", () => {
+        const target = node.matches("toolbaritem") ? node.querySelector("toolbarbutton") || node : node;
+        target.doCommand();
+      });
+      menu.append(item);
+    }
+  }
+
+  function fitToolbar() {
+    const urlbar = document.getElementById("urlbar-container");
+    if (!urlbar || document.documentElement.hasAttribute("customizing")) {
+      return;
+    }
+    const buttons = actionButtons();
+    let room = urlbar.getBoundingClientRect().width - URLBAR_MIN;
+    const shown = buttons.filter(node => !node.hasAttribute("nyx-overflowed"));
+    for (let i = shown.length - 1; i >= 0 && room < 0; i--) {
+      const node = shown[i];
+      node.nyxWidth = node.getBoundingClientRect().width + 4;
+      node.setAttribute("nyx-overflowed", "true");
+      node.setAttribute("cui-anchorid", OVERFLOW);
+      room += node.nyxWidth;
+    }
+    // Back in order, each while it fits with a little to spare, so a resize can't flicker.
+    for (const node of buttons.filter(n => n.hasAttribute("nyx-overflowed"))) {
+      const width = node.nyxWidth || 36;
+      if (room - width < 16) {
+        break;
+      }
+      node.removeAttribute("nyx-overflowed");
+      node.removeAttribute("cui-anchorid");
+      room -= width;
+    }
+    const button = overflowButton();
+    button.hidden = !buttons.some(node => node.hasAttribute("nyx-overflowed"));
+    button.style.order = document.getElementById("PanelUI-button")?.style.order || "";
+  }
+
+  let fitting = 0;
+  const fitSoon = () => {
+    cancelAnimationFrame(fitting);
+    fitting = requestAnimationFrame(fitToolbar);
+  };
+
+  window.NyxToolbar = { fit: fitToolbar };
 
   function placePasswords() {
     if (document.getElementById(PASSWORDS) && !Services.prefs.getBoolPref("nyx.toolbar.passwords-placed", false)) {
@@ -241,6 +338,8 @@
     CUI.addListener(listener);
     buildQrButton();
     applyOrder();
+    new ResizeObserver(fitSoon).observe(document.getElementById("navigator-toolbox"));
+    window.addEventListener("aftercustomization", fitSoon);
     window.addEventListener("aftercustomization", applySoon);
     window.addEventListener("customizationchange", applySoon);
     Services.prefs.addObserver("zen.tabs.vertical", applySoon);

@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
 /* What the mockup has that Zen lays out differently: the top bar, the address bar's icons, the
  * sidebar's rows and its foot. Colors are in theme.css. */
 
@@ -558,4 +562,19 @@ menuseparator {
     width: auto !important;
     min-width: 0 !important;
   }
+}
+
+/* ---------- Overflow: buttons the window has no room for are in More tools ---------- */
+:root:not([customizing]) [nyx-overflowed] {
+  display: none !important;
+}
+
+#nyx-overflow-button {
+  list-style-image: url("chrome://global/skin/icons/more.svg");
+  -moz-context-properties: fill;
+  fill: currentColor;
+}
+
+#nyx-overflow-button > .toolbarbutton-menu-dropmarker {
+  display: none;
 }

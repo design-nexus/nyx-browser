@@ -1,11 +1,15 @@
-/* The Appearance panel. Orientation, sidebar and effects are prefs read right here; theme,
- * accent and density go to a file the launcher reads, because the launcher resolves them
- * through the suite's theme code. */
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+/* The Appearance panel. Orientation, sidebar and effects are prefs; theme, accent and density go
+ * to appearance.json, which the theme bridge resolves through Theme Engine 2.0 (NyxTheme). */
 {
   const CONFIG = Services.env.get("XDG_CONFIG_HOME") || PathUtils.join(Services.env.get("HOME"), ".config");
   const FILE = PathUtils.join(CONFIG, "nyx-browser", "appearance.json");
   const SWATCHES = ["blue", "violet", "pink", "red", "coral", "amber", "green", "teal", "graphite"];
   const WIDGET = "nyx-appearance-button";
+  const { NyxTheme } = ChromeUtils.importESModule("chrome://browser/content/nyx/NyxTheme.sys.mjs");
 
   let saved = { theme: "follow", accent: "", density: "" };
 
@@ -36,6 +40,7 @@
     render();
     await IOUtils.makeDirectory(PathUtils.parent(FILE), { ignoreExisting: true });
     await IOUtils.writeJSON(FILE, saved, { tmpPath: `${FILE}.tmp` });
+    NyxTheme.refresh();
   }
 
   function segment(label, note, options, current, choose, disabled = false) {
@@ -137,14 +142,6 @@
   }
 
   window.NyxAppearance = { open, load, render, file: FILE };
-
-  function applyEffects() {
-    document.documentElement.toggleAttribute("nyx-frosted", Services.prefs.getBoolPref("nyx.effects.frosted", false));
-  }
-
-  applyEffects();
-  Services.prefs.addObserver("nyx.effects.frosted", applyEffects);
-  window.addEventListener("unload", () => Services.prefs.removeObserver("nyx.effects.frosted", applyEffects), { once: true });
 
   window.addEventListener(
     "keydown",

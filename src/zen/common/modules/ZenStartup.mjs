@@ -105,9 +105,13 @@ class ZenStartup {
       // Just in case we didn't get the right size.
       gZenUIManager.updateTabsToolbar();
       this.closeWatermark();
+      // Nyx: tabs can lie in a row as well as a column.
       document
         .getElementById("tabbrowser-arrowscrollbox")
-        .setAttribute("orient", "vertical");
+        .setAttribute(
+          "orient",
+          gZenVerticalTabsManager._prefsVerticalTabs ? "vertical" : "horizontal"
+        );
       this.isReady = true;
       this.#initialized.resolve();
 

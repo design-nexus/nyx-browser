@@ -873,7 +873,32 @@
         Services.prefs.getIntPref(
           "browser.tabs.dragDrop.moveOverThresholdPercent"
         ) / 100;
-      return (event.clientY - rect.top) / rect.height <= threshold;
+      return this._dragOverlap(event, rect) <= threshold;
+    }
+
+    /**
+     * Nyx: tabs lie in a row rather than a column (zen.tabs.vertical is off).
+     *
+     * @returns {boolean}
+     */
+    get _tabsInRow() {
+      return !Services.prefs.getBoolPref("zen.tabs.vertical", true);
+    }
+
+    /**
+     * How far along an element the pointer is, from 0 to 1: down a column of tabs, or across
+     * a row of them.
+     *
+     * @param {DragEvent} event
+     * @param {DOMRect} rect - The element's bounds
+     * @returns {number}
+     */
+    _dragOverlap(event, rect) {
+      if (this._tabsInRow) {
+        const ratio = (event.clientX - rect.left) / rect.width;
+        return RTL_UI ? 1 - ratio : ratio;
+      }
+      return (event.clientY - rect.top) / rect.height;
     }
 
     /**
@@ -893,6 +918,7 @@
       }
       indicator.setAttribute("orientation", "horizontal");
       const style = indicator.style;
+      style.removeProperty("left");
       const vars = {
         "--indicator-left": `${left}px`,
         "--indicator-width": `${width}px`,
@@ -903,6 +929,24 @@
           style.setProperty(name, value);
         }
       }
+      return indicator;
+    }
+
+    /**
+     * Nyx: stands the shared drop indicator up beside an element in a row of tabs.
+     *
+     * @param {object} options
+     * @param {number} options.left - Offset from the left, in px
+     * @param {number} options.top - Top offset, in px
+     * @param {number} options.height - Indicator height, in px
+     * @returns {Element} The indicator
+     */
+    _placeRowDropIndicator({ left, top, height }) {
+      const indicator = gZenPinnedTabManager.dragIndicator;
+      indicator.setAttribute("orientation", "vertical");
+      indicator.style.setProperty("--indicator-top", `${Math.round(top)}px`);
+      indicator.style.setProperty("--indicator-height", `${Math.round(height)}px`);
+      indicator.style.left = `${Math.round(left)}px`;
       return indicator;
     }
 
@@ -1672,7 +1716,7 @@
           movingTabs
         ) || !isZenFolder;
       let rect = window.windowUtils.getBoundsWithoutFlushing(dropElement);
-      const overlapPercent = (event.clientY - rect.top) / rect.height;
+      const overlapPercent = this._dragOverlap(event, rect);
       // We wan't to leave a small threshold (20% for example) so we can drag tabs below and above
       // a folder label without dragging into the folder.
       let threshold =
@@ -1719,16 +1763,34 @@
         }
         dropBefore =
           !showIndicatorUnderNewTabButton && this._dropsBefore(event, rect);
-        const top = Math.round(dropBefore ? rect.top : rect.top + rect.height);
         const indicatorStyle = gZenPinnedTabManager.dragIndicator.style;
-        if (indicatorStyle.getPropertyValue("--indicator-top") !== `${top}px`) {
-          shouldPlayHapticFeedback = true;
+        if (this._tabsInRow) {
+          const left = Math.round(
+            dropBefore !== RTL_UI ? rect.left - 2 : rect.right + 1
+          );
+          if (indicatorStyle.left !== `${left}px`) {
+            shouldPlayHapticFeedback = true;
+          }
+          this._placeRowDropIndicator({
+            left,
+            top: rect.top + separation / 2,
+            height: rect.height - separation,
+          });
+        } else {
+          const top = Math.round(
+            dropBefore ? rect.top : rect.top + rect.height
+          );
+          if (
+            indicatorStyle.getPropertyValue("--indicator-top") !== `${top}px`
+          ) {
+            shouldPlayHapticFeedback = true;
+          }
+          this._placeDropIndicator({
+            left: rect.left + separation / 2,
+            width: rect.width - separation,
+            top,
+          });
         }
-        this._placeDropIndicator({
-          left: rect.left + separation / 2,
-          width: rect.width - separation,
-          top,
-        });
         this.#removeDragOverBackground();
         if (!isTab(dropElement) && dropElement?.parentElement?.isZenFolder) {
           dropElement = dropElement.parentElement;

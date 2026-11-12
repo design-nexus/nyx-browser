@@ -1,23 +1,28 @@
-/* Nyx Design 2.0 over Zen's chrome. Every color is a token from nyx_theme. Values here are
- * Nyx Dark, for the moment before the theme file loads. */
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+/* Nyx Design 2.0 over Zen's chrome. Every color is a token from Theme Engine 2.0, which
+ * src/nyx/modules/NyxTheme.sys.mjs loads over these. The values here are Catppuccin Mocha,
+ * NyxOS's default, for the moment before it does and for a system without the theme engine. */
 :root {
-  --nyx-bg: #09090a;
-  --nyx-panel: #09090a;
-  --nyx-card: #161617;
-  --nyx-raised: #1d1d1f;
-  --nyx-popover: #1a1a1c;
-  --nyx-surface: #1a1a1c;
-  --nyx-text: #e8e8ea;
-  --nyx-dim: #9a9aa1;
-  --nyx-tertiary: #7b7b83;
-  --nyx-border: #2a2a2d;
-  --nyx-divider: #1a1a1c;
-  --nyx-accent: #5b9cff;
-  --nyx-on-accent: #09090a;
-  --nyx-danger: #ff6b6b;
-  --nyx-warning: #e0a63a;
-  --nyx-success: #46d08a;
-  --nyx-shadow: #030303;
+  --nyx-bg: #1e1e2e;
+  --nyx-panel: #222333;
+  --nyx-card: #282839;
+  --nyx-raised: #2e2f40;
+  --nyx-popover: #161622;
+  --nyx-surface: #161622;
+  --nyx-text: #cdd6f4;
+  --nyx-dim: #6c7086;
+  --nyx-tertiary: #5c6074;
+  --nyx-border: #313244;
+  --nyx-divider: #2c2d3e;
+  --nyx-accent: #89b4fa;
+  --nyx-on-accent: #1e1e2e;
+  --nyx-danger: #f38ba8;
+  --nyx-warning: #f9e2af;
+  --nyx-success: #a6e3a1;
+  --nyx-shadow: #101019;
   --nyx-hover: 6%;
   --nyx-selection: 16%;
   --nyx-radius-small: 7px;
@@ -355,12 +360,16 @@ panel {
   font-family: var(--nyx-font) !important;
 }
 
-/* Frosted menus are an option, and solid by default */
-:root[nyx-frosted] :is(menupopup, panel) {
-  --panel-background: color-mix(in srgb, var(--nyx-popover) 74%, transparent) !important;
-  --arrowpanel-background: color-mix(in srgb, var(--nyx-popover) 74%, transparent) !important;
-  --menu-background-color: color-mix(in srgb, var(--nyx-popover) 74%, transparent) !important;
+/* Frosted menus are an option, and solid by default. The compositor blurs what shows through. */
+@media -moz-pref("nyx.effects.frosted") {
+  :is(menupopup, panel) {
+    --panel-background: color-mix(in srgb, var(--nyx-popover) 74%, transparent) !important;
+    --arrowpanel-background: color-mix(in srgb, var(--nyx-popover) 74%, transparent) !important;
+    --menu-background-color: color-mix(in srgb, var(--nyx-popover) 74%, transparent) !important;
+  }
 }
+
+
 
 /* Split view: the focused pane carries a thin accent line */
 .browserSidebarContainer.deck-selected[zen-split="true"],
@@ -576,6 +585,7 @@ panel {
   fill: none;
 }
 
+/* Reduced motion, asked for by the system or set in the theme. */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -583,4 +593,9 @@ panel {
     transition-duration: 0s !important;
     animation-duration: 0s !important;
   }
+}
+
+:root[nyx-reduced-motion] :is(*, *::before, *::after) {
+  transition-duration: 0s !important;
+  animation-duration: 0s !important;
 }

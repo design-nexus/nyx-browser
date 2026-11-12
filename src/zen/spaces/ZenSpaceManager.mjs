@@ -1392,9 +1392,7 @@ class nsZenWorkspaces {
     );
     /* We can't show the rename input properly in collapsed state,
     so hide the workspace edit input */
-    const isCollapsed = !Services.prefs.getBoolPref(
-      "zen.view.sidebar-expanded"
-    );
+    const isCollapsed = !gZenVerticalTabsManager._prefsSidebarExpanded;
     workspaceName.hidden =
       isCollapsed ||
       (this.#contextMenuData.workspaceId &&

@@ -57,6 +57,11 @@ window.gZenVerticalTabsManager = {
   },
 
   toggleExpand() {
+    // Nyx: the sidebar button and Ctrl+B step through Browser's sidebar modes.
+    if (window.NyxSidebar) {
+      window.NyxSidebar.toggle();
+      return;
+    }
     const newVal = !Services.prefs.getBoolPref("zen.view.sidebar-expanded");
     Services.prefs.setBoolPref("zen.view.sidebar-expanded", newVal);
     Services.prefs.setBoolPref("zen.view.use-single-toolbar", false);
@@ -296,11 +301,16 @@ window.gZenVerticalTabsManager = {
     );
     XPCOMUtils.defineLazyPreferenceGetter(
       this,
-      "_prefsSidebarExpanded",
+      "_prefsSidebarExpandedPref",
       "zen.view.sidebar-expanded",
       false,
       updateEvent
     );
+    // Nyx: Browser's sidebar modes decide this per window (src/nyx/modules/sidebar.js).
+    Object.defineProperty(this, "_prefsSidebarExpanded", {
+      configurable: true,
+      get: () => this.nyxSidebarExpanded ?? this._prefsSidebarExpandedPref,
+    });
     XPCOMUtils.defineLazyPreferenceGetter(
       this,
       "_prefsSidebarExpandedMaxWidth",
@@ -437,6 +447,19 @@ window.gZenVerticalTabsManager = {
         "orient",
         isVerticalTabs ? "vertical" : "horizontal"
       );
+      // Nyx: Browser's horizontal layout (src/nyx/styles/horizontal.css) keys on this.
+      document.documentElement.toggleAttribute(
+        "nyx-tabs-horizontal",
+        !isVerticalTabs
+      );
+      // Nyx: each workspace scrolls its own tabs, in a row when tabs are horizontal.
+      for (const box of document.querySelectorAll(
+        ".workspace-arrowscrollbox"
+      )) {
+        const orient = isVerticalTabs ? "vertical" : "horizontal";
+        box.setAttribute("orient", orient);
+        box.scrollbox?.setAttribute("orient", orient);
+      }
 
       const buttonsTarget = document.getElementById(
         "zen-sidebar-top-buttons-customization-target"

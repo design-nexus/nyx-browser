@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
 /* Connects menus and commands to the native host. Web pages have no route to this script: there
  * are no content scripts, no web-accessible resources and no external messaging, and messages
  * from anywhere but this extension's own pages are ignored. Page text is read only for a user's

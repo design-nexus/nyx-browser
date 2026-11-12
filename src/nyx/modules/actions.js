@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
 /* Toolbar buttons for what the Nyx extension does. A button presses the extension's own keyboard
  * command, so there's one code path, and it carries the same permissions as the shortcut. Keys
  * have no ids; they keep the manifest's order, even when someone rebinds them. */

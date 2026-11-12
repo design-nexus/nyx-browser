@@ -1,0 +1,14 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+# Browser's own chrome. Included by src/browser/base/content/zen-assets.jar.inc.mn.
+% resource nyx %content/browser/nyx/
+
+        content/browser/nyx/NyxPreloaded.js                  (../../nyx/NyxPreloaded.js)
+        content/browser/nyx/NyxTheme.sys.mjs                 (../../nyx/modules/NyxTheme.sys.mjs)
+        content/browser/nyx/modules/                         (../../nyx/modules/*.js)
+        content/browser/nyx/styles/                          (../../nyx/styles/*.css)
+        content/browser/nyx/icons/                           (../../nyx/icons/*.svg)
+        content/browser/nyx/extension/                       (../../nyx/extension/*.*)
+        content/browser/nyx/extension/icons/                 (../../nyx/extension/icons/*.svg)

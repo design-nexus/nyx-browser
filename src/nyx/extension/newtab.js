@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
 /* The new tab page: search, the sites you visit most, and what you visited last. Nothing is
  * fetched from the network, and there's no sponsored content or news. */
 "use strict";
