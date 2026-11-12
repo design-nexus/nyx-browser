@@ -1,7 +1,11 @@
-"""Drive a private, headless Zen through Marionette. Standard library only.
+"""Drive a private, headless Browser through Marionette. Standard library only.
 
 The browser runs with its own HOME and XDG folders under a temporary directory, so a run
-can't touch the user's browsers or show a window.
+can't touch the user's browsers or show a window. It's the build in engine/obj-*/dist/bin, or
+the folder named by NYX_BROWSER_DIR (an installed copy, a release tarball).
+
+Its theme comes from a stand-in for `nyx-browser-bridge theme --watch` that serves whatever the
+test last wrote with write_tokens(), so tests can set any theme and change it live.
 """
 
 import base64
@@ -14,11 +18,40 @@ import tempfile
 import time
 from pathlib import Path
 
-DEFAULT_RUNTIME = Path.home() / ".local/share/nyx-browser/runtime/1.24b/zen"
+ROOT = Path(__file__).resolve().parents[2]
+
+
+def default_build():
+    named = os.environ.get("NYX_BROWSER_DIR")
+    if named:
+        return Path(named)
+    builds = sorted(ROOT.glob("engine/obj-*/dist/bin"))
+    if not builds:
+        raise RuntimeError("No build in engine/: run `npx surfer build`, or set NYX_BROWSER_DIR")
+    return builds[0]
+
+
+FAKE_BRIDGE = """#!/usr/bin/env python3
+import json, os, sys, threading, time
+path = sys.argv[1]
+def eof():
+    sys.stdin.read()
+    os._exit(0)
+threading.Thread(target=eof, daemon=True).start()
+shown = None
+while True:
+    try:
+        css = open(path).read()
+    except OSError:
+        css = None
+    if css is not None and css != shown:
+        print(json.dumps({"css": css}), flush=True)
+        shown = css
+    time.sleep(0.1)
+"""
 
 BASE_PREFS = {
     "marionette.port": 2829,
-    "app.update.enabled": False,
     "browser.shell.checkDefaultBrowser": False,
     "browser.startup.page": 3,
     "browser.sessionstore.interval": 500,
@@ -38,11 +71,11 @@ class ScriptError(RuntimeError):
 class Browser:
     """One headless browser with a scratch profile. Use as a context manager."""
 
-    def __init__(self, prefs=None, runtime=DEFAULT_RUNTIME, width=1440, height=900, port=2829, home=None, tokens=None, env=None):
+    def __init__(self, prefs=None, runtime=None, width=1440, height=900, port=2829, home=None, tokens=None, env=None):
         self.tokens = tokens
         self.extra_env = env or {}
         self.prefs = {**BASE_PREFS, **(prefs or {}), "marionette.port": port}
-        self.runtime = Path(runtime)
+        self.runtime = Path(runtime) if runtime else default_build()
         self.size = (width, height)
         self.port = port
         self.own_home = home is None
@@ -67,6 +100,10 @@ class Browser:
         (self.profile / "user.js").write_text("\n".join(lines) + "\n")
         if self.tokens is not None:
             self.write_tokens(self.tokens)
+        bridge = self.home / "bin/nyx-browser-bridge"
+        bridge.parent.mkdir(parents=True, exist_ok=True)
+        bridge.write_text(FAKE_BRIDGE.replace("sys.argv[1]", json.dumps(str(self.tokens_file))))
+        bridge.chmod(0o755)
         env = {
             **os.environ,
             "HOME": str(self.home),
@@ -79,10 +116,11 @@ class Browser:
             "MOZ_HEADLESS_HEIGHT": str(self.size[1]),
             "MOZ_DISABLE_AUTO_SAFE_MODE": "1",
             "MOZ_REMOTE_ALLOW_SYSTEM_ACCESS": "1",
+            "NYX_BROWSER_BRIDGE": str(bridge),
             **self.extra_env,
         }
         self.proc = subprocess.Popen(
-            [str(self.runtime / "zen-bin"), "--marionette", "--no-remote", "--profile", str(self.profile)],
+            [str(self.runtime / "nyx-browser"), "--marionette", "--no-remote", "--profile", str(self.profile)],
             env=env,
             stdout=subprocess.DEVNULL,
             stderr=(self.home / "browser.log").open("ab"),
@@ -92,10 +130,13 @@ class Browser:
         self._call("Marionette:SetContext", {"value": "chrome"})
         self.wait_ready()
 
+    @property
+    def tokens_file(self):
+        return self.home / "theme.css"
+
     def write_tokens(self, css):
-        """What the launcher does: replace the theme file atomically."""
-        path = self.home / ".local/state/nyx-browser/tokens.css"
-        path.parent.mkdir(parents=True, exist_ok=True)
+        """What the theme bridge does on a change: hand the browser a new stylesheet."""
+        path = self.tokens_file
         temporary = path.with_suffix(".tmp")
         temporary.write_text(css)
         temporary.replace(path)

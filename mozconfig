@@ -1,11 +1,10 @@
 # Nyx Browser. Surfer appends this after configs/common and configs/<os>, so these win.
 
-# The profile lives in $XDG_CONFIG_HOME/nyx-browser. Zen's profile code needs the
-# lowercased basename to match the profile name, or it leaves an empty folder beside it.
+# The profile lives in $XDG_CONFIG_HOME/nyx-browser (MOZ_APP_PROFILE, set in nyx/patches).
+# Zen's profile code needs the lowercased basename to match it, or it leaves an empty
+# folder beside it.
 ac_add_options --with-app-basename=Nyx-Browser
 export MOZ_APP_BASENAME=Nyx-Browser
-ac_add_options MOZ_APP_PROFILE=nyx-browser
-ac_add_options MOZ_APP_VENDOR="Design Nexus"
 # The Wayland app ID, matching the desktop entry.
 export MOZ_APP_REMOTINGNAME=io.github.design_nexus.nyx.Browser
 ac_add_options --with-distribution-id=io.github.design_nexus

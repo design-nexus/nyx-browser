@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """The interface against the approved mockup, in each layout.
 
-    tools/setup-runtime.sh && tests/parity.py [--shots DIR]
+    tests/parity.py [--shots DIR]
 
 Checks what a person sees: which buttons exist, their order, what lines up, and that controls
 really do what they show. Colors are checked in tests/look.py.

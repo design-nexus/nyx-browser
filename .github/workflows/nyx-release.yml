@@ -1,0 +1,130 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+# Builds Browser for Linux x86_64 on a standard runner: Zen's release build without PGO or LTO,
+# with sccache. Pull requests from upstream/* (a new Zen release) are built and smoke-tested;
+# a run started by hand with `publish` makes a GitHub release that nyx-packages can pin.
+name: Nyx release build
+
+on:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: Publish a GitHub release
+        type: boolean
+        default: false
+      release:
+        description: This Zen version's release number (1, 2, …)
+        default: "1"
+  pull_request:
+    branches: [main]
+    paths-ignore: ["**.md", "nyx/docs/**"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nyx-release-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    if: github.event_name != 'pull_request' || startsWith(github.head_ref, 'upstream/') || contains(github.event.pull_request.labels.*.name, 'build')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 355
+    env:
+      SURFER_COMPAT: x86_64
+      SURFER_PLATFORM: linux
+      ZEN_GA_DISABLE_PGO: "1"
+      ZEN_DISABLE_LTO: "1"
+      SCCACHE_GHA_ENABLED: "true"
+      NYX_JOBS: "4"
+    steps:
+      - name: Free disk space
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: false
+          swap-storage: false
+
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version-file: .python-version
+
+      - uses: mozilla-actions/sccache-action@v0.0.9
+
+      - name: Rust
+        run: rustup toolchain install "$(sed -n 's/^channel *= *"\(.*\)"/\1/p' rust-toolchain.toml)" --profile minimal
+
+      - name: System packages
+        run: sudo apt-get update && sudo apt-get install -y xvfb
+
+      - name: Version
+        id: version
+        run: |
+          zen=$(jq -r '.brands.nyx.release.displayVersion' surfer.json)
+          echo "zen=$zen" >>"$GITHUB_OUTPUT"
+          echo "name=nyx-browser-$zen-${{ inputs.release || '0' }}" >>"$GITHUB_OUTPUT"
+
+      - name: Firefox source, Zen and Nyx patches
+        run: |
+          npm ci
+          npx surfer ci --brand nyx
+          npx surfer download
+          nyx/tools/import.sh
+
+      - name: Bootstrap
+        run: cd engine && ./mach --no-interactive bootstrap --application-choice browser
+
+      - name: Build
+        run: |
+          export ZEN_RELEASE=1
+          export CC="$HOME/.mozbuild/clang/bin/clang" CXX="$HOME/.mozbuild/clang/bin/clang++"
+          ulimit -n 4096
+          npx surfer build
+
+      - name: Package
+        run: cd engine && ./mach package
+
+      - name: Native host
+        run: cargo build --release --locked --manifest-path nyx/Cargo.toml -p nyx-browser-bridge
+
+      - name: Release tarball
+        id: tarball
+        run: |
+          mkdir out
+          tar -xf engine/obj-*/dist/nyx-browser-*.tar.* -C out
+          install -m755 nyx/target/release/nyx-browser-bridge out/nyx-browser/nyx-browser-bridge
+          file="${{ steps.version.outputs.name }}.linux-x86_64.tar.xz"
+          tar -C out -cJf "$file" nyx-browser
+          sha256sum "$file" >"$file.sha256"
+          echo "file=$file" >>"$GITHUB_OUTPUT"
+
+      - name: Smoke test
+        run: |
+          cargo build --locked --manifest-path nyx/Cargo.toml -p nyx-browser-bridge
+          NYX_BROWSER_DIR="$PWD/out/nyx-browser" xvfb-run -a python3 nyx/tests/smoke.py
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.version.outputs.name }}
+          path: |
+            ${{ steps.tarball.outputs.file }}
+            ${{ steps.tarball.outputs.file }}.sha256
+          retention-days: 14
+
+      - name: Publish
+        if: inputs.publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="v${{ steps.version.outputs.zen }}-${{ inputs.release }}"
+          gh release create "$tag" "${{ steps.tarball.outputs.file }}" "${{ steps.tarball.outputs.file }}.sha256" \
+            --target "$GITHUB_SHA" --title "Browser ${{ steps.version.outputs.zen }} (${{ inputs.release }})" \
+            --notes "Built from $GITHUB_SHA on Zen ${{ steps.version.outputs.zen }}."

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Tab behavior in both orientations, against a private headless browser.
 
-    tools/setup-runtime.sh && tests/tabs.py [--shots DIR] [--only NAME]
+    tests/tabs.py [--shots DIR] [--only NAME]
 
 Drags go through Zen's real dragstart/dragover/drop handlers with synthesized events, so
 they exercise its drop logic, not the operating system's drag session.
@@ -598,7 +598,7 @@ def second_window(b, horizontal):
           attr: doc.documentElement.hasAttribute("nyx-tabs-horizontal"),
           orient: win.gBrowser.tabContainer.getAttribute("orient"),
           scroll: win.gZenWorkspaces.activeScrollbox?.getAttribute("orient"),
-          patched: !!win.ZenDragAndDrop.prototype._nyxPatched,
+          nyx: !!win.NyxSidebar && !!win.NyxAppearance,
           page: (() => { const b = doc.getElementById("tabbrowser-tabbox").getBoundingClientRect(); return { x: b.x, y: b.y, w: b.width, h: b.height }; })(),
           size: [win.innerWidth, win.innerHeight],
         };
@@ -610,7 +610,7 @@ def second_window(b, horizontal):
     )
     want = "horizontal" if horizontal else "vertical"
     check(d["attr"] == horizontal and d["orient"] == want and d["scroll"] == want, "a second window has the wrong orientation", d)
-    check(d["patched"], "a second window didn't load the chrome layer", d)
+    check(d["nyx"], "a second window didn't load Browser's own chrome", d)
     if horizontal:
         check(d["page"]["w"] > d["size"][0] - 40, "a second window's page doesn't span it", d)
 

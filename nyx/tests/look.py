@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """The theme and the sidebar's modes, against a private headless browser.
 
-    cargo build && tools/setup-runtime.sh && tests/look.py [--shots DIR]
+    cargo build && tests/look.py [--shots DIR]
 
-Theme files come from the launcher's own --print-tokens.
+Theme files come from the bridge's own `nyx-browser-bridge theme`.
 """
 
 import argparse
@@ -21,7 +21,7 @@ from marionette import Browser  # noqa: E402
 
 
 def tokens(theme, density="comfortable", accent=None):
-    """The launcher's output for a suite set to `theme`."""
+    """The bridge's stylesheet for a suite set to `theme`."""
     with tempfile.TemporaryDirectory(prefix="nyx-browser-tokens-") as config:
         (Path(config) / "nyx").mkdir()
         suite = f'mode = "theme"\ntheme = "{theme}"\ndensity = "{density}"\n'
@@ -29,7 +29,7 @@ def tokens(theme, density="comfortable", accent=None):
             suite += f'[app_accents]\nbrowser = "{accent}"\n'
         (Path(config) / "nyx/theme.toml").write_text(suite)
         env = {**os.environ, "XDG_CONFIG_HOME": config}
-        return subprocess.check_output([str(ROOT / "target/debug/nyx-browser"), "--print-tokens"], env=env, text=True)
+        return subprocess.check_output([str(ROOT / "target/debug/nyx-browser-bridge"), "theme"], env=env, text=True)
 
 
 def value(css, name):
@@ -124,7 +124,7 @@ const page = document.getElementById("tabbrowser-tabbox").getBoundingClientRect(
 return {
   attr: document.documentElement.getAttribute("nyx-sidebar"),
   compact: gZenCompactModeManager.preference,
-  expanded: Services.prefs.getBoolPref("zen.view.sidebar-expanded"),
+  expanded: gZenVerticalTabsManager._prefsSidebarExpanded,
   toolbox: [Math.round(toolbox.x), Math.round(toolbox.width)],
   page: [Math.round(page.x), Math.round(page.width)],
   win: innerWidth,
@@ -221,12 +221,39 @@ def appearance_panel(shots):
         check(d["file"] == {"theme": "nyx-light", "accent": "green", "density": "relaxed"}, "the choices weren't saved", d)
         check("Light" in d["checked"] and "Relaxed" in d["checked"], "controls don't report their state", d)
 
-        # The launcher turns the panel's file into the theme, end to end.
+        # The bridge turns the panel's file into the theme, end to end.
         env = {**os.environ, "XDG_CONFIG_HOME": str(b.home / ".config")}
-        made = subprocess.check_output([str(ROOT / "target/debug/nyx-browser"), "--print-tokens"], env=env, text=True)
-        check(value(made, "bg") == value(tokens("nyx-light"), "bg"), "the launcher ignored the chosen theme", made[:200])
-        check(value(made, "accent") == value(made, "swatch-green"), "the launcher ignored the chosen accent", made[:400])
-        check(value(made, "header") == "50px", "the launcher ignored the chosen density", made[:600])
+        made = subprocess.check_output([str(ROOT / "target/debug/nyx-browser-bridge"), "theme"], env=env, text=True)
+        check(value(made, "bg") == value(tokens("nyx-light"), "bg"), "the bridge ignored the chosen theme", made[:200])
+        check(value(made, "accent") == value(made, "swatch-green"), "the bridge ignored the chosen accent", made[:400])
+        check(value(made, "header") == "50px", "the bridge ignored the chosen density", made[:600])
+
+
+def sidebar_per_window(shots):
+    """Automatic follows each window's own width: a narrow window and a wide one differ."""
+    with Browser({}, tokens=tokens("catppuccin-mocha"), width=1800, height=1100) as b:
+        d = b.js_async(r"""
+            const done = arguments[arguments.length - 1];
+            (async () => {
+              const sleep = ms => new Promise(r => setTimeout(r, ms));
+              window.resizeTo(1600, 900);
+              const win = OpenBrowserWindow();
+              await new Promise(r => { const o = (s, t) => { if (s === win) { Services.obs.removeObserver(o, t); r(); } }; Services.obs.addObserver(o, "browser-delayed-startup-finished"); });
+              win.resizeTo(1000, 800);
+              await sleep(1500);
+              const r = {
+                wide: document.documentElement.getAttribute("nyx-sidebar"),
+                narrow: win.document.documentElement.getAttribute("nyx-sidebar"),
+                wideExpanded: gZenVerticalTabsManager._prefsSidebarExpanded,
+                narrowExpanded: win.gZenVerticalTabsManager._prefsSidebarExpanded,
+              };
+              win.close();
+              done(r);
+            })().catch(e => done({ error: String(e) }));
+        """, timeout=60)
+        check("error" not in d, "opening a second window threw", d)
+        check(d.get("wide") == "expanded" and d.get("narrow") == "compact", "windows didn't each follow their own width", d)
+        check(d.get("wideExpanded") is True and d.get("narrowExpanded") is False, "one window's mode reached the other", d)
 
 
 def customizing(shots):
@@ -262,32 +289,7 @@ def customizing(shots):
             check(d["rows"] == ("vertical" if vertical else "horizontal"), "customizing changed the orientation", d)
 
 
-def untested_release(shots):
-    """On a Zen release the layer wasn't tested on, it steps back: tabs stay usable and vertical."""
-    cfg = Browser({}).runtime / "nyx.cfg"
-    saved = cfg.read_text()
-    version = next(line.split('"')[1] for line in saved.splitlines() if "const TESTED" in line)
-    cfg.write_text(saved.replace(f'"{version}"', '"0.0-not-this-one"'))
-    try:
-        with Browser({"zen.tabs.vertical": False}, tokens=tokens("catppuccin-mocha"), width=1800, height=1100) as b:
-            d = b.js(r"""
-                return {
-                  orient: gBrowser.tabContainer.getAttribute("orient"),
-                  horizontalLayout: document.documentElement.hasAttribute("nyx-tabs-horizontal"),
-                  patched: !!ZenDragAndDrop.prototype._nyxPatched,
-                  themed: getComputedStyle(document.documentElement).getPropertyValue("--nyx-tile") !== "",
-                  button: !!document.getElementById("nyx-appearance-button"),
-                  tabs: gBrowser.tabs.length,
-                };
-            """)
-    finally:
-        cfg.write_text(saved)
-    check(d["orient"] == "vertical" and not d["horizontalLayout"], "an untested release kept horizontal tabs", d)
-    check(not d["patched"], "an untested release still overrode Zen's internals", d)
-    check(d["themed"] and d["tabs"] >= 1, "an untested release didn't still open with the theme", d)
-
-
-TESTS = [theme_files, security_indicator, sidebar_modes, appearance_panel, customizing, untested_release]
+TESTS = [theme_files, security_indicator, sidebar_modes, sidebar_per_window, appearance_panel, customizing]
 
 
 def main():

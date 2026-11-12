@@ -1,0 +1,48 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+# Quick checks on every push: the native host's tests, the scripts, and that Zen's and Nyx's
+# patches still apply to the Firefox release surfer.json names.
+name: Nyx checks
+
+on:
+  push:
+    branches: [main, fork]
+  pull_request:
+    branches: [main]
+
+jobs:
+  host:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - name: Rust
+        run: rustup toolchain install "$(sed -n 's/^channel *= *"\(.*\)"/\1/p' rust-toolchain.toml)" --profile minimal --component rustfmt
+      - name: Native host
+        run: |
+          sudo apt-get update && sudo apt-get install -y libdbus-1-dev pkg-config
+          cd nyx
+          cargo fmt --check
+          cargo test --locked
+      - name: Scripts
+        run: for script in install.sh uninstall.sh nyx/*.sh nyx/tools/*.sh; do bash -n "$script"; done
+
+  patches:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+      - uses: actions/setup-python@v6
+        with:
+          python-version-file: .python-version
+      - name: Rust
+        run: rustup toolchain install "$(sed -n 's/^channel *= *"\(.*\)"/\1/p' rust-toolchain.toml)" --profile minimal
+      - name: Apply
+        run: |
+          npm ci
+          npx surfer download
+          nyx/tools/import.sh 2>&1 | tee import.log
+          ! grep -E "error:|patch failed|does not apply" import.log
