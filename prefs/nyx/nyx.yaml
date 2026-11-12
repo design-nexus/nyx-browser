@@ -25,3 +25,7 @@
 
 - name: nyx.newtab.background
   value: none
+
+# The bookmarks bar shows bookmarks as just their icon (the name on hover); folders keep names.
+- name: nyx.bookmarks.icons-only
+  value: false
