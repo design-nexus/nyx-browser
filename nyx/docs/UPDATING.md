@@ -69,3 +69,11 @@ and the nyx-packages pull request, and don't describe the installed version as p
 Zen's release build without PGO or LTO, with sccache. It makes
 `nyx-browser-<zen>-<release>.linux-x86_64.tar.xz` with the native host inside and its SHA-256,
 tagged `v<zen>-<release>`. nyx-packages pins that file and its hash.
+
+A local build can be released the same way: `./mach package`, unpack the tarball, add
+`nyx/target/release/nyx-browser-bridge`, repack its top folder as `nyx-browser/` under the
+name above, and `gh release create v<zen>-<release>` with the file and its `.sha256`.
+
+To move NyxOS to a release, set `version` and `hash` in nyx-packages' `pkgs/nyx-browser.nix`
+(the hash is the tarball's SHA-256 as SRI, `sha256-…`), build `.#nyx-browser` in the VM, push,
+and update `nyx-packages` in nyxos' `flake.lock`.
