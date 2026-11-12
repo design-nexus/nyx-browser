@@ -1,0 +1,27 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+# Tab orientation is Zen's zen.tabs.vertical; these are Browser's own.
+
+# expanded, compact, hidden or auto (follows the window's width).
+- name: nyx.sidebar.mode
+  value: auto
+
+# Window widths, in CSS pixels, where Automatic switches mode.
+- name: nyx.sidebar.auto.expanded-from
+  value: 1400
+
+- name: nyx.sidebar.auto.compact-from
+  value: 900
+
+# Frosted menus and panels, blurred by the compositor where it can.
+- name: nyx.effects.frosted
+  value: false
+
+# The new tab page's sections, in order; a section left out is hidden.
+- name: nyx.newtab.sections
+  value: "search,favorites,frequent,recent"
+
+- name: nyx.newtab.background
+  value: none

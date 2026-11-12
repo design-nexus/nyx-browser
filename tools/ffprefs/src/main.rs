@@ -158,11 +158,24 @@ fn load_preferences() -> Vec<Preference> {
     let config_path = get_config_path();
     let mut pref_files = Vec::new();
     get_prefs_files_recursively(&config_path, &mut pref_files);
+    // Nyx Browser: prefs/nyx is read last, and a pref it defines replaces Zen's default for it.
+    // A static definition of the same name stays: Zen defines some prefs both ways.
+    let nyx_dir = config_path.join("nyx");
+    pref_files.sort_by_key(|path| (path.starts_with(&nyx_dir), path.clone()));
     for file_path in pref_files {
         let content = fs::read_to_string(&file_path).expect("Failed to read file");
-        let mut parsed_prefs: Vec<Preference> =
+        let parsed_prefs: Vec<Preference> =
             serde_yaml::from_str(&content).expect("Failed to parse YAML");
-        prefs.append(&mut parsed_prefs);
+        let overrides = file_path.starts_with(&nyx_dir);
+        for pref in parsed_prefs {
+            if overrides {
+                prefs.retain(|existing: &Preference| {
+                    existing.name != pref.name
+                        || matches!(existing.r#type.as_deref(), Some("static" | "rust"))
+                });
+            }
+            prefs.push(pref);
+        }
     }
     ordered_prefs(prefs)
 }

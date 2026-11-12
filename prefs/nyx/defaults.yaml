@@ -1,0 +1,51 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+# Zen and Firefox defaults that Browser changes. tools/ffprefs reads this folder last, so
+# each entry here replaces the one Zen defines.
+
+# The address bar has its own row, with the buttons beside it.
+- name: zen.view.use-single-toolbar
+  value: false
+
+- name: zen.view.experimental-no-window-controls
+  value: true
+
+- name: zen.theme.content-element-separation
+  value: 6
+
+- name: zen.theme.border-radius
+  value: 11
+
+- name: zen.theme.hide-unified-extensions-button
+  value: false
+
+- name: zen.view.overflow-webext-toolbar
+  value: false
+
+- name: zen.welcome-screen.seen
+  value: true
+
+- name: zen.watermark.enabled
+  value: false
+
+# Firefox's downloads panel; Zen's Library doesn't follow the Nyx theme.
+- name: zen.library.enabled
+  value: false
+
+- name: browser.download.autohideButton
+  value: false
+
+# Ctrl+T opens the new tab page instead of Zen's address bar.
+- name: zen.urlbar.replace-newtab
+  value: false
+
+- name: zen.updates.show-update-notification
+  value: false
+
+- name: browser.shell.checkDefaultBrowser
+  value: false
+
+- name: browser.shareqrcode.enabled
+  value: true
