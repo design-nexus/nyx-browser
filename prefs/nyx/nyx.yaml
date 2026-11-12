@@ -29,3 +29,7 @@
 # The bookmarks bar shows bookmarks as just their icon (the name on hover); folders keep names.
 - name: nyx.bookmarks.icons-only
   value: false
+
+# The QR code button in the address field.
+- name: nyx.toolbar.qr-button
+  value: true

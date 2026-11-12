@@ -616,3 +616,9 @@ menuseparator {
     display: none !important;
   }
 }
+
+@media not -moz-pref("nyx.toolbar.qr-button") {
+  #nyx-qr-button {
+    display: none !important;
+  }
+}

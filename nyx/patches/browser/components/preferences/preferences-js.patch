@@ -1,0 +1,24 @@
+diff --git a/browser/components/preferences/preferences.js b/browser/components/preferences/preferences.js
+index 02548b9..de56511 100644
+--- a/browser/components/preferences/preferences.js
++++ b/browser/components/preferences/preferences.js
+@@ -554,7 +554,7 @@ function register_module(categoryName, categoryObject) {
+       }
+       this._initted = true;
+       let template = document.getElementById("template-" + categoryName);
+-      if (template && (!srdSectionPrefs.all || categoryName.startsWith("paneZen"))) {
++      if (template && (!srdSectionPrefs.all || categoryName.startsWith("paneZen") || categoryName.startsWith("paneNyx"))) {
+         // Replace the template element with the nodes inside of it.
+         template.replaceWith(template.content);
+ 
+@@ -600,6 +600,10 @@ function init_all() {
+   register_module("paneZenLooks", gZenLooksAndFeel);
+   register_module("paneZenTabManagement", gZenWorkspacesSettings);
+   register_module("paneZenMarketplace", gZenMarketplaceManager);
++  register_module("paneNyxAppearance", gNyxAppearancePane);
++  register_module("paneNyxTabs", gNyxTabsPane);
++  register_module("paneNyxToolbar", gNyxToolbarPane);
++  register_module("paneNyxIntegrations", gNyxIntegrationsPane);
+ 
+   // Restore the cached Firefox Labs nav button visibility so it shows
+   // immediately when recipes are expected to be available, before

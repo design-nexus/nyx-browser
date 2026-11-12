@@ -118,7 +118,7 @@
         html("span", { class: "nyx-switch" + (frosted ? " nyx-on" : "") })
       ),
       html("div", { class: "nyx-line" }),
-      html("button", { class: "nyx-row", type: "button", onclick: () => { document.getElementById("nyx-appearance-panel").hidePopup(); openPreferences(); } }, "All browser settings")
+      html("button", { class: "nyx-row", type: "button", onclick: () => { document.getElementById("nyx-appearance-panel").hidePopup(); openPreferences("paneNyxAppearance"); } }, "All browser settings")
     );
   }
 

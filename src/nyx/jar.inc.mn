@@ -11,4 +11,5 @@
         content/browser/nyx/styles/                          (../../nyx/styles/*.css)
         content/browser/nyx/icons/                           (../../nyx/icons/*.svg)
         content/browser/nyx/extension/                       (../../nyx/extension/*.*)
+        content/browser/preferences/nyx-settings.js          (../../nyx/preferences/nyx-settings.js)
         content/browser/nyx/extension/icons/                 (../../nyx/extension/icons/*.svg)
