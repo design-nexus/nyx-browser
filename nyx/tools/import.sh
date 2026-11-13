@@ -18,6 +18,9 @@ done
 
 npx surfer set brand nyx >/dev/null
 npm run import
+# Zen's strings live outside Firefox's tree. Without them every window's en-US bundle fails
+# (Fluent needs all of a window's files), and every menu and panel label is blank.
+python3 scripts/copy_language_pack.py en-US >/dev/null
 
 for patch in "${patches[@]}"; do
   git -C engine apply "$root/$patch"

@@ -17,6 +17,8 @@
 }
 
 .urlbar {
+  /* Nyx: the address reads at the chrome's own size. */
+  font-size: 1em;
   --urlbarview-separator-color: light-dark(rgb(233, 233, 233), rgb(46 46 47));
   --urlbarview-background-color-hover: var(--toolbarbutton-background-color-hover);
   border-radius: calc(var(--toolbarbutton-border-radius) - 2px);
@@ -91,14 +93,27 @@
   }
 }
 
-#identity-box.chromeUI:not([pageproxystate="invalid"]) {
-  & #identity-icon-box {
-    background: var(--zen-color-contrast-10) !important;
-  }
+
+
+/* Nyx: the address field says in words when a page isn't secure. */
+#identity-box:not(.notSecureText) #identity-icon-box #identity-icon-label {
+  display: none;
 }
 
-#identity-icon-box #identity-icon-label {
-  display: none;
+#identity-box.notSecureText #identity-icon-box {
+  padding: 2px 8px 2px 6px !important;
+  gap: 6px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--nyx-warning) 14%, transparent) !important;
+  color: var(--nyx-warning);
+  fill: var(--nyx-warning);
+
+  & #identity-icon-label {
+    margin: 0;
+    padding: 0;
+    font-size: 13px;
+    color: inherit;
+  }
 }
 
 #identity-permission-box:not(:hover):not(:focus-within) {
@@ -131,7 +146,7 @@
 }
 
 #urlbar .urlbar-input-box {
-  font-weight: var(--zen-font-weight-medium);
+  font-weight: normal;
 }
 
 :root[zen-single-toolbar="true"] #urlbar:not([breakout-extend]) {
@@ -182,11 +197,11 @@
   gap: var(--zen-space-2);
 
   & #zen-copy-url-button {
-    order: -1;
+    display: none;
   }
 
   & #identity-box {
-    order: 999;
+    order: -1;
     margin: 0 !important;
   }
 }
@@ -438,7 +453,8 @@
   /* Add space to beginning of toolbar and make that space click the first <toolbarbutton> */
   > :is(toolbarbutton, toolbaritem):first-child,
   > toolbarpaletteitem:first-child > :is(toolbarbutton, toolbaritem) {
-    padding-inline-start: 0;
+    /* Nyx: the top bar starts 6px in (mockups: .bar). */
+    padding-inline-start: calc(6px - var(--toolbarbutton-padding-outer));
   }
 }
 
@@ -729,7 +745,6 @@
  * them into a single, unified button */
 #reader-mode-button,
 .urlbar-go-button,
-#star-button-box,
 #pageActionButton:not([open]) {
   display: none !important;
 }

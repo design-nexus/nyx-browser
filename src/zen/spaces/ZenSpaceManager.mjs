@@ -354,6 +354,45 @@ class nsZenWorkspaces {
     }
     perifery.setAttribute("hidden", "true");
     this._fixIndicatorsNames(workspaces);
+    this.#initWorkspaceChip();
+  }
+
+  /**
+   * Nyx: with tabs in a row, a chip for the current space starts the row and opens the
+   * workspaces menu; tab search ends it. (navigator-toolbox.inc.xhtml)
+   */
+  #initWorkspaceChip() {
+    const chip = document.getElementById("nyx-workspace-chip");
+    if (!chip || chip.nyxReady) {
+      return;
+    }
+    chip.nyxReady = true;
+    const open = () => this.openWorkspacesMenu(chip);
+    chip.addEventListener("click", event => event.button === 0 && open());
+    chip.addEventListener("keydown", event => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        open();
+      }
+    });
+    document
+      .getElementById("nyx-row-tab-search")
+      ?.addEventListener("command", () => gTabsPanel.searchTabs());
+    window.addEventListener("ZenWorkspacesUIUpdate", () => this.updateWorkspaceChip());
+    window.addEventListener("ZenWorkspaceDataChanged", () => this.updateWorkspaceChip());
+    this.updateWorkspaceChip();
+  }
+
+  updateWorkspaceChip() {
+    const chip = document.getElementById("nyx-workspace-chip");
+    const workspace = this.getActiveWorkspace();
+    if (!chip || !workspace) {
+      return;
+    }
+    const icon = this.getWorkspaceIcon(workspace);
+    chip.querySelector(".nyx-workspace-chip-icon").textContent =
+      icon && !icon.endsWith(".svg") ? icon : this.workspaceInitial(workspace);
+    chip.querySelector(".nyx-workspace-chip-name").textContent = workspace.name;
   }
 
   /**
@@ -1131,15 +1170,34 @@ class nsZenWorkspaces {
     ) {
       // Go through each tab and see if there's another tab with the same startup URL.
       // If we do find one, remove it.
-      const newTabUrl = Services.prefs.getStringPref(
-        "browser.startup.homepage"
+      // Nyx: the start page is the dashboard (HomePage.get), and a new window brings every
+      // other window's tabs with it, so each window would add one more. A start page another
+      // window is showing stays.
+      const { AboutNewTab } = ChromeUtils.importESModule(
+        "resource:///modules/AboutNewTab.sys.mjs"
       );
+      const startPages = new Set([
+        ...Services.prefs.getStringPref("browser.startup.homepage").split("|"),
+        HomePage.get(window),
+        AboutNewTab.newTabURL,
+        "about:home",
+        "about:newtab",
+      ]);
+      const shownElsewhere = tab =>
+        [...Services.wm.getEnumerator("navigator:browser")].some(
+          win => win !== window && win.gBrowser?.selectedTab?.id === tab.id
+        );
       const tabs = gBrowser.tabs.filter(
         tab =>
           !tab.collapsed && !tab.hasAttribute("zen-empty-tab") && !tab.pinned
       );
       for (const tab of tabs) {
-        if (tab._originalUrl === newTabUrl && tab !== gBrowser.selectedTab) {
+        const url = tab._originalUrl ?? tab.linkedBrowser.currentURI.spec;
+        if (
+          startPages.has(url) &&
+          tab !== gBrowser.selectedTab &&
+          !shownElsewhere(tab)
+        ) {
           gBrowser.removeTab(tab, {
             skipSessionStore: true,
           });
@@ -2121,6 +2179,11 @@ class nsZenWorkspaces {
       );
       requestAnimationFrame(() => {
         workspaceElement.style.paddingTop = essentialsHeight + "px";
+        // Nyx: the workspace row moves up over the essentials' room (zen-workspaces.css).
+        workspaceElement.style.setProperty(
+          "--nyx-essentials-height",
+          essentialsHeight + "px"
+        );
       });
     }
   }
@@ -2299,9 +2362,75 @@ class nsZenWorkspaces {
       img.src = icon;
       indicatorIcon.appendChild(img);
     } else {
-      indicatorIcon.textContent = icon;
+      // Nyx: a space without an icon shows its initial.
+      indicatorIcon.textContent =
+        icon || this.workspaceInitial(currentWorkspace);
     }
     indicatorName.textContent = currentWorkspace.name;
+    if (currentWorkspace.uuid === this.activeWorkspace) {
+      this.updateWorkspaceChip();
+    }
+  }
+
+  /**
+   * Nyx: the letter that stands for a space without an icon.
+   *
+   * @param {object} workspace
+   * @returns {string}
+   */
+  workspaceInitial(workspace) {
+    return [...(workspace?.name?.trim() || "?")][0].toLocaleUpperCase();
+  }
+
+  /**
+   * Nyx: the workspaces menu the workspace row opens: each space with its shortcut, then a new
+   * space and this space's own settings.
+   *
+   * @param {Element} anchor
+   */
+  openWorkspacesMenu(anchor) {
+    const menu = document.getElementById("nyx-workspaces-menu");
+    const separator = document.getElementById("nyx-workspaces-menu-separator");
+    for (const item of menu.querySelectorAll(".nyx-workspaces-menu-space")) {
+      item.remove();
+    }
+    const active = this.activeWorkspace;
+    this.getWorkspaces().forEach((workspace, index) => {
+      const item = document.createXULElement("menuitem");
+      item.className = "nyx-workspaces-menu-space";
+      item.setAttribute("type", "checkbox");
+      item.setAttribute("label", workspace.name);
+      if (workspace.uuid === active) {
+        item.setAttribute("checked", "true");
+      }
+      const shortcut =
+        index < 10 &&
+        lazy.ZenKeyboardShortcuts.getShortcutDisplayFromCommand(
+          window,
+          `cmd_zenWorkspaceSwitch${index + 1}`
+        );
+      if (shortcut) {
+        item.setAttribute("acceltext", shortcut);
+      }
+      item.addEventListener("command", () =>
+        this.changeWorkspaceWithID(workspace.uuid)
+      );
+      separator.before(item);
+    });
+    document.l10n.setAttributes(
+      document.getElementById("nyx-workspaces-menu-edit"),
+      "nyx-workspace-menu-edit",
+      { name: this.getActiveWorkspace()?.name ?? "" }
+    );
+    menu.openPopup(anchor, "after_start", 8, 0);
+  }
+
+  /** Nyx: "Edit <space>…" opens the space's own menu (name, icon, theme and the rest). */
+  openWorkspaceSettingsMenu() {
+    const anchor = this.activeWorkspaceIndicator;
+    document
+      .getElementById("zenWorkspaceMoreActions")
+      .openPopup(anchor, "after_start", 8, 0, true);
   }
 
   _fixIndicatorsNames(workspaces) {
@@ -3667,37 +3796,38 @@ class nsZenWorkspaces {
       parent.removeAttribute("icons-overflow");
       return;
     }
-    const maxButtonSize = AppConstants.platform == "macosx" ? 34 : 32; // IMPORTANT: This should match the CSS size of the icons
-    const minButtonSize = maxButtonSize / 2; // Minimum size for icons when space is limited
-    const separation = 3; // Space between icons
-
-    // Calculate the total width needed for all icons
-    const totalWidth = Array.from(parent.children).reduce((width, icon) => {
-      if (icon.tagName === "toolbarbutton") {
-        return width + minButtonSize + separation;
-      }
-      return width;
-    }, 0);
-
-    // Check if the total width exceeds the parent's width.
-    const parentWidth =
-      window.windowUtils.getBoundsWithoutFlushing(parent).width;
-    if (totalWidth > parentWidth) {
+    // Nyx: the foot's letter tiles are 26 px with 2 px between (zen-workspaces.css). They take
+    // the room the foot's other buttons leave, and shrink only when there isn't enough.
+    const maxButtonSize = 26;
+    const minButtonSize = maxButtonSize / 2;
+    const separation = 2;
+    const icons = Array.from(parent.children).filter(
+      icon => icon.tagName === "toolbarbutton"
+    );
+    const foot = parent.parentElement;
+    const others = Array.from(foot.children)
+      .filter(child => child !== parent && !child.hidden)
+      .reduce(
+        (width, child) =>
+          width + window.windowUtils.getBoundsWithoutFlushing(child).width,
+        0
+      );
+    const room =
+      window.windowUtils.getBoundsWithoutFlushing(foot).width -
+      others -
+      separation * foot.children.length;
+    const totalWidth = icons.length * (minButtonSize + separation);
+    if (totalWidth > room) {
       parent.setAttribute("icons-overflow", "true");
     } else {
       parent.removeAttribute("icons-overflow");
     }
-
-    // Set the width of each icon to the maximum size they can fit on
     const widthPerButton = Math.max(
-      (parentWidth - separation * (parent.children.length - 1)) /
-        parent.children.length,
+      (room - separation * (icons.length - 1)) / icons.length,
       minButtonSize
     );
-    for (const icon of parent.children) {
-      if (icon.tagName === "toolbarbutton") {
-        icon.style.width = `${Math.min(widthPerButton, maxButtonSize)}px`;
-      }
+    for (const icon of icons) {
+      icon.style.width = `${Math.min(widthPerButton, maxButtonSize)}px`;
     }
   }
 

@@ -146,7 +146,7 @@ class Rig:
         stub.write_text(f'#!/bin/sh\nprintf "%s\\n" "$*" >> "{self.capture_log}"\n')
         stub.chmod(0o755)
         weather = self.bin / "nyx-weather"
-        weather.write_text('#!/bin/sh\nprintf \'{"text":"Rain 11","tooltip":"Calera\\\\nHigh: 71\\\\nWind: 3 mph"}\\n\'\n')
+        weather.write_text('#!/bin/sh\nprintf \'{"text":"☂ 11°","tooltip":"Calera · Alabama, United States — Rain\\\\nHigh: 14° · Low: 9°\\\\nWind: 3 mph"}\\n\'\n')
         weather.chmod(0o755)
         self.web = socketserver.TCPServer(("127.0.0.1", 0), Quiet)
         threading.Thread(target=self.web.serve_forever, daemon=True).start()
@@ -247,6 +247,7 @@ def test_new_tab_and_theme(rig):
     check(d["url"].startswith("moz-extension://"), "the new tab page isn't the extension's", d)
     light = theme_css(b.home, "nyx-light")
     bg_light = css_value(light, "bg")
+    b.write_tokens(light)
     reached = open_tab(b, d["url"])
     check(reached.endswith("newtab.html"), "the new tab page didn't load", reached)
     handles = b.call("WebDriver:GetWindowHandles", {})
@@ -257,6 +258,7 @@ def test_new_tab_and_theme(rig):
         wait(lambda: b.js(read, "--nyx-bg") == bg_light, "the theme to reach the new tab page")
         dark = theme_css(b.home, "nyx-dark")
         bg_dark = css_value(dark, "bg")
+        b.write_tokens(dark)
         check(bg_dark != bg_light, "light and dark themes share a background")
         wait(lambda: b.js(read, "--nyx-bg") == bg_dark, "a theme change to reach the new tab page", timeout=6)
         check(b.js("return !!document.getElementById('search') && !!document.getElementById('favorites')"), "the page's parts are missing")
@@ -272,8 +274,45 @@ def test_new_tab_and_theme(rig):
         check(len(icons) >= 3, "the page's icons are missing", icons)
         for icon in icons:
             check(icon["path"] > 5 and icon["stroke"] not in ("none", "rgba(0, 0, 0, 0)"), "an icon draws nothing", icon)
-        card = b.js("return { now: document.getElementById('weather-now').textContent, details: document.getElementById('weather-details').textContent }")
-        check(card["now"] == "Rain 11" and "Calera" in card["details"] and "Wind" not in card["details"], "the weather card is wrong", card)
+        card = b.js("return { now: document.getElementById('weather-now').textContent, details: document.getElementById('weather').title }")
+        check(card["now"] == "Calera · Rain 11°" and "Wind" in card["details"], "the weather card is wrong", card)
+        favorite = b.js_async(r"""
+            const done = arguments[arguments.length - 1];
+            const pause = ms => new Promise(r => setTimeout(r, ms));
+            const dialog = document.getElementById("favorite-dialog");
+            const form = document.getElementById("favorite-form");
+            const type = (input, text) => { input.value = text; input.dispatchEvent(new Event("input")); input.dispatchEvent(new Event("change")); };
+            (async () => {
+              document.querySelector("#favorites .site.add").click();
+              await pause(200);
+              const opened = dialog.open;
+              type(form.elements.url, "not an address");
+              form.requestSubmit();
+              await pause(200);
+              const refused = { open: dialog.open, error: !document.getElementById("favorite-error").hidden };
+              type(form.elements.url, "example.org");
+              type(form.elements.title, "Example");
+              const preview = document.getElementById("favorite-preview-host").textContent;
+              form.requestSubmit();
+              await pause(600);
+              const tiles = () => [...document.querySelectorAll("#favorites a.site")].map(a => ({ href: a.getAttribute("href"), name: a.querySelector("span:not(.site-icon)")?.textContent }));
+              const added = { open: dialog.open, tiles: tiles() };
+              document.querySelector("#favorites .edit").click();
+              await pause(200);
+              const editing = { heading: document.getElementById("favorite-heading").textContent, url: form.elements.url.value };
+              type(form.elements.title, "Renamed");
+              form.requestSubmit();
+              await pause(600);
+              done({ opened, refused, preview, added, editing, edited: tiles() });
+            })().catch(e => done({ error: String(e) }));
+        """, timeout=20)
+        check("error" not in favorite, "the favorite dialog threw", favorite)
+        check(favorite["opened"], "Add didn't open the favorite dialog", favorite)
+        check(favorite["refused"]["open"] and favorite["refused"]["error"], "the dialog took an address that isn't one", favorite)
+        check(favorite["preview"] == "example.org", "the dialog's preview doesn't show the address", favorite)
+        check(not favorite["added"]["open"] and {"href": "https://example.org/", "name": "Example"} in favorite["added"]["tiles"], "the favorite wasn't added", favorite)
+        check(favorite["editing"] == {"heading": "Edit favorite", "url": "https://example.org/"}, "Edit didn't open the favorite", favorite)
+        check({"href": "https://example.org/", "name": "Renamed"} in favorite["edited"], "the favorite wasn't renamed", favorite)
         check(b.js("return document.querySelectorAll('iframe, script[src^=http]').length") == 0, "the page loads something from the network")
     finally:
         b.call("Marionette:SetContext", {"value": "chrome"})
@@ -283,7 +322,7 @@ def test_toolbar_buttons(rig):
     b = rig.browser
     d = b.js(
         r"""
-        return ["nyx-share-button", "nyx-capture-button", "nyx-assistant-button", "nyx-appearance-button"].map(id => {
+        return ["nyx-share-button", "nyx-capture-button", "nyx-assistant-button", "nyx-settings-button"].map(id => {
           const e = document.getElementById(id);
           const r = e?.getBoundingClientRect();
           return { id, shown: !!e && r.width > 0, area: e?.closest("toolbar")?.id, tip: e?.getAttribute("tooltiptext") };
@@ -432,9 +471,11 @@ def test_assistant_with_a_hostile_page(rig):
 
 
 def test_side_panel_opens(rig):
-    """The Assistant button opens the panel in Zen's sidebar, beside the page."""
+    """The Assistant button opens the panel in Zen's sidebar, beside the page, and closes it."""
     b = rig.browser
     open_tab(b, rig.url)
+    b.js("SidebarController.hide()")
+    time.sleep(0.5)
     press(b, "nyx-assistant-button")
     time.sleep(1.5)
     d = b.js(
@@ -448,6 +489,10 @@ def test_side_panel_opens(rig):
     )
     check(d["exists"] and not d["hidden"] and d["w"] > 100 and d["h"] > 100, "the side panel didn't open", d)
     check((d["url"] or "").endswith("/panel.html"), "the side panel shows the wrong page", d)
+    press(b, "nyx-assistant-button")
+    time.sleep(1.5)
+    closed = b.js("const box = document.getElementById('sidebar-box'); return { hidden: box.hidden || box.getBoundingClientRect().width === 0, open: SidebarController.isOpen }")
+    check(closed["hidden"] and not closed["open"], "pressing the Assistant button again didn't close the panel", closed)
 
 
 def test_panel_shows_answers_as_plain_text(rig):
@@ -508,7 +553,7 @@ def test_host_missing_is_reported(rig):
         before = b.js_async(
             r"""
             const done = arguments[arguments.length - 1];
-            window.browser.runtime.sendMessage({ to: "background", action: "theme" }).then(v => done({ ok: !!v }), e => done({ error: e.message }));
+            window.browser.runtime.sendMessage({ to: "background", action: "weather" }).then(v => done({ ok: !!v }), e => done({ error: e.message }));
             """
         )
         check(before.get("ok"), "the host wasn't connected to begin with", before)
@@ -523,7 +568,7 @@ def test_host_missing_is_reported(rig):
         after = b.js_async(
             r"""
             const done = arguments[arguments.length - 1];
-            window.browser.runtime.sendMessage({ to: "background", action: "theme" }).then(v => done({ ok: !!v }), e => done({ error: e.message }));
+            window.browser.runtime.sendMessage({ to: "background", action: "weather" }).then(v => done({ ok: !!v }), e => done({ error: e.message }));
             """
         )
     finally:

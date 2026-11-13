@@ -30,6 +30,8 @@
     );
   }
 
+  // First, so the pages' stylesheet, which covers this window too, has changed when apply reads it.
+  NyxTheme.themePages();
   const stop = NyxTheme.subscribe(apply);
   window.addEventListener("unload", stop, { once: true });
 }

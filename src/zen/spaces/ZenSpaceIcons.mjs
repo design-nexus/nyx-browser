@@ -155,7 +155,8 @@ class nsZenWorkspaceIcons extends MozXULElement {
       icon.textContent = workspace.icon;
     } else {
       icon.setAttribute("no-icon", true);
-      icon.textContent = "";
+      // Nyx: a space without an icon shows its initial.
+      icon.textContent = gZenWorkspaces.workspaceInitial(workspace);
     }
   }
 

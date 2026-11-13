@@ -1,0 +1,41 @@
+% This Source Code Form is subject to the terms of the Mozilla Public
+% License, v. 2.0. If a copy of the MPL was not distributed with this
+% file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+% Nyx Design 2.0 tokens, included by zen-theme.css. Theme Engine 2.0 replaces the base values at
+% run time (NyxTheme.sys.mjs); these are Nyx Dark, for a page the theme hasn't reached.
+% The derived values follow whatever the base values are.
+
+  --nyx-bg: #0d0e12;
+  --nyx-panel: #121318;
+  --nyx-card: #191a21;
+  --nyx-raised: #1f2028;
+  --nyx-popover: #1d1e26;
+  --nyx-surface: #1d1e26;
+  --nyx-text: #e7e8ee;
+  --nyx-dim: #a2a5ba;
+  --nyx-tertiary: #8a8ea8;
+  --nyx-border: #2b2d37;
+  --nyx-divider: #1d1e26;
+  --nyx-accent: #3d8ae8;
+  --nyx-on-accent: #0d0e12;
+  --nyx-danger: #f2655f;
+  --nyx-warning: #eeb43f;
+  --nyx-success: #59d45b;
+  --nyx-shadow: #060609;
+  --nyx-hover: 6%;
+  --nyx-selection: 16%;
+  --nyx-radius-small: 7px;
+  --nyx-radius-card: 11px;
+  --nyx-radius-dialog: 15px;
+  --nyx-font: "Inter", "Inter Variable", "Inter 18pt", sans-serif;
+  --nyx-header: 46px;
+  --nyx-nav: 34px;
+  --nyx-control: 32px;
+
+  --nyx-tile: color-mix(in srgb, var(--nyx-text) 5%, var(--nyx-bg));
+  --nyx-hover-bg: color-mix(in srgb, var(--nyx-accent) var(--nyx-hover), var(--nyx-tile));
+  --nyx-sel-bg: color-mix(in srgb, var(--nyx-accent) calc(var(--nyx-selection) + 2%), var(--nyx-bg));
+  --nyx-line: color-mix(in srgb, var(--nyx-text) 9%, transparent);
+  --nyx-muted: color-mix(in srgb, var(--nyx-text) 18%, var(--nyx-bg));
+  --nyx-elevation: 0 0 0 1px var(--nyx-line), 0 18px 48px color-mix(in srgb, var(--nyx-shadow) 70%, transparent);

@@ -83,26 +83,28 @@ zen-folder {
     }
 
     align-items: center;
-    font-weight: var(--font-weight-semibold);
+    /* Nyx: a folder's row reads like a tab's: dimmed text and a line icon. */
+    font-weight: normal;
+    color: var(--nyx-dim);
 
     :root:not([zen-sidebar-expanded]) {
       width: var(--tab-min-width) !important;
     }
 
     .tab-group-folder-icon {
-      width: var(--zen-size-28);
-      height: var(--zen-size-28);
+      width: 16px;
+      height: 16px;
+      display: flex;
       align-content: center;
       position: absolute;
       pointer-events: none;
+      color: var(--nyx-dim);
 
       :root[zen-sidebar-expanded] & {
-        left: var(--zen-space-5);
+        left: 9px;
       }
 
       & svg {
-        filter: contrast(125%);
-        transform: translate(-1px, -1px);
 
         :root:not([zen-sidebar-expanded]) & {
           transition: transform 0.1s ease;
@@ -159,18 +161,29 @@ zen-folder {
       display: none;
     }
 
-    & > label,
+    & > .tab-group-label,
     & > #tab-label-input {
-      padding: 0 0 0 var(--zen-space-32) !important;
+      padding: 0 0 0 34px !important;
       width: 100%;
     }
 
-    & > label {
+    & > .nyx-folder-count {
+      flex: none;
+      margin: 0 6px 0 0 !important;
+      font-size: 11px;
+      color: var(--nyx-tertiary);
+
+      :root:not([zen-sidebar-expanded="true"]) & {
+        display: none;
+      }
+    }
+
+    & > .tab-group-label {
       width: 100% !important;
       border: none !important;
-      color: var(--toolbar-color) !important;
+      color: inherit !important;
       margin: 0 !important;
-      font-weight: var(--font-weight-semibold);
+      font-weight: normal;
       align-self: center !important;
       text-align: start;
       align-content: center;

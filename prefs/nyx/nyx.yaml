@@ -26,3 +26,11 @@
 # The QR code button in the address field.
 - name: nyx.toolbar.qr-button
   value: true
+
+# Settings › Tabs & Sidebar: a middle click on a tab closes it.
+- name: nyx.tabs.middle-click-close
+  value: true
+
+# Settings › Tabs & Sidebar: the workspace icons at the sidebar's foot.
+- name: nyx.sidebar.foot-spaces
+  value: true

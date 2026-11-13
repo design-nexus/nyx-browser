@@ -85,6 +85,9 @@ rm -rf "$app.old"
 [[ -d $app ]] && mv "$app" "$app.old"
 mv "$unpacked" "$app"
 rm -rf "$app.old"
+# A local build keeps the build ID of the last full build, so Firefox would go on running the
+# scripts it cached from the previous install. This marker has it drop its caches at next start.
+touch "$app/browser/.purgecaches"
 
 mkdir -p "$bin"
 ln -sfn "$app/nyx-browser" "$bin/nyx-browser"

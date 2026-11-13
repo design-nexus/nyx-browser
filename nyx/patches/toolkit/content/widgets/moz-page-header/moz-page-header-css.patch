@@ -1,0 +1,20 @@
+diff --git a/toolkit/content/widgets/moz-page-header/moz-page-header.css b/toolkit/content/widgets/moz-page-header/moz-page-header.css
+index 1933bf1..fc222c3 100644
+--- a/toolkit/content/widgets/moz-page-header/moz-page-header.css
++++ b/toolkit/content/widgets/moz-page-header/moz-page-header.css
+@@ -26,7 +26,15 @@ h6 {
+   margin: 0;
+ }
+ 
++/* Nyx: a page's title is its name in Nyx Design's heading, without the category's icon. */
++h1 {
++  font-size: 20px;
++  font-weight: 600;
++  letter-spacing: -0.01em;
++}
++
+ .icon {
++  display: none;
+   width: var(--icon-size);
+   height: var(--icon-size);
+   -moz-context-properties: fill, stroke;

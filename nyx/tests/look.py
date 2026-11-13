@@ -9,6 +9,7 @@ Theme files come from the bridge's own `nyx-browser-bridge theme`.
 import argparse
 import json
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -173,7 +174,7 @@ def sidebar_modes(shots):
 def appearance_panel(shots):
     with Browser({}, tokens=tokens("catppuccin-mocha"), width=1800, height=1100) as b:
         d = b.js(r"""
-            const button = document.getElementById("nyx-appearance-button");
+            const button = document.getElementById("nyx-settings-button");
             const r = button?.getBoundingClientRect();
             return { exists: !!button, w: r?.width, h: r?.height, area: button?.closest("toolbar")?.id, tip: button?.getAttribute("tooltiptext") };
         """)
@@ -270,10 +271,10 @@ def customizing(shots):
                   const customizing = document.documentElement.hasAttribute("customizing");
                   const palette = !!document.getElementById("customization-palette");
                   const { CustomizableUI } = ChromeUtils.importESModule("moz-src:///browser/components/customizableui/CustomizableUI.sys.mjs");
-                  const before = CustomizableUI.getPlacementOfWidget("nyx-appearance-button");
-                  CustomizableUI.removeWidgetFromArea("nyx-appearance-button");
-                  const removed = CustomizableUI.getPlacementOfWidget("nyx-appearance-button");
-                  CustomizableUI.addWidgetToArea("nyx-appearance-button", before.area);
+                  const before = CustomizableUI.getPlacementOfWidget("nyx-share-button");
+                  CustomizableUI.removeWidgetFromArea("nyx-share-button");
+                  const removed = CustomizableUI.getPlacementOfWidget("nyx-share-button");
+                  CustomizableUI.addWidgetToArea("nyx-share-button", before.area);
                   const left = events("aftercustomization");
                   gCustomizeMode.exit();
                   await left;
@@ -289,7 +290,68 @@ def customizing(shots):
             check(d["rows"] == ("vertical" if vertical else "horizontal"), "customizing changed the orientation", d)
 
 
-TESTS = [theme_files, security_indicator, sidebar_modes, sidebar_per_window, appearance_panel, customizing]
+def content_bg(b, url_part):
+    """--nyx-bg in the tab whose page address has `url_part`, read in its own process."""
+    b._call("Marionette:SetContext", {"value": "content"})
+    try:
+        for handle in b._call("WebDriver:GetWindowHandles", {}):
+            b._call("WebDriver:SwitchToWindow", {"handle": handle, "focus": False})
+            if url_part in b.js("return document.documentURI"):
+                return b.js("return getComputedStyle(document.documentElement).getPropertyValue('--nyx-bg').trim()")
+        raise AssertionError(f"no tab for {url_part}")
+    finally:
+        b._call("Marionette:SetContext", {"value": "chrome"})
+
+
+def pages_follow_theme(shots):
+    """Browser's own pages carry the theme however they open: restored at startup, in another
+    process, or left open through a change. Websites only hear light or dark."""
+    light, dark = tokens("nyx-light"), tokens("nyx-dark")
+    home = Path(tempfile.mkdtemp(prefix="nyx-browser-look-"))
+    try:
+        prefs = {"browser.startup.page": 3, "browser.sessionstore.interval": 200}
+        with Browser(prefs, tokens=dark, home=home) as b:
+            b.js_async(r"""
+                const done = arguments[arguments.length - 1];
+                gBrowser.selectedTab = gBrowser.addTab("about:preferences", { triggeringPrincipal: Services.scriptSecurityManager.getSystemPrincipal() });
+                setTimeout(() => done(null), 2500);
+            """)
+        with Browser(prefs, tokens=light, home=home) as b:
+            b.js_async(r"""
+                const done = arguments[arguments.length - 1];
+                const sp = Services.scriptSecurityManager.getSystemPrincipal();
+                gBrowser.addTab("http://127.0.0.1:9/", { triggeringPrincipal: sp });
+                gBrowser.addTab("about:reader?url=" + encodeURIComponent("http://127.0.0.1:9/"), { triggeringPrincipal: sp });
+                gBrowser.addTab("data:text/html,<title>Site</title>A site", { triggeringPrincipal: sp });
+                setTimeout(() => done(null), 3000);
+            """)
+            want = value(light, "bg")
+            restored = b.js_async(r"""
+                const done = arguments[arguments.length - 1];
+                const tab = gBrowser.tabs.find(t => t.linkedBrowser.currentURI.spec.startsWith("about:preferences"));
+                if (!tab) {
+                  done({ tabs: gBrowser.tabs.map(t => t.linkedBrowser.currentURI.spec) });
+                  return;
+                }
+                // A restored tab loads when it's chosen.
+                gBrowser.selectedTab = tab;
+                setTimeout(() => {
+                  const doc = tab.linkedBrowser.contentDocument;
+                  done(doc && getComputedStyle(doc.documentElement).getPropertyValue("--nyx-bg").trim());
+                }, 2000);
+            """)
+            check(restored == want, "Settings restored at startup isn't in the theme", restored)
+            check(content_bg(b, "about:neterror") == want, "an error page isn't in the theme")
+            check(content_bg(b, "about:reader") == want, "Reader view isn't in the theme")
+            check(content_bg(b, "data:text/html") == "", "a website can read the theme")
+            b.write_tokens(dark)
+            time.sleep(1.5)
+            check(content_bg(b, "about:neterror") == value(dark, "bg"), "a theme change didn't reach an open page")
+    finally:
+        shutil.rmtree(home, ignore_errors=True)
+
+
+TESTS = [theme_files, pages_follow_theme, security_indicator, sidebar_modes, sidebar_per_window, appearance_panel, customizing]
 
 
 def main():

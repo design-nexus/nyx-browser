@@ -1,0 +1,37 @@
+diff --git a/browser/components/customizableui/CustomizableUI.sys.mjs b/browser/components/customizableui/CustomizableUI.sys.mjs
+index a324a8a..7dece50 100644
+--- a/browser/components/customizableui/CustomizableUI.sys.mjs
++++ b/browser/components/customizableui/CustomizableUI.sys.mjs
+@@ -379,7 +379,8 @@ var CustomizableUIInternal = {
+       {
+         type: CustomizableUI.TYPE_TOOLBAR,
+         overflowable: true,
+-        defaultPlacements: navbarPlacements,
++        // Nyx: Browser's top bar.
++        defaultPlacements: lazy.ZenCustomizableUI.navbarPlacements(navbarPlacements),
+         verticalTabsDefaultPlacements: [
+         ],
+         defaultCollapsed: false,
+@@ -2998,8 +2999,22 @@ var CustomizableUIInternal = {
+       // Close the containing panel (e.g. overflow), PanelUI will reopen.
+       let wrapper = this.wrapWidget(aWidget.id).forWindow(ownerWindow);
+       if (wrapper?.anchor) {
++        let panel = aNode.closest("panel");
+         this.hidePanelForNode(aNode);
+         anchor = wrapper.anchor;
++        // Nyx: an extension's button in More tools opens its view under the More tools button,
++        // which is only free once More tools has closed.
++        if (panel && panel.state != "closed") {
++          panel.addEventListener(
++            "popuphidden",
++            () =>
++              ownerWindow.setTimeout(() =>
++                ownerWindow.PanelUI.showSubView(aWidget.viewId, anchor, aEvent)
++              ),
++            { once: true }
++          );
++          return;
++        }
+       }
+     } else if (areaType != CustomizableUI.TYPE_PANEL) {
+       let wrapper = this.wrapWidget(aWidget.id).forWindow(ownerWindow);

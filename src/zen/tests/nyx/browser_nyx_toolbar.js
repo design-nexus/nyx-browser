@@ -3,35 +3,38 @@
 
 "use strict";
 
-const overflowed = () => [...document.querySelectorAll("[nyx-overflowed]")].map(node => node.id);
+const overflowList = () => [...document.getElementById("widget-overflow-list").children].map(node => node.id);
 
 add_task(async function test_buttons_without_room_go_into_more_tools() {
-  const urlbar = document.getElementById("urlbar-container");
-  const more = () => document.getElementById("nyx-overflow-button");
+  const navBar = document.getElementById("nav-bar");
+  const more = document.getElementById("nav-bar-overflow-button");
 
-  // Squeeze the address field below its usable width.
-  urlbar.style.maxWidth = "60px";
-  window.NyxToolbar.fit();
-  await BrowserTestUtils.waitForCondition(() => overflowed().length > 0, "a button moved into More tools");
-  ok(!more().hidden, "More tools shows");
-  for (const id of overflowed()) {
-    is(document.getElementById(id).getAttribute("cui-anchorid"), "nyx-overflow-button", `${id}'s panels anchor on More tools`);
-  }
+  // A narrow window: Firefox's own overflow moves the last actions into More tools.
+  const { outerWidth, outerHeight } = window;
+  window.resizeTo(800, outerHeight);
+  await TestUtils.waitForCondition(() => navBar.hasAttribute("overflowing"), "the top bar overflows");
+  ok(overflowList().length, "a button moved into More tools");
+  ok(more.getBoundingClientRect().width > 0, "More tools shows");
   for (const id of ["back-button", "forward-button", "stop-reload-button", "urlbar-container"]) {
-    ok(!overflowed().includes(id), `${id} never moves`);
+    ok(!overflowList().includes(id), `${id} never moves`);
   }
+  for (const id of ["nyx-settings-button", "PanelUI-button"]) {
+    ok(document.getElementById(id).getBoundingClientRect().width > 0, `${id} stays in the row`);
+  }
+  ok(
+    more.getBoundingClientRect().left < document.getElementById("nyx-settings-button").getBoundingClientRect().left,
+    "More tools comes before Settings and the menu"
+  );
+  const placed = CustomizableUI.getWidgetIdsInArea("nav-bar").filter(id => overflowList().includes(id));
+  Assert.deepEqual(overflowList(), placed, "More tools keeps the top bar's order");
+  is(
+    navBar.getAttribute("addon-webext-overflowtarget"),
+    "widget-overflow-list",
+    "extensions' buttons go into More tools too"
+  );
 
-  const popup = more().querySelector("menupopup");
-  const shownPopup = BrowserTestUtils.waitForEvent(popup, "popupshown");
-  more().open = true;
-  await shownPopup;
-  is(popup.children.length, overflowed().length, "the menu lists each moved button");
-  popup.hidePopup();
-
-  urlbar.style.maxWidth = "";
-  window.NyxToolbar.fit();
-  await BrowserTestUtils.waitForCondition(() => overflowed().length === 0, "they come back with room");
-  ok(more().hidden, "More tools hides again");
+  window.resizeTo(outerWidth, outerHeight);
+  await TestUtils.waitForCondition(() => !navBar.hasAttribute("overflowing"), "they come back with room");
 });
 
 add_task(async function test_icons_only_keeps_folder_names() {
@@ -41,12 +44,12 @@ add_task(async function test_icons_only_keeps_folder_names() {
   const toolbar = document.getElementById("PersonalToolbar");
   setToolbarVisibility(toolbar, true, false, false);
   const item = guid => [...document.querySelectorAll("#PlacesToolbarItems > .bookmark-item")].find(n => n._placesNode?.bookmarkGuid === guid);
-  await BrowserTestUtils.waitForCondition(() => item(bookmark.guid) && item(folder.guid), "the bookmarks are on the bar");
+  await TestUtils.waitForCondition(() => item(bookmark.guid) && item(folder.guid), "the bookmarks are on the bar");
   const label = guid => getComputedStyle(item(guid).querySelector(".toolbarbutton-text")).display;
 
   isnot(label(bookmark.guid), "none", "names show by default");
   await SpecialPowers.pushPrefEnv({ set: [["nyx.bookmarks.icons-only", true]] });
-  is(label(bookmark.guid), "none", "Icons only hides a bookmark's name");
+  await TestUtils.waitForCondition(() => label(bookmark.guid) === "none", "Icons only hides a bookmark's name");
   isnot(label(folder.guid), "none", "a folder keeps its name");
   await SpecialPowers.popPrefEnv();
 

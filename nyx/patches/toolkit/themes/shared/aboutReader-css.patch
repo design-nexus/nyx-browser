@@ -1,0 +1,24 @@
+diff --git a/toolkit/themes/shared/aboutReader.css b/toolkit/themes/shared/aboutReader.css
+index 4f6922d..46b254c 100644
+--- a/toolkit/themes/shared/aboutReader.css
++++ b/toolkit/themes/shared/aboutReader.css
+@@ -1221,3 +1221,19 @@ pre code {
+ .radiorow>label:hover::after {
+   border: none !important;
+ }
++
++/* Nyx: the automatic theme is Browser's, its surface and text in the scheme it's in. A theme
++ * chosen in Reader view stays as chosen. */
++@media (prefers-color-scheme: light) {
++  :root {
++    --light-theme-background: var(--nyx-surface, #fff);
++    --light-theme-foreground: var(--nyx-text, rgb(21, 20, 26));
++  }
++}
++
++@media (prefers-color-scheme: dark) {
++  :root {
++    --dark-theme-background: var(--nyx-surface, rgb(28, 27, 34));
++    --dark-theme-foreground: var(--nyx-text, rgb(251, 251, 254));
++  }
++}

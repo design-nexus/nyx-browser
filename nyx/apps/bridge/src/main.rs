@@ -2,13 +2,15 @@
 //! browser starts it and talks on stdin and stdout: a 32-bit native-endian length, then JSON.
 //! Only the fixed operations in `protocol` exist. There's no shell and no way to name a program.
 //!
-//! `nyx-browser-bridge theme [--watch]` is Browser's theme instead; see `theme`. And
-//! `nyx-browser-bridge actions` serves Browser's Nyx actions on D-Bus; see `actions`.
+//! `nyx-browser-bridge theme [--watch]` is Browser's theme instead; see `theme`.
+//! `nyx-browser-bridge actions` serves Browser's Nyx actions on D-Bus; see `actions`. And
+//! `share-destinations` and `share-to` are the Share button's dropdown; see `share_menu`.
 
 mod actions;
 mod appearance;
 mod assistant;
 mod protocol;
+mod share_menu;
 mod theme;
 mod tokens;
 
@@ -37,6 +39,8 @@ fn main() -> std::process::ExitCode {
     match args.first().map(String::as_str) {
         Some("theme") => return theme::run(&args[1..]),
         Some("actions") => return actions::run(&args[1..]),
+        Some("share-destinations") => return share_menu::run_destinations(),
+        Some("share-to") => return share_menu::run_share_to(&args[1..]),
         _ => {}
     }
     if !caller_allowed(&args) {
@@ -129,7 +133,11 @@ fn integrations_file() -> PathBuf {
 /// Settings turns groups off in `integrations.json` (`{"assistant": false}`). A group not listed
 /// is on. A file that can't be read turns everything off: it's a permission, so it fails closed.
 fn check_allowed(op: &Op, file: &Path) -> Result<(), Refusal> {
-    let key = match op.group() {
+    group_allowed(op.group(), file)
+}
+
+fn group_allowed(group: Group, file: &Path) -> Result<(), Refusal> {
+    let key = match group {
         Group::Always => return Ok(()),
         Group::Share => "share",
         Group::Capture => "capture",
@@ -220,6 +228,10 @@ fn weather_cached() -> Result<Value, Refusal> {
 /// The short reading and its details, as plain strings. Anything else in the output is ignored.
 fn parse_weather(output: &str) -> Option<Value> {
     let weather: Value = serde_json::from_str(output.trim()).ok()?;
+    // Weather prints its place with no reading when nothing has been fetched yet.
+    if weather.get("class").and_then(Value::as_str) == Some("offline") {
+        return None;
+    }
     let text = weather.get("text")?.as_str()?.trim();
     if text.is_empty() {
         return None;
@@ -330,6 +342,7 @@ mod tests {
         assert!(parse_weather("not json").is_none());
         assert!(parse_weather(r#"{"text":"  "}"#).is_none());
         assert!(parse_weather("{}").is_none());
+        assert!(parse_weather(r#"{"text":"☁ New York","tooltip":"New York — No cached forecast yet","class":"offline"}"#).is_none());
     }
 
     #[test]

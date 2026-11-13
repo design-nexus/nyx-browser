@@ -427,9 +427,11 @@ window.gZenVerticalTabsManager = {
       const isVerticalTabs = this._prefsVerticalTabs || forCustomizableMode;
       const isSidebarExpanded = this._prefsSidebarExpanded || !isVerticalTabs;
       const isRightSide = this._prefsRightSide && isVerticalTabs;
+      // Nyx: tabs in a row keep the top bar of their own; the row lies under it.
       const isSingleToolbar =
-        ((this._prefsUseSingleToolbar && isVerticalTabs && isSidebarExpanded) ||
-          !isVerticalTabs) &&
+        this._prefsUseSingleToolbar &&
+        isVerticalTabs &&
+        isSidebarExpanded &&
         !forCustomizableMode &&
         !this.hidesTabsToolbar;
       const titlebar = document.getElementById("titlebar");
@@ -447,7 +449,7 @@ window.gZenVerticalTabsManager = {
         "orient",
         isVerticalTabs ? "vertical" : "horizontal"
       );
-      // Nyx: Browser's horizontal layout (src/nyx/styles/horizontal.css) keys on this.
+      // Nyx: tabs in a row (zen-tabs/horizontal-tabs.css) key on this.
       document.documentElement.toggleAttribute(
         "nyx-tabs-horizontal",
         !isVerticalTabs
@@ -695,6 +697,8 @@ window.gZenVerticalTabsManager = {
         );
       }
 
+      this._placeTabStrip(isVerticalTabs);
+
       gZenCompactModeManager.updateCompactModeContext(isSingleToolbar);
       window.dispatchEvent(new Event("resize"));
       gZenUIManager.updateTabsToolbar();
@@ -708,6 +712,29 @@ window.gZenVerticalTabsManager = {
 
   rebuildURLBarMenus() {
     gURLBar.updatePlaceholder();
+  },
+
+  /**
+   * Nyx: with tabs in a row, the tab strip (#titlebar) lies above the top bar, as Firefox's
+   * does, and the bookmarks bar stays under the top bar; with tabs in a column it's the
+   * sidebar's again. moveBefore keeps the strip's state, as Zen does when it moves the nav bar.
+   *
+   * @param {boolean} vertical
+   */
+  _placeTabStrip(vertical) {
+    const titlebar = document.getElementById("titlebar");
+    if (!vertical) {
+      const navBar = document.getElementById("nav-bar");
+      if (titlebar.nextElementSibling !== navBar) {
+        navBar.parentNode.moveBefore(titlebar, navBar);
+      }
+    } else if (titlebar.parentNode !== this.navigatorToolbox) {
+      this.navigatorToolbox.moveBefore(
+        titlebar,
+        document.getElementById("BrowserToolbarPalette") ??
+          document.getElementById("zen-sidebar-splitter")
+      );
+    }
   },
 
   rebuildAreas() {

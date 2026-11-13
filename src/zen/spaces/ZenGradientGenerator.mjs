@@ -1694,22 +1694,8 @@ export class nsZenThemePicker extends nsZenMultiWindowFeature {
     this.#currentLightness = themedColors[0]?.lightness ?? 50;
 
     if (themedColors.length === 0) {
-      const getBrowserBg = () => {
-        if (this.canBeTransparent) {
-          if (this.isDarkMode) {
-            return "rgba(0, 0, 0, 0.4)";
-          }
-          // On macOS (vibrancy) and Windows (Mica) a transparent light background
-          // sits over a compositor material that keeps UI text readable. Linux has no
-          // such material when zen.widget.linux.transparency is enabled, so a fully
-          // transparent light theme leaves dark UI text unreadable (gh-15334).
-          return AppConstants.platform === "linux"
-            ? "rgba(255, 255, 255, 0.4)"
-            : "transparent";
-        }
-        return this.isDarkMode ? "#131313" : "#e9e9e9";
-      };
-      return forToolbar ? this.getToolbarModifiedBase() : getBrowserBg();
+      // Nyx: a space without colors of its own wears the system theme.
+      return "var(--nyx-bg)";
     } else if (themedColors.length === 1) {
       return this.#getSingleRGBColor(themedColors[0], forToolbar);
     }
@@ -2182,12 +2168,17 @@ export class nsZenThemePicker extends nsZenMultiWindowFeature {
             }
           }
 
+          // Nyx: a space without colors of its own takes the theme's accent and text.
           docElement.style.setProperty(
             "--zen-primary-color",
-            this.getAccentColorForUI(dominantColor, isDarkMode)
+            isDefaultTheme
+              ? "var(--nyx-accent)"
+              : this.getAccentColorForUI(dominantColor, isDarkMode)
           );
           for (const [property, value] of Object.entries(
-            browser.gZenThemePicker.toolbarTextStyles(dominantColor, isDarkMode)
+            isDefaultTheme
+              ? { "--toolbox-textcolor": "var(--nyx-text)" }
+              : browser.gZenThemePicker.toolbarTextStyles(dominantColor, isDarkMode)
           )) {
             docElement.style.setProperty(property, value);
           }
@@ -2493,11 +2484,16 @@ export class nsZenThemePicker extends nsZenMultiWindowFeature {
       isDarkMode = this.shouldBeDarkMode(dominantColor);
       isExplicitMode = true;
     }
-    const primaryColor = this.getAccentColorForUI(dominantColor, isDarkMode);
-    const paletteStyles = {
-      ...this.toolbarTextStyles(dominantColor, isDarkMode),
-      "--zen-primary-color": primaryColor,
-    };
+    // Nyx: a space without colors of its own takes the theme's accent and text.
+    const primaryColor = isDefaultTheme
+      ? "var(--nyx-accent)"
+      : this.getAccentColorForUI(dominantColor, isDarkMode);
+    const paletteStyles = isDefaultTheme
+      ? { "--toolbox-textcolor": "var(--nyx-text)", "--zen-primary-color": primaryColor }
+      : {
+          ...this.toolbarTextStyles(dominantColor, isDarkMode),
+          "--zen-primary-color": primaryColor,
+        };
     this.#gradientsCache[uuid] = {
       gradient,
       toolbarGradient,

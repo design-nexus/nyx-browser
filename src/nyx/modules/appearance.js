@@ -2,13 +2,14 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-/* The Appearance panel. Orientation, sidebar and effects are prefs; theme, accent and density go
+/* The Appearance panel (Ctrl+, and the Settings button), and F1 for the keyboard shortcuts.
+ * Orientation, sidebar and effects are prefs; theme, accent and density go
  * to appearance.json, which the theme bridge resolves through Theme Engine 2.0 (NyxTheme). */
 {
   const CONFIG = Services.env.get("XDG_CONFIG_HOME") || PathUtils.join(Services.env.get("HOME"), ".config");
   const FILE = PathUtils.join(CONFIG, "nyx-browser", "appearance.json");
   const SWATCHES = ["blue", "violet", "pink", "red", "coral", "amber", "green", "teal", "graphite"];
-  const WIDGET = "nyx-appearance-button";
+  const BUTTON = "nyx-settings-button";
   const { NyxTheme } = ChromeUtils.importESModule("chrome://browser/content/nyx/NyxTheme.sys.mjs");
 
   let saved = { theme: "follow", accent: "", density: "" };
@@ -138,10 +139,12 @@
   function open(anchor) {
     const panel = document.getElementById("nyx-appearance-panel") || buildPanel();
     load();
-    panel.openPopup(anchor || document.getElementById(WIDGET) || document.getElementById("urlbar"), "bottomright topright");
+    panel.openPopup(anchor || document.getElementById(BUTTON), "bottomright topright");
   }
 
   window.NyxAppearance = { open, load, render, file: FILE };
+
+  document.getElementById(BUTTON)?.addEventListener("command", event => open(event.currentTarget));
 
   window.addEventListener(
     "keydown",
@@ -149,22 +152,12 @@
       if (event.ctrlKey && !event.shiftKey && !event.altKey && event.key === ",") {
         event.preventDefault();
         open();
+      } else if (event.key === "F1" && !event.ctrlKey && !event.shiftKey && !event.altKey && !event.metaKey) {
+        // The keyboard shortcuts (Settings' Keyboard Shortcuts).
+        event.preventDefault();
+        switchToTabHavingURI("about:keyboard", true);
       }
     },
     true
   );
-
-  // Registered once per process; every window after the first finds it already there.
-  if (!Services.nyxAppearanceWidget) {
-    Services.nyxAppearanceWidget = true;
-    window.CustomizableUI.createWidget({
-      id: WIDGET,
-      label: "Settings",
-      tooltiptext: "Settings (Ctrl+,)",
-      defaultArea: window.CustomizableUI.AREA_NAVBAR,
-      onCommand(event) {
-        event.target.ownerDocument.defaultView.NyxAppearance.open(event.target);
-      },
-    });
-  }
 }

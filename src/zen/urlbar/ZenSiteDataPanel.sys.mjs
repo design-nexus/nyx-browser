@@ -62,9 +62,7 @@ export class nsZenSiteDataPanel {
       ? this.anchor
       : this.extensionsPanelButton;
 
-    this.document
-      .getElementById("nav-bar")
-      .setAttribute("addon-webext-overflowbutton", "zen-site-data-icon-button");
+    // Nyx: the top bar's extensions overflow into More tools (navigator-toolbox.inc.xhtml).
 
     this.#initCopyUrlButton();
     this.#initEventListeners();

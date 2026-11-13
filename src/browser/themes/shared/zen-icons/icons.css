@@ -508,10 +508,7 @@
   display: flex !important;
 }
 
-#identity-permission-box,
-:root:not([zen-has-empty-tab="true"]) #urlbar:not([breakout-extend]) #identity-icon-box:not([open]),
-:root[zen-has-empty-tab="true"] #zen-site-data-icon-button,
-#urlbar[breakout-extend] #zen-site-data-icon-button {
+#zen-site-data-icon-button {
   display: none !important;
 }
 
@@ -815,54 +812,10 @@
   list-style-image: url("manage.svg") !important;
 }
 
-/* FIX header icons for the app menu sub menus (eg. fx account, history...) */
+/* Nyx: the app menu's submenus and other panels have a plain title, as in the mockups. */
 .panel-header > h1 {
   text-align: left;
   margin-left: var(--zen-space-8) !important;
-}
-
-/* header icons for the app menu sub menus (eg. fx account, history...) */
-.panel-header > h1 > span::before {
-  content: "";
-  background: var(--header-image, none) center / 16px no-repeat;
-  -moz-context-properties: fill, fill-opacity;
-  fill: currentColor;
-  padding-inline-start: calc(var(--fp-enabled, 0) * 16px);
-  margin-inline-end: calc(var(--fp-enabled, 0) * 8px);
-}
-
-#PanelUI-fxa .panel-header > h1 > span::before {
-  --header-image: var(--avatar-image-url);
-  --fp-enabled: 1;
-  transform: scale(1.25);
-  border-radius: var(--border-radius-circle);
-  display: inline-block;
-  height: var(--size-item-small);
-}
-
-#PanelUI-bookmarks .panel-header > h1 > span::before {
-  --header-image: url("bookmark-star-on-tray.svg");
-  --fp-enabled: 1;
-}
-
-#PanelUI-history .panel-header > h1 > span::before {
-  --header-image: url("history.svg");
-  --fp-enabled: 1;
-}
-
-#PanelUI-helpView .panel-header > h1 > span::before {
-  --header-image: url("help.svg");
-  --fp-enabled: 1;
-}
-
-#appMenu-libraryView .panel-header > h1 > span::before {
-  --header-image: url("library.svg");
-  --fp-enabled: 1;
-}
-
-#unified-extensions-panel .panel-header > h1 > span::before {
-  --header-image: url("extension.svg");
-  --fp-enabled: 1;
 }
 
 #alltabs-button,

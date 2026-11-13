@@ -1,0 +1,18 @@
+diff --git a/browser/components/tabbrowser/content/tabs.mjs b/browser/components/tabbrowser/content/tabs.mjs
+index 8bc7d9c..0a1479f 100644
+--- a/browser/components/tabbrowser/content/tabs.mjs
++++ b/browser/components/tabbrowser/content/tabs.mjs
+@@ -499,6 +499,13 @@ export class MozTabbrowserTabs extends MozElements.TabsBase {
+       }
+     } else if (event.eventPhase == Event.BUBBLING_PHASE && event.button == 1) {
+       let tab = event.target?.closest("tab");
++      // Nyx: Settings › Tabs & Sidebar can turn closing tabs with a middle click off.
++      if (
++        tab &&
++        !Services.prefs.getBoolPref("nyx.tabs.middle-click-close", true)
++      ) {
++        tab = null;
++      }
+       if (tab) {
+         if (tab.multiselected) {
+           gBrowser.removeMultiSelectedTabs({

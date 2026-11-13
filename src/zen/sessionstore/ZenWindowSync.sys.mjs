@@ -9,7 +9,9 @@ import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs";
 const lazy = {};
 
 ChromeUtils.defineESModuleGetters(lazy, {
+  AboutNewTab: "resource:///modules/AboutNewTab.sys.mjs",
   BrowserWindowTracker: "resource:///modules/BrowserWindowTracker.sys.mjs",
+  HomePage: "resource:///modules/HomePage.sys.mjs",
   isLibraryCopy: "moz-src:///zen/library/ZenLibraryUtils.sys.mjs",
   TabStateFlusher:
     "moz-src:///browser/components/sessionstore/TabStateFlusher.sys.mjs",
@@ -273,6 +275,21 @@ class nsZenWindowSync {
     let initialTab = aWindow.gBrowser?.selectedTab;
     aWindow.gZenStartup.promiseInitialized.then(() => {
       if (initialTab && !initialTab.closing) {
+        // Nyx: a new window's own start page (the dashboard) stays in that window until it's
+        // left. Synced, every window opened would leave one more in all the others.
+        // The page may not have loaded yet: what the window was opened with says.
+        const opened = aWindow.arguments?.[0];
+        const url =
+          typeof opened === "string"
+            ? opened
+            : initialTab.linkedBrowser.currentURI.spec;
+        if (
+          this.#isStartPage(url) &&
+          this.#browserWindowsList.some(win => win !== aWindow)
+        ) {
+          this.#syncOnceLeft(initialTab);
+          return;
+        }
         // If the initial tab is still open after startup, we trigger a fake TabSelect event
         // to ensure the tab gets synced properly. This is needed in cases where the window
         // is opened with a URL and the TabSelect event happens before the window sync is fully initialized.
@@ -280,6 +297,65 @@ class nsZenWindowSync {
         this.on_TabOpen({ target: initialTab }, { ignoreExistingId: true });
       }
     });
+  }
+
+  /**
+   * Nyx: whether `aURL` is a start page: the dashboard, or Firefox's home and new tab pages.
+   *
+   * @param {string} aURL
+   * @returns {boolean}
+   */
+  #isStartPage(aURL) {
+    return [
+      "about:home",
+      "about:newtab",
+      lazy.AboutNewTab.newTabURL,
+      lazy.HomePage.get(),
+    ].includes(aURL);
+  }
+
+  /**
+   * Nyx: syncs `aTab` to the other windows once it goes from the start page to another page.
+   *
+   * @param {MozTabbrowserTab} aTab
+   */
+  #syncOnceLeft(aTab) {
+    const window = aTab.documentGlobal;
+    const sync = () => {
+      if (aTab.closing || window.closed) {
+        return;
+      }
+      // As an event of this window's: the copies' own TabOpen events are then its, and
+      // ignored, as for any tab it syncs.
+      const context = this.#eventHandlingContext;
+      if (context.window && context.window !== window) {
+        lazy.setTimeout(sync, 50);
+        return;
+      }
+      context.window = window;
+      context.eventCount++;
+      try {
+        this.on_TabOpen({ target: aTab }, { ignoreExistingId: true });
+      } finally {
+        if (--context.eventCount === 0) {
+          context.window = null;
+        }
+      }
+    };
+    const listener = {
+      onLocationChange: (aBrowser, aWebProgress, aRequest, aLocation) => {
+        if (
+          aBrowser !== aTab.linkedBrowser ||
+          !aWebProgress.isTopLevel ||
+          this.#isStartPage(aLocation.spec)
+        ) {
+          return;
+        }
+        window.gBrowser.removeTabsProgressListener(listener);
+        sync();
+      },
+    };
+    window.gBrowser.addTabsProgressListener(listener);
   }
 
   /**

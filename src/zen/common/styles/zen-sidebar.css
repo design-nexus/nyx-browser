@@ -13,7 +13,8 @@
 
   & #sidebar-box {
     border-radius: var(--zen-native-inner-radius);
-    box-shadow: var(--zen-big-shadow);
+    /* Nyx: a page beside the page, outlined as the page is. */
+    box-shadow: inset 0 0 0 1px var(--nyx-line);
     overflow: hidden;
   }
 
@@ -31,4 +32,61 @@
 /* Menubar */
 #toolbar-menubar {
   display: none !important;
+}
+
+/* Nyx: the sidebar's panels (Assistant, bookmarks, history) in Nyx Design: the page's surface, a
+ * header of the panel's name with its switcher and a close button. */
+#sidebar-box {
+  --sidebar-background-color: var(--nyx-surface, var(--nyx-bg));
+  --sidebar-text-color: var(--nyx-text);
+  --sidebar-border-color: var(--nyx-line);
+  font-size: 13px;
+}
+
+#sidebar-header {
+  min-height: var(--nyx-nav);
+  padding: 6px 6px 6px 8px;
+  font-size: 13px;
+  border-bottom: 1px solid var(--nyx-line);
+}
+
+#sidebar-switcher-target {
+  padding: 4px 6px;
+  border: 0;
+  border-radius: var(--nyx-radius-small);
+  gap: 6px;
+
+  &:hover,
+  &.active {
+    background-color: var(--nyx-hover-bg);
+  }
+}
+
+#sidebar-title {
+  padding: 0;
+  font-weight: 600;
+}
+
+#sidebar-switcher-arrow {
+  list-style-image: url("chrome://browser/content/nyx/icons/chevron.svg");
+  width: 16px;
+  height: 16px;
+  fill: var(--nyx-tertiary);
+  opacity: 1;
+}
+
+#sidebar-close {
+  appearance: none;
+  width: 26px;
+  height: 26px;
+  padding: 5px;
+  border-radius: var(--nyx-radius-small);
+  list-style-image: url("chrome://browser/content/nyx/icons/close.svg");
+  -moz-context-properties: fill;
+  fill: var(--nyx-tertiary);
+
+  &:hover {
+    background-color: var(--nyx-hover-bg);
+    fill: var(--nyx-text);
+  }
 }

@@ -9,9 +9,13 @@
 
 :host(:is(.anonymous-content-host, notification-message)),
 :root {
+  /* Nyx: Nyx Design 2.0's tokens, from Theme Engine 2.0; Zen's colors below come from them. */
+%include ../../../nyx/styles/tokens.inc.css
+
   /* Default values */
-  --zen-border-radius: 7px;
-  --zen-primary-color: AccentColor;
+  --zen-border-radius: var(--nyx-radius-small);
+  --zen-webview-border-radius: var(--nyx-radius-card);
+  --zen-primary-color: var(--nyx-accent);
 
   --zen-background-opacity: 1;
 
@@ -21,45 +25,18 @@
   --zen-branding-bg-reverse: light-dark(var(--zen-branding-dark), var(--zen-branding-paper));
 
   /** Zen colors are generated automatically from the primary color */
-  --zen-colors-primary: light-dark(
-    color-mix(in srgb, var(--zen-primary-color) 50%, black 50%),
-    color-mix(in srgb, var(--zen-primary-color) 20%, var(--zen-branding-bg) 80%)
-  );
-  --zen-colors-secondary: light-dark(
-    color-mix(in srgb, var(--zen-colors-primary) 20%, white 80%),
-    color-mix(in srgb, var(--zen-primary-color) 30%, var(--zen-branding-bg) 70%)
-  );
-  --zen-colors-tertiary: light-dark(
-    color-mix(in srgb, var(--zen-primary-color) 2%, white 98%),
-    color-mix(in srgb, var(--zen-primary-color) 1%, var(--zen-branding-bg) 99%)
-  );
+  --zen-colors-primary: var(--nyx-sel-bg);
+  --zen-colors-secondary: var(--nyx-sel-bg);
+  --zen-colors-tertiary: var(--nyx-bg);
 
-  --zen-colors-hover-bg: light-dark(
-    color-mix(in srgb, var(--zen-primary-color) 90%, white 10%),
-    color-mix(in srgb, var(--zen-primary-color) 90%, var(--zen-branding-bg) 10%)
-  );
-  --zen-colors-primary-foreground: light-dark(
-    var(--zen-branding-bg-reverse),
-    color-mix(in srgb, var(--zen-primary-color) 80%, white 20%)
-  );
-  --zen-colors-border: light-dark(
-    color-mix(in srgb, var(--zen-colors-secondary) 50%, transparent),
-    color-mix(in srgb, var(--zen-colors-secondary) 20%, rgb(79, 79, 79))
-  );
-  --zen-colors-border-contrast: light-dark(
-    color-mix(in srgb, var(--zen-colors-secondary) 10%, rgba(181, 181, 181, 0.11) 90%),
-    color-mix(in srgb, var(--zen-colors-secondary) 10%, rgba(255, 255, 255, 0.11) 90%)
-  );
+  --zen-colors-hover-bg: var(--nyx-hover-bg);
+  --zen-colors-primary-foreground: var(--nyx-text);
+  --zen-colors-border: var(--nyx-line);
+  --zen-colors-border-contrast: var(--nyx-line);
 
-  --zen-colors-input-bg: light-dark(
-    color-mix(in srgb, var(--zen-primary-color) 1%, var(--zen-colors-tertiary) 99%),
-    color-mix(in srgb, var(--zen-primary-color) 1%, var(--zen-branding-bg) 99%)
-  );
+  --zen-colors-input-bg: var(--nyx-tile);
 
-  --zen-urlbar-background: light-dark(
-    color-mix(in srgb, var(--zen-primary-color) 3%, #f4f4f4 97%),
-    color-mix(in srgb, var(--zen-primary-color) 4%, rgb(24, 24, 24) 96%)
-  );
+  --zen-urlbar-background: var(--nyx-tile);
 
   --zen-secondary-btn-color: var(--zen-colors-primary-foreground);
   --panel-separator-zap-gradient: none !important;
@@ -139,20 +116,15 @@
   );
 
 
-  --zen-toolbar-element-bg: light-dark(
-    color-mix(in oklch, var(--toolbox-textcolor) 8%, transparent),
-    color-mix(in oklch, var(--toolbox-textcolor) 15%, transparent)
-  );
+  --zen-toolbar-element-bg: var(--nyx-tile);
+  --zen-toolbar-element-bg-hover: var(--nyx-hover-bg);
 
 
   /* Toolbar */
   --tab-selected-color-scheme: inherit !important;
   --tabstrip-inner-border: transparent;
 
-  --zen-toolbar-height: 38px;
-  @media (-moz-platform: macos) {
-    --zen-toolbar-height: 42px;
-  }
+  --zen-toolbar-height: var(--nyx-header);
 
   --toolbarbutton-padding-outer: 4px;
   --zen-toolbar-height-with-bookmarks: var(--zen-toolbar-height);
@@ -161,11 +133,7 @@
     --zen-toolbar-height-with-bookmarks: calc(var(--zen-toolbar-height) + 30px);
   }
 
-  --toolbarbutton-background-color-hover: color-mix(
-    in srgb,
-    var(--zen-branding-bg-reverse) 7%,
-    transparent
-  ) !important;
+  --toolbarbutton-background-color-hover: var(--nyx-hover-bg) !important;
   --zen-toolbar-button-size: 16px;
   @media (-moz-platform: macos) {
     --zen-toolbar-button-size: 17px;
@@ -178,11 +146,7 @@
     * background on the native theme. */
   --toolbar-background-color: light-dark(rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.15));
 
-  --toolbarbutton-background-color-active: color-mix(
-    in srgb,
-    var(--zen-branding-bg-reverse) 10%,
-    transparent
-  ) !important;
+  --toolbarbutton-background-color-active: var(--nyx-sel-bg) !important;
 
   --toolbar-color: var(--toolbox-textcolor) !important;
   --toolbox-textcolor-inactive: var(--toolbox-textcolor) !important;
@@ -191,10 +155,7 @@
   --urlbar-box-active-bgcolor: var(--toolbarbutton-background-color-hover) !important;
   --urlbar-box-hover-bgcolor: var(--toolbarbutton-background-color-hover) !important;
   --input-background-color: light-dark(rgba(255, 255, 255, 0.2), rgba(0, 0, 0, 0.2)) !important;
-  --toolbar-field-focus-background-color: light-dark(
-    rgba(255, 255, 255, 0.25),
-    rgba(0, 0, 0, 0.3)
-  ) !important;
+  --toolbar-field-focus-background-color: var(--nyx-popover) !important;
 
   /* Transitions */
   --zen-tabbox-element-indent-transition: margin-inline-start 0.1s ease-in-out;
@@ -202,36 +163,31 @@
   --zen-hidden-toolbar-transition: var(--zen-hidden-toolbar-transition-duration) ease-in-out;
 
   /* XUL */
-  --zen-main-browser-background: light-dark(rgb(235, 235, 235), #1b1b1b);
+  --zen-main-browser-background: var(--nyx-bg);
   --zen-main-browser-background-toolbar: var(--zen-main-browser-background);
 
   --browser-area-z-index-toolbox: 2 !important;
   --attention-dot-color: transparent !important;
 
-  --toolbar-text-color: light-dark(rgba(0, 0, 0, .8), rgba(255, 255, 255, .8)) !important;
+  --toolbar-text-color: var(--nyx-dim) !important;
+  --toolbox-textcolor: var(--nyx-text);
 
   --zen-appcontent-border: 1px solid var(--zen-colors-border);
 
-  --toolbarbutton-border-radius: 6px;
-  --urlbar-margin-inline: 1px !important;
+  --toolbarbutton-border-radius: var(--nyx-radius-small);
+  /* Nyx: the address field's background is 8px from the buttons beside it (mockups: .url). */
+  --urlbar-margin-inline: 7px !important;
 
-  --zen-squircle-value: 1.3;
-
-  @media (-moz-platform: windows) {
-    --zen-squircle-value: 2.3;
-  }
+  /* Nyx: Nyx Design's corners are round, at the radius given. */
+  --zen-squircle-value: 1;
 
   --tab-icon-overlay-stroke: light-dark(white, black) !important;
   --tab-close-button-padding: 4px !important;
 
   --input-border-color: var(--zen-input-border-color) !important;
-  --zen-themed-toolbar-bg-transparent: light-dark(var(--zen-branding-bg), #171717);
+  --zen-themed-toolbar-bg-transparent: var(--nyx-bg);
 
-  --zen-workspace-indicator-height: 44px;
-
-  &:not([zen-sidebar-expanded='true']) {
-    --zen-workspace-indicator-height: 38px;
-  }
+  --zen-workspace-indicator-height: calc(var(--nyx-nav) + 8px);
 
   --toolbar-field-color: var(--toolbox-textcolor) !important;
 
@@ -253,9 +209,19 @@
   }
 
   --toolbar-field-background-color: var(--zen-colors-input-bg) !important;
-  --arrowpanel-background: light-dark(rgb(244, 244, 244), rgb(31, 31, 31)) !important;
+  --arrowpanel-background: var(--nyx-popover) !important;
+  --arrowpanel-color: var(--nyx-text) !important;
+  --arrowpanel-border-color: transparent !important;
+  --arrowpanel-border-radius: var(--nyx-radius-dialog) !important;
+  --panel-background: var(--nyx-popover);
+  --panel-color: var(--nyx-text);
+  --menu-background-color: var(--nyx-popover);
+  --menu-color: var(--nyx-text);
+  --menu-border-color: transparent;
+  --menuitem-border-radius: var(--nyx-radius-small);
+  --zen-dialog-background: var(--nyx-popover);
 
-  --panel-separator-color: color-mix(in srgb, currentColor 15%, transparent) !important;
+  --panel-separator-color: var(--nyx-line) !important;
 
   --zen-active-tab-scale: 0.98;
   @media (-moz-platform: macos) {
@@ -297,10 +263,25 @@
   @media (-moz-platform: windows) {
     font-family: 'Segoe UI Variable', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   }
+
+  @media (-moz-platform: linux) {
+    font-family: var(--nyx-font);
+  }
+}
+
+/* Nyx: Firefox's tokens from Nyx's, more specific than :root, so they hold over pages that set
+ * Firefox's tokens themselves (Settings sets its own canvas). */
+:root:not(#nyx-tokens) {
+%include ../../../nyx/styles/firefox-tokens.inc.css
 }
 
 #main-window[windowtype="navigator:browser"]:not([popup-window]) {
   min-height: var(--zen-browser-window-min-height) !important;
+
+  /* Nyx: Nyx Design's text size; Firefox would take the system's. */
+  @media (-moz-platform: linux) {
+    font-size: 13px;
+  }
 
   @media (-moz-windows-mica) or (-moz-platform: macos) or ((-moz-platform: linux) and
         -moz-pref('zen.widget.linux.transparency')) {

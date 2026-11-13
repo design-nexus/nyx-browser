@@ -1,0 +1,38 @@
+diff --git a/browser/modules/BrowserUIUtils.sys.mjs b/browser/modules/BrowserUIUtils.sys.mjs
+index 09a3b84..f5b420c 100644
+--- a/browser/modules/BrowserUIUtils.sys.mjs
++++ b/browser/modules/BrowserUIUtils.sys.mjs
+@@ -147,6 +147,21 @@ export var BrowserUIUtils = {
+       : "http://";
+   },
+ 
++  /**
++   * Returns the protocol that trimURL would strip from the start of aURL, or
++   * the empty string. Nyx trims "http://" along with "https://": the identity
++   * box already says "Not secure" on pages that aren't.
++   *
++   * @param {string} aURL The URL whose trimmable protocol should be returned.
++   * @returns {string} The protocol that would be trimmed.
++   */
++  getTrimmedURLProtocol(aURL) {
++    let protocols = UrlbarPrefs.getScotchBonnetPref("trimHttps")
++      ? ["https://", "http://"]
++      : ["http://"];
++    return protocols.find(protocol => aURL.startsWith(protocol)) ?? "";
++  },
++
+   /**
+    * Returns the prefix that trimURL would strip from the start of aURL, e.g.
+    * "https://", "www.", or "https://www.". Returns the empty string if no
+@@ -158,8 +173,9 @@ export var BrowserUIUtils = {
+    */
+   getTrimmedURLPrefix(aURL) {
+     let prefix = "";
+-    if (aURL.startsWith(this.trimURLProtocol)) {
+-      prefix = this.trimURLProtocol;
++    let protocol = this.getTrimmedURLProtocol(aURL);
++    if (protocol) {
++      prefix = protocol;
+       aURL = aURL.substring(prefix.length);
+       if (UrlbarPrefs.get("trimWww") && aURL.startsWith("www.")) {
+         prefix += "www.";

@@ -69,6 +69,74 @@ hbox.editBMPanel_folderRow {
 }
 
 /* Bookmarks in toolbar */
+/* Nyx: the bookmarks bar sits on the frame's own surface, under the top bar (or the tab row). */
 #PersonalToolbar {
   background: transparent;
+  color: var(--nyx-dim);
+
+  /* Collapsed, it takes no room at all. */
+  &:not([collapsed]) {
+    padding: 0 8px 4px !important;
+  }
+
+  & .bookmark-item:not(toolbarseparator) {
+    height: 26px;
+    margin: 0 1px !important;
+    padding: 0 9px 0 7px !important;
+    gap: 7px;
+    border-radius: var(--nyx-radius-small) !important;
+    color: inherit;
+    font-size: 12.5px;
+
+    &:hover {
+      background: var(--nyx-hover-bg) !important;
+      color: var(--nyx-text);
+    }
+
+    &[open] {
+      background: var(--nyx-sel-bg) !important;
+      color: var(--nyx-text);
+    }
+
+    & > .toolbarbutton-icon {
+      width: 14px;
+      height: 14px;
+      margin: 0 !important;
+    }
+
+    & > .toolbarbutton-text {
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+  }
+
+  & toolbarseparator {
+    appearance: none;
+    width: 1px;
+    min-width: 1px;
+    height: 14px;
+    margin: 0 4px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: var(--nyx-line);
+
+    &::before {
+      display: none;
+    }
+  }
+
+  /* Icons only (Settings › Toolbar): a bookmark is its icon, its name in the tooltip. Folders
+   * keep their names. */
+  @media -moz-pref("nyx.bookmarks.icons-only") {
+    & #PlacesToolbarItems > .bookmark-item:not([container]) {
+      width: 28px;
+      padding: 0 !important;
+      justify-content: center;
+
+      /* Firefox forces bookmarks' names to show (toolbarbuttons.css), with !important. */
+      & > .toolbarbutton-text {
+        display: none !important;
+      }
+    }
+  }
 }

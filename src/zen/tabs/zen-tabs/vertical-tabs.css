@@ -83,12 +83,17 @@
 
 #browser,
 zen-library {
-  --zen-min-toolbox-padding: 5px;
+  --zen-min-toolbox-padding: 7px;
   @media (-moz-platform: macos) {
     --zen-min-toolbox-padding: 6px;
   }
 
   --zen-toolbox-padding: var(--zen-min-toolbox-padding);
+
+  /* Nyx: the rail's padding, which its width is made of (below), holds inside it too. */
+  :root:not([zen-sidebar-expanded="true"]) & {
+    --zen-toolbox-padding: 6px;
+  }
 }
 
 /* ==========================================================================
@@ -131,8 +136,10 @@ zen-library {
 /* ==========================================================================
    Pinned Tabs Separator
    ========================================================================== */
+/* Nyx: the separator is the Today heading over the day's tabs; Zen's line goes. */
 .pinned-tabs-container-separator {
-  height: var(--zen-size-22);
+  height: auto;
+  min-height: 30px;
   border: none;
   width: 100%;
 
@@ -158,6 +165,7 @@ zen-library {
   );
 
   & toolbarseparator {
+    visibility: hidden;
     height: 1px;
     background: var(--zen-pinned-separator-color);
     padding: 0;
@@ -194,11 +202,6 @@ zen-library {
     gap: var(--zen-space-2);
     pointer-events: none;
     padding-inline-start: var(--zen-space-8);
-    background: linear-gradient(
-        var(--zen-pinned-separator-color),
-        var(--zen-pinned-separator-color)
-      )
-      0 50% / calc(100% - 4px) 1px no-repeat;
 
     & .toolbarbutton-icon,
     & .toolbarbutton-text {
@@ -251,13 +254,63 @@ zen-library {
   }
 }
 
+/* Nyx: a pinned tab (not one in a folder) says so at its end, where the close button would be. */
+.zen-workspace-pinned-tabs-section > .tabbrowser-tab[pinned]:not([zen-essential]):not(:hover) > .tab-stack > .tab-content::after {
+  content: url("chrome://browser/content/nyx/icons/pin.svg");
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin-inline-end: 4px;
+  -moz-context-properties: fill, fill-opacity;
+  fill: var(--nyx-tertiary);
+}
+
+#navigator-toolbox:not([zen-sidebar-expanded="true"]) .zen-workspace-pinned-tabs-section > .tabbrowser-tab > .tab-stack > .tab-content::after {
+  display: none;
+}
+
+/* Nyx: the sidebar's section headings (Folders, Today), small and uppercase. */
+.nyx-section-label {
+  margin: 0;
+  padding: 10px 8px 4px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--nyx-tertiary);
+
+  :root:not([zen-sidebar-expanded="true"]) & {
+    display: none;
+  }
+}
+
+.nyx-folders-header {
+  width: 100%;
+  padding-inline-end: 2px;
+
+  & .nyx-section-label {
+    flex: 1;
+  }
+
+  & .nyx-new-folder-button {
+    --toolbarbutton-inner-padding: 2px;
+    margin: 6px 0 0 !important;
+    list-style-image: url("chrome://browser/skin/zen-icons/plus.svg");
+    color: var(--nyx-dim);
+  }
+
+  :root:not([zen-sidebar-expanded="true"]) & {
+    display: none;
+  }
+}
+
 /* ==========================================================================
    Navigator Toolbox (Main Sidebar Container) Base Styles
    ========================================================================== */
 #navigator-toolbox,
 .zen-library-space-body {
-  --border-radius-medium: 14px;
-  --tab-border-radius: 8px;
+  --border-radius-medium: var(--nyx-radius-small);
+  --tab-border-radius: var(--nyx-radius-small);
 
   min-width: var(--zen-toolbox-min-width);
   margin-top: 0 !important;
@@ -326,7 +379,10 @@ zen-library {
   position: relative;
   border-bottom: 0 solid transparent !important;
 
-  --tab-margin-block: 2px;
+  /* Nyx: rows of Nyx Design's nav height, a pixel apart. */
+  --tab-margin-block: 0.5px;
+  --tab-min-height: var(--nyx-nav);
+  font-size: 13px;
   grid-gap: 0 !important;
 
   &[overflow]::after,
@@ -548,6 +604,32 @@ zen-library {
   }
 }
 
+/* Nyx: in the sidebar, open or as a rail, names are dimmed until hovered or selected, and the
+ * selected tab carries an accent bar. Tabs in rows aren't in the toolbox (horizontal-tabs.css). */
+#navigator-toolbox #tabbrowser-tabs .tabbrowser-tab:not([zen-essential]) {
+  color: var(--nyx-dim);
+
+  &:hover,
+  &:is([visuallyselected], [multiselected]) {
+    color: var(--nyx-text);
+  }
+
+  &[visuallyselected] > .tab-stack > .tab-background {
+    position: relative;
+  }
+
+  &[visuallyselected] > .tab-stack > .tab-background::before {
+    content: "";
+    position: absolute;
+    inset-inline-start: 0;
+    top: 8px;
+    bottom: 8px;
+    width: 2px;
+    border-radius: 2px;
+    background: var(--nyx-accent);
+  }
+}
+
 :is(#navigator-toolbox, .zen-library-space-body)[zen-sidebar-expanded="true"] {
   --zen-toolbox-min-width: 163px;
 
@@ -559,7 +641,7 @@ zen-library {
   }
 
   #tabbrowser-tabs {
-    --toolbarbutton-padding-inner: 10px !important;
+    --toolbarbutton-padding-inner: 9px !important;
     --tab-icon-end-margin: var(--toolbarbutton-padding-inner) !important;
   }
 
@@ -587,25 +669,24 @@ zen-library {
     margin-top: 0;
   }
 
-  & .zen-current-workspace-indicator-icon[no-icon="true"] {
-    display: none;
-  }
-
   & #zen-workspaces-button {
     & .zen-workspace-sidebar-icon[no-icon="true"] {
       display: none;
     }
   }
 
+  /* Nyx: the spaces, then a new one. */
   & #zen-sidebar-foot-buttons {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
+    gap: 2px;
     width: 100%;
+    height: 40px;
     position: relative;
   }
 
   & #zen-essentials {
-    --tab-min-height: 46px;
+    --tab-min-height: 40px;
   }
 
   & #TabsToolbar-customization-target {
@@ -652,11 +733,12 @@ zen-library {
   }
 
   & #tabbrowser-tabs {
-    --tab-padding-inline: 8px;
-    --tab-icon-end-margin: 8.5px;
+    --tab-padding-inline: 9px;
+    --tab-icon-end-margin: 9px;
 
     & .tabbrowser-tab {
       overflow: visible;
+
 
       & .tab-label-container {
         height: 100%;
@@ -720,7 +802,7 @@ zen-library {
         margin-inline-end: 0;
       }
 
-      &:is(:hover, [multiselected][selected]) .tab-close-button,
+      &:is(:hover, [multiselected][selected], [visuallyselected]:not([pinned])) .tab-close-button,
       &:hover .tab-reset-button {
         visibility: visible;
       }
@@ -758,7 +840,12 @@ zen-library {
     display: flex;
     align-items: center;
     justify-content: center;
-    opacity: var(--zen-opacity-40);
+
+    /* Nyx: the rail keeps the space's initial, and nothing else, from the workspace row. */
+    & .nyx-workspace-menu-chevron,
+    & .nyx-tab-search-button {
+      display: none;
+    }
 
     & .zen-workspaces-actions {
       position: absolute;
@@ -766,9 +853,11 @@ zen-library {
       height: 100%;
     }
 
-    &:is([open="true"], :hover) .zen-current-workspace-indicator-icon {
-      display: none;
-    }
+  }
+
+  /* Nyx: the rail has no section headings, so the Today heading's room goes. */
+  & .pinned-tabs-container-separator {
+    min-height: 8px;
   }
 
   & .zen-essentials-container {
@@ -782,6 +871,14 @@ zen-library {
 
   & #zen-essentials {
     margin-left: unset !important;
+    /* Nyx: inside the rail's padding, as wide as its tabs; tiles as tall as the sidebar's. */
+    min-width: 0 !important;
+    --tab-min-height: 40px;
+  }
+
+  /* Nyx: the rail's foot has only the spaces; the workspace menu makes new ones. */
+  & #zen-sidebar-foot-buttons #zen-create-new-button {
+    display: none;
   }
 
   & #vertical-tabs-newtab-button {
@@ -958,6 +1055,17 @@ zen-library {
   }
 }
 
+/* Nyx: long titles end in an ellipsis rather than fading out. */
+.tabbrowser-tab .tab-label-container {
+  mask-image: none !important;
+
+  & .tab-label {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
 .tab-reset-button,
 .tab-reset-pin-button,
 .tab-close-button {
@@ -974,8 +1082,13 @@ zen-library {
 
 .tabbrowser-tab > .tab-stack > .tab-content > :is(.tab-close-button, .tab-reset-button) {
   --zen-tab-button-line-rotation: 45deg;
-  --zen-tab-button-line-length: 15px;
+  --zen-tab-button-line-length: 9.5px;
   position: relative;
+  color: var(--nyx-tertiary);
+
+  &:hover {
+    color: var(--nyx-text);
+  }
 
   &::before,
   &::after {
@@ -1009,7 +1122,7 @@ zen-library {
 
   @media (-moz-pref("zen.pinned-tab-manager.close-shortcut-behavior", "close")) {
     --zen-tab-button-line-rotation: 45deg;
-    --zen-tab-button-line-length: 15px;
+    --zen-tab-button-line-length: 9.5px;
   }
 }
 
@@ -1237,30 +1350,26 @@ zen-library {
 
 #zen-essentials {
   z-index: 2;
+  /* Nyx: the workspace row comes first, then the essentials (see the indicator's offset). */
+  translate: 0 var(--zen-workspace-indicator-height);
 }
 
 .zen-essentials-container {
   overflow: hidden;
   min-height: var(--zen-size-2);
-  gap: var(--zen-space-4);
+  gap: 6px;
   transition:
     max-height 0.3s ease-out,
     grid-template-columns 0.3s ease-out;
   opacity: 1;
   --min-essentials-width-wrap: calc(var(--tab-min-height) + 4px);
-  grid-template-columns: repeat(auto-fit, minmax(max(23.7%, var(--min-essentials-width-wrap)), 1fr));
-  &[data-hack-type="1"] {
-    grid-template-columns: repeat(auto-fit, minmax(max(30%, var(--min-essentials-width-wrap)), auto));
-  }
-  &[data-hack-type="2"] {
-    grid-template-columns: repeat(auto-fit, minmax(max(23%, var(--min-essentials-width-wrap)), 1fr) minmax(max(23%, var(--min-essentials-width-wrap)), 1fr));
-  }
-  &[data-hack-type="3"] {
-    grid-template-columns: repeat(auto-fit, minmax(max(25%, 48px), 1fr));
-  }
+  /* Nyx: four to a row, as Nyx Design's sidebar has them. */
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   scrollbar-width: thin;
-  min-width: calc(100% + var(--zen-toolbox-padding) * 2);
-  width: calc(100% + var(--zen-toolbox-padding) * 2);
+  /* Nyx: #zen-essentials already spans the toolbox's padding; spanning it again overhung it. */
+  box-sizing: border-box;
+  min-width: 100%;
+  width: 100%;
   padding: 0 var(--zen-toolbox-padding);
   display: grid !important; /* Override the hidden attribute */
 
@@ -1287,13 +1396,17 @@ zen-library {
   width: 100% !important;
 
   & .tab-background {
-    border-radius: var(--border-radius-medium) !important;
+    border-radius: 9px !important;
   }
 
-  --tab-background-color-selected: light-dark(rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.2));
+  --tab-background-color-selected: var(--nyx-sel-bg);
+
+  &[visuallyselected] .tab-background {
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--nyx-accent) 35%, transparent) !important;
+  }
 
   &:not([visuallyselected], [multiselected="true"]) .tab-background {
-    background: var(--zen-toolbar-element-bg);
+    background: var(--nyx-tile);
     border: none;
   }
 
@@ -1326,7 +1439,7 @@ zen-library {
   }
 
   &:hover .tab-background {
-    --zen-essential-tab-hover-bg: light-dark(rgba(0, 0, 0, 0.1), var(--tab-background-color-selected));
+    --zen-essential-tab-hover-bg: var(--nyx-hover-bg);
     background: var(--zen-essential-tab-hover-bg);
   }
 
@@ -1479,9 +1592,8 @@ zen-library {
   }
 }
 
-#tabs-newtab-button:not([in-urlbar="true"]),
-.zen-current-workspace-indicator-name {
-  color: var(--zen-tabs-dimmed-text-color);
+#tabs-newtab-button:not([in-urlbar="true"]) {
+  color: var(--nyx-tertiary);
 }
 
 @media (-moz-pref("zen.theme.hide-tab-throbber")) {

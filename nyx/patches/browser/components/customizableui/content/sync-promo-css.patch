@@ -1,0 +1,17 @@
+diff --git a/browser/components/customizableui/content/sync-promo.css b/browser/components/customizableui/content/sync-promo.css
+index 5fb403f..5ec7c59 100644
+--- a/browser/components/customizableui/content/sync-promo.css
++++ b/browser/components/customizableui/content/sync-promo.css
+@@ -15,6 +15,12 @@
+ moz-promo {
+   --promo-image-size: var(--size-image-xsmall);
+   --promo-padding: var(--space-large);
++  /* Nyx: the app menu's sign-in card, in the theme's accent (firefox-tokens.inc.css). */
++  --promo-background-color-vibrant: color-mix(in srgb, var(--nyx-accent) var(--nyx-selection), var(--nyx-popover));
++  --promo-border-color-vibrant: color-mix(in srgb, var(--nyx-accent) 30%, transparent);
++  --promo-message-text-color-vibrant: var(--nyx-text);
++  --promo-heading-text-color-vibrant: var(--nyx-text);
++  --promo-border-radius: var(--nyx-radius-card);
+ }
+ 
+ a {

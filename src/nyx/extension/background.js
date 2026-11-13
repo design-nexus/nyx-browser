@@ -57,6 +57,12 @@ async function activeTab() {
 
 const isWebPage = tab => /^https?:/i.test(tab?.url || "");
 
+/** Firefox gives an extension its own pages and other extensions' only blurred. */
+const isCapturable = tab => {
+  const url = tab?.url || "";
+  return url.startsWith(browser.runtime.getURL("")) || url === "about:blank" || !/^(about|chrome|resource|moz-extension):/i.test(url);
+};
+
 /** Visible text only. Runs once, returns plain strings, and leaves nothing in the page. */
 function readPageScript(limit) {
   return { url: location.href, title: document.title, text: (document.body?.innerText || "").slice(0, limit) };
@@ -95,20 +101,25 @@ function openPanel(request) {
   return opened;
 }
 
+// Where the menus are: web pages, which Share, Capture and Assistant work on.
+const WEB_PAGES = ["http://*/*", "https://*/*"];
+
 const MENUS = [
-  { id: "assistant-explain", title: "Explain with Assistant", contexts: ["selection"] },
-  { id: "assistant-ask", title: "Ask Assistant about this page", contexts: ["page", "selection"] },
-  { id: "share-selection", title: "Share selection", contexts: ["selection"] },
-  { id: "share-link", title: "Share link", contexts: ["link"] },
-  { id: "share-page", title: "Share this page", contexts: ["page"] },
-  { id: "capture", title: "Capture", contexts: ["page", "selection"] },
-  { id: "capture-visible", parentId: "capture", title: "Visible page", contexts: ["page", "selection"] },
-  { id: "capture-full", parentId: "capture", title: "Full page", contexts: ["page", "selection"] },
-  { id: "capture-region", parentId: "capture", title: "Region", contexts: ["page", "selection"] },
-  { id: "capture-text", parentId: "capture", title: "Text from region", contexts: ["page", "selection"] },
+  { id: "assistant-explain", title: "Explain with Assistant", contexts: ["selection"], documentUrlPatterns: WEB_PAGES },
+  { id: "assistant-ask", title: "Ask Assistant about this page", contexts: ["page", "selection"], documentUrlPatterns: WEB_PAGES },
+  { id: "share-selection", title: "Share selection", contexts: ["selection"], documentUrlPatterns: WEB_PAGES },
+  { id: "share-link", title: "Share link", contexts: ["link"], targetUrlPatterns: WEB_PAGES },
+  { id: "share-page", title: "Share this page", contexts: ["page"], documentUrlPatterns: WEB_PAGES },
+  { id: "capture", title: "Capture", contexts: ["page", "selection"], documentUrlPatterns: WEB_PAGES },
+  { id: "capture-visible", parentId: "capture", title: "Visible page", contexts: ["page", "selection"], documentUrlPatterns: WEB_PAGES },
+  { id: "capture-full", parentId: "capture", title: "Full page", contexts: ["page", "selection"], documentUrlPatterns: WEB_PAGES },
+  { id: "capture-region", parentId: "capture", title: "Region", contexts: ["page", "selection"], documentUrlPatterns: WEB_PAGES },
+  { id: "capture-text", parentId: "capture", title: "Text from region", contexts: ["page", "selection"], documentUrlPatterns: WEB_PAGES },
 ];
 
-browser.runtime.onInstalled.addListener(() => {
+// The menus are kept between starts; an update brings its own.
+browser.runtime.onInstalled.addListener(async () => {
+  await browser.contextMenus.removeAll();
   for (const item of MENUS) {
     browser.contextMenus.create(item);
   }
@@ -152,12 +163,15 @@ browser.contextMenus.onClicked.addListener((info, tab) => {
 
 browser.commands.onCommand.addListener(async command => {
   if (command === "open-assistant") {
-    // Before any await: opening the panel needs the gesture still in hand.
-    const opened = browser.sidebarAction.open();
+    // Before any await: opening the panel needs the gesture still in hand. An open panel closes.
+    await browser.sidebarAction.toggle();
+    if (!(await browser.sidebarAction.isOpen({}))) {
+      return;
+    }
     const tab = await activeTab();
     panelRequest = { kind: "ask", selection: "", tabId: tab?.id };
     browser.runtime.sendMessage({ to: "panel", request: panelRequest }).catch(() => {});
-    return opened;
+    return;
   }
   const tab = await activeTab();
   if (command === "share-page") {
@@ -165,6 +179,10 @@ browser.commands.onCommand.addListener(async command => {
       call("share_page", { url: tab.url, title: tab.title || "" }).catch(report);
     }
   } else if (command === "capture-page") {
+    if (!isCapturable(tab)) {
+      report(new Error("This page can’t be captured."));
+      return;
+    }
     captureVisible().then(data => call("capture_open", { data })).catch(report);
   }
 });
@@ -184,8 +202,6 @@ browser.runtime.onMessage.addListener((message, sender) => {
     return undefined;
   }
   switch (message.action) {
-    case "theme":
-      return call("theme");
     case "weather":
       return call("weather_cached");
     case "panel-request": {

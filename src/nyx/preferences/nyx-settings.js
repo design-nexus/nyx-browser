@@ -15,6 +15,10 @@ Preferences.addAll([
   { id: "nyx.toolbar.qr-button", type: "bool" },
   { id: "nyx.bookmarks.icons-only", type: "bool" },
   { id: "browser.toolbars.bookmarks.visibility", type: "string" },
+  { id: "nyx.tabs.middle-click-close", type: "bool" },
+  { id: "browser.tabs.closeWindowWithLastTab", type: "bool", inverted: true },
+  { id: "nyx.sidebar.foot-spaces", type: "bool" },
+  { id: "zen.view.compact.show-sidebar-and-toolbar-on-hover", type: "bool" },
 ]);
 
 const gNyxFiles = {
@@ -48,13 +52,11 @@ var gNyxAppearancePane = {
       const { NyxTheme } = ChromeUtils.importESModule("chrome://browser/content/nyx/NyxTheme.sys.mjs");
       NyxTheme.refresh();
     };
-    const theme = document.getElementById("nyxTheme");
-    theme.value = saved.theme || "follow";
-    theme.addEventListener("command", () => save({ theme: theme.value }));
-    for (const [id, key] of [["nyxAccent", "accent"], ["nyxDensity", "density"]]) {
-      const list = document.getElementById(id);
-      list.value = saved[key] || "";
-      list.addEventListener("command", () => save({ [key]: list.value }));
+    // The theme and density are segmented controls (radiogroups), the accent a list.
+    for (const [id, key, fallback] of [["nyxTheme", "theme", "follow"], ["nyxAccent", "accent", ""], ["nyxDensity", "density", ""]]) {
+      const control = document.getElementById(id);
+      control.value = saved[key] || fallback;
+      control.addEventListener("command", () => save({ [key]: control.value }));
     }
   },
 };
@@ -103,8 +105,11 @@ var gNyxIntegrationsPane = {
   async showPasswords() {
     const { AddonManager } = ChromeUtils.importESModule("resource://gre/modules/AddonManager.sys.mjs");
     const addon = await AddonManager.getAddonByID("nyx-passwords@design-nexus.github.io");
-    document.getElementById("nyxPasswordsState").textContent = addon?.isActive
-      ? `Logins, passkeys and masked email come from Nyx Passwords (its extension ${addon.version}). Pair it once from its toolbar button.`
-      : "Install Nyx Passwords to fill logins, passkeys and masked email here. Browser keeps no passwords of its own.";
+    const state = document.getElementById("nyxPasswordsState");
+    if (addon?.isActive) {
+      document.l10n.setAttributes(state, "nyx-integrations-passwords-active", { version: addon.version });
+    } else {
+      document.l10n.setAttributes(state, "nyx-integrations-passwords-missing");
+    }
   },
 };

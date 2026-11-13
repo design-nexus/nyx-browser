@@ -1,35 +1,54 @@
 diff --git a/browser/components/preferences/preferences.xhtml b/browser/components/preferences/preferences.xhtml
-index f19d2ad..5559a81 100644
+index f19d2ad..6c26347 100644
 --- a/browser/components/preferences/preferences.xhtml
 +++ b/browser/components/preferences/preferences.xhtml
-@@ -125,6 +125,26 @@
+@@ -37,6 +37,7 @@
+   <link rel="stylesheet" href="chrome://browser/skin/preferences/privacy.css" />
+   <link rel="stylesheet" href="chrome://browser/content/preferences/widgets/setting-group.css" />
+   <link rel="stylesheet" href="chrome://browser/content/preferences/widgets/setting-pane.css" />
++  <link rel="stylesheet" href="chrome://browser/content/preferences/nyx-preferences.css" />
+   <link rel="stylesheet" href="chrome://browser/content/preferences/widgets/setting-control.css" />
+   <link rel="stylesheet" href="chrome://browser/content/ipprotection/vpn-site-rules-list.css" />
+ 
+@@ -48,6 +49,7 @@
+   <link rel="localization" href="browser/preferences/fonts.ftl"/>
+   <link rel="localization" href="browser/preferences/moreFromMozilla.ftl"/>
+   <link rel="localization" href="browser/preferences/preferences.ftl"/>
++  <link rel="localization" href="browser/preferences/nyx-preferences.ftl"/>
+   <link rel="localization" href="toolkit/branding/brandings.ftl"/>
+   <link rel="localization" href="toolkit/firefoxlabs/features.ftl"/>
+   <link rel="localization" href="toolkit/global/mozPageHeader.ftl"/>
+@@ -125,6 +127,29 @@
          iconsrc="chrome://browser/skin/preferences/category-general.svg"
          data-l10n-id="pane-general-title">
        </html:moz-page-nav-button>
++      <!-- Nyx: Browser's own panes first, then Firefox's and Zen's. -->
++      <html:div class="nyx-nav-heading" data-l10n-id="nyx-pane-group-browser"></html:div>
 +      <html:moz-page-nav-button id="category-nyx-appearance"
 +        view="paneNyxAppearance"
-+        iconsrc="chrome://browser/skin/customize.svg"
-+        label="Appearance">
++        iconsrc="chrome://browser/content/nyx/icons/settings.svg"
++        data-l10n-id="pane-nyx-appearance-title">
 +      </html:moz-page-nav-button>
 +      <html:moz-page-nav-button id="category-nyx-tabs"
 +        view="paneNyxTabs"
-+        iconsrc="chrome://browser/skin/window.svg"
-+        label="Tabs &amp; Sidebar">
++        iconsrc="chrome://browser/content/nyx/icons/sidebar.svg"
++        data-l10n-id="pane-nyx-tabs-title">
 +      </html:moz-page-nav-button>
 +      <html:moz-page-nav-button id="category-nyx-toolbar"
 +        view="paneNyxToolbar"
-+        iconsrc="chrome://browser/skin/bookmarks-toolbar.svg"
-+        label="Toolbar">
++        iconsrc="chrome://browser/content/nyx/icons/menu.svg"
++        data-l10n-id="pane-nyx-toolbar-title">
 +      </html:moz-page-nav-button>
 +      <html:moz-page-nav-button id="category-nyx-integrations"
 +        view="paneNyxIntegrations"
-+        iconsrc="chrome://browser/skin/share.svg"
-+        label="Nyx Integrations">
++        iconsrc="chrome://browser/content/nyx/icons/assistant.svg"
++        data-l10n-id="pane-nyx-integrations-title">
 +      </html:moz-page-nav-button>
++      <html:div class="nyx-nav-heading" data-l10n-id="nyx-pane-group-firefox"></html:div>
        <html:moz-page-nav-button id="category-zen-looks"
          view="paneZenLooks"
          iconsrc="chrome://browser/skin/customize.svg"
-@@ -284,6 +304,7 @@
+@@ -284,6 +309,7 @@
  #include zenLooksAndFeel.inc.xhtml
  #include zenTabsManagement.inc.xhtml
  #include zenMarketplace.inc.xhtml

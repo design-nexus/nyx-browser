@@ -19,15 +19,17 @@ add_task(async function test_switching_keeps_the_tabs() {
   const count = gBrowser.tabs.length;
 
   await SpecialPowers.pushPrefEnv({ set: [["zen.tabs.vertical", false]] });
-  await BrowserTestUtils.waitForCondition(() => orient().strip === "horizontal", "the strip lies in a row");
+  await TestUtils.waitForCondition(() => orient().strip === "horizontal", "the strip lies in a row");
   Assert.deepEqual(orient(), { layout: true, strip: "horizontal", space: "horizontal" }, "tabs, workspace and layout are a row");
+  is(document.getElementById("titlebar").nextElementSibling?.id, "nav-bar", "the row lies above the top bar");
   is(gBrowser.tabs.length, count, "no tab opened or closed");
   is(gBrowser.selectedTab, tabs[1], "the same tab is selected");
   ok(tabs[0].pinned, "the pinned tab is still pinned");
 
   await SpecialPowers.popPrefEnv();
-  await BrowserTestUtils.waitForCondition(() => orient().strip === "vertical", "the strip is a column again");
+  await TestUtils.waitForCondition(() => orient().strip === "vertical", "the strip is a column again");
   Assert.deepEqual(orient(), { layout: false, strip: "vertical", space: "vertical" }, "back to a column");
+  is(document.getElementById("titlebar").parentElement, gNavToolbox, "the column is the sidebar's again");
   is(gBrowser.tabs.length, count, "no tab opened or closed");
 
   gBrowser.unpinTab(tabs[0]);
@@ -44,6 +46,6 @@ add_task(async function test_a_row_drops_by_x() {
   ok(dnd._dropsBefore({ clientX: 120, clientY: 29 }, rect), "the near half drops before");
   ok(!dnd._dropsBefore({ clientX: 280, clientY: 1 }, rect), "the far half drops after");
   await SpecialPowers.popPrefEnv();
-  ok(!dnd._tabsInRow, "a column again");
+  await TestUtils.waitForCondition(() => !dnd._tabsInRow, "a column again");
   ok(dnd._dropsBefore({ clientX: 280, clientY: 1 }, rect), "a column drops by height");
 });

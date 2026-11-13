@@ -10,6 +10,14 @@
   <menuitem data-l10n-id="tabs-toolbar-new-tab" command="cmd_newNavigatorTab" image="chrome://browser/skin/zen-icons/plus.svg" />
 </menupopup>
 
+<!-- Nyx: the workspaces menu the workspace row opens (ZenSpaceManager.openWorkspacesMenu). -->
+<menupopup id="nyx-workspaces-menu" class="nyx-menu">
+  <html:div class="nyx-menu-title" data-l10n-id="nyx-workspace-menu-title"/>
+  <menuseparator id="nyx-workspaces-menu-separator"/>
+  <menuitem class="menuitem-iconic nyx-workspaces-menu-new" data-l10n-id="nyx-workspace-menu-new" command="cmd_zenOpenWorkspaceCreation" image="chrome://browser/skin/zen-icons/plus.svg"/>
+  <menuitem id="nyx-workspaces-menu-edit" class="menuitem-iconic" command="cmd_nyxEditWorkspace" image="chrome://browser/content/nyx/icons/settings.svg"/>
+</menupopup>
+
 <menupopup id="zenWorkspaceMoreActions">
   <menuitem id="context_zenEditWorkspace" data-l10n-id="zen-workspaces-panel-change-name" command="cmd_zenChangeWorkspaceName"/>
   <menuitem id="context_zenEditWorkspaceIcon" data-l10n-id="zen-workspaces-panel-change-icon" command="cmd_zenChangeWorkspaceIcon"/>

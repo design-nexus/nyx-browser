@@ -43,6 +43,7 @@
 /* Bookmarks */
 #PersonalToolbar:not([collapsed]) {
   min-height: var(--zen-size-30);
+  max-height: var(--zen-size-30);
 }
 
 #firefox-view-button,
@@ -184,10 +185,15 @@
 .toolbarbutton-1:not(#tabs-newtab-button),
 .urlbar-page-action,
 .identity-box-button {
-  --tab-border-radius: 8px;
+  --tab-border-radius: var(--nyx-radius-small);
   --toolbarbutton-border-radius: var(--tab-border-radius);
   --toolbarbutton-padding-inner: 6px;
   --toolbarbutton-padding-outer: 1px;
+
+  /* Nyx: toolbar buttons are 30px squares, 2px apart (mockups: .btn). */
+  &.toolbarbutton-1 {
+    --toolbarbutton-padding-inner: 7px;
+  }
   --toolbarbutton-icon-fill: color-mix(in srgb, currentColor 70%, transparent);
 
   transition:
@@ -291,9 +297,37 @@
   --arrowpanel-menuitem-border-radius: calc(10px * var(--zen-squircle-value));
 }
 
-#unified-extensions-empty-state,
 #unified-extensions-discover-extensions {
   display: none !important;
+}
+
+/* Nyx: why the list is empty, in a line of text: no illustration, no Discover button. */
+#unified-extensions-empty-state {
+  align-items: stretch !important;
+  gap: 2px;
+  padding: 6px var(--arrowpanel-menuitem-padding-inline) !important;
+  text-align: start !important;
+
+  &[hidden] {
+    display: none !important;
+  }
+
+  & > img {
+    display: none !important;
+  }
+
+  & > h2 {
+    margin: 0 !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    color: var(--nyx-text);
+  }
+
+  & > description {
+    margin: 0 !important;
+    font-size: 12px;
+    color: var(--nyx-dim);
+  }
 }
 
 #zen-site-data-addons {
@@ -656,7 +690,8 @@
 
 /* Overflow panel */
 #widget-overflow-mainView {
-  --menu-panel-width-wide: 200px;
+  /* Nyx: More tools is as wide as the mockups' menus. */
+  --menu-panel-width-wide: 240px;
 
   & toolbarbutton {
     scale: 1 !important;
@@ -672,8 +707,9 @@
   display: none;
 }
 
+/* Nyx: More tools lists its tools in the top bar's order. */
 #widget-overflow-list {
-  flex-direction: column-reverse;
+  flex-direction: column;
 }
 
 /* Contextual new tab popup menu */

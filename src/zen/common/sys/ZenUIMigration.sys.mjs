@@ -11,6 +11,8 @@ ChromeUtils.defineESModuleGetters(lazy, {
     "moz-src:///browser/components/customizableui/CustomizableUI.sys.mjs",
   SessionStore:
     "moz-src:///browser/components/sessionstore/SessionStore.sys.mjs",
+  NyxWidgets: "chrome://browser/content/nyx/NyxWidgets.sys.mjs",
+  ZenCustomizableUI: "resource:///modules/ZenCustomizableUI.sys.mjs",
 });
 
 class nsZenUIMigration {
@@ -26,6 +28,7 @@ class nsZenUIMigration {
       }
     }
     this.#migrateLibraryButton();
+    this.#migrateNyxToolbars();
     this.clearVariables();
     if (this.shouldRestart) {
       Services.startup.quit(
@@ -52,6 +55,63 @@ class nsZenUIMigration {
 
   clearVariables() {
     this._migrationVersion = this.MIGRATION_VERSION;
+  }
+
+  /**
+   * Nyx: profiles from before Browser's own top bar get its buttons where the mockups have them,
+   * once. Extensions' buttons stay where they are. Profiles already arranged only gain buttons
+   * that aren't anywhere yet (Passwords', from version 3) and lose the ones Browser no longer has
+   * (the shortcuts hint in the sidebar's foot, from version 4).
+   */
+  #migrateNyxToolbars() {
+    const pref = "nyx.ui.migration.toolbars";
+    const version = Services.prefs.getIntPref(pref, 0);
+    if (version >= 4) {
+      return;
+    }
+    const RETIRED = ["nyx-shortcuts-button"];
+    const CUI = lazy.CustomizableUI;
+    const areas = new Map([
+      [CUI.AREA_NAVBAR, lazy.NyxWidgets.navbarPlacements],
+      ["zen-sidebar-top-buttons", [lazy.NyxWidgets.SIDEBAR_BUTTON]],
+      ["zen-sidebar-foot-buttons", lazy.ZenCustomizableUI.defaultSidebarIcons],
+    ]);
+    // A toolbar's saved placements are only there once a window has it.
+    const listener = {
+      onAreaNodeRegistered: area => {
+        const placements = areas.get(area);
+        if (!placements) {
+          return;
+        }
+        areas.delete(area);
+        for (const id of RETIRED) {
+          if (CUI.getPlacementOfWidget(id, false)?.area === area) {
+            CUI.removeWidgetFromArea(id);
+          }
+        }
+        if (version < 2) {
+          for (const id of CUI.getWidgetIdsInArea(area)) {
+            if (
+              !CUI.isWebExtensionWidget(id) &&
+              (CUI.isSpecialWidget(id) || !placements.includes(id))
+            ) {
+              CUI.removeWidgetFromArea(id);
+            }
+          }
+        }
+        placements.forEach((id, index) => {
+          if (version < 2 || !CUI.getPlacementOfWidget(id, false)) {
+            CUI.addWidgetToArea(id, area, index);
+          }
+        });
+        if (!areas.size) {
+          CUI.removeListener(listener);
+          Services.prefs.setIntPref(pref, 4);
+          Services.prefs.clearUserPref("nyx.toolbar.arranged");
+        }
+      },
+    };
+    CUI.addListener(listener);
   }
 
   #migrateLibraryButton() {

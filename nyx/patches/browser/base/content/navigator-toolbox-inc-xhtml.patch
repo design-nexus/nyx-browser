@@ -1,0 +1,91 @@
+diff --git a/browser/base/content/navigator-toolbox.inc.xhtml b/browser/base/content/navigator-toolbox.inc.xhtml
+index 805fa03..b3c423a 100644
+--- a/browser/base/content/navigator-toolbox.inc.xhtml
++++ b/browser/base/content/navigator-toolbox.inc.xhtml
+@@ -35,6 +35,18 @@
+            context="toolbar-context-menu"
+            flex="1">
+ 
++    <!-- Nyx: with tabs in a row, the space's chip starts the row (ZenSpaceManager.updateWorkspaceChip). -->
++    <hbox id="nyx-workspace-chip"
++          align="center"
++          role="button"
++          tabindex="0"
++          aria-haspopup="menu"
++          data-l10n-id="nyx-workspace-menu-button">
++      <label class="nyx-workspace-chip-icon"/>
++      <label class="nyx-workspace-chip-name"/>
++      <image class="nyx-workspace-menu-chevron"/>
++    </hbox>
++
+     <hbox class="titlebar-spacer" type="pre-tabs"/>
+ 
+     <hbox flex="1" align="end" class="toolbar-items">
+@@ -106,6 +118,11 @@
+       </hbox>
+     </hbox>
+ 
++    <!-- Nyx: with tabs in a row, tab search ends the row. -->
++    <toolbarbutton id="nyx-row-tab-search"
++                   class="toolbarbutton-1 nyx-tab-search-button"
++                   data-l10n-id="nyx-tab-search-button"/>
++
+ #include private-browsing-indicator.inc.xhtml
+ 
+     <toolbarbutton class="content-analysis-indicator toolbarbutton-1 content-analysis-indicator-icon"/>
+@@ -124,8 +141,8 @@
+            default-overflowbutton="nav-bar-overflow-button"
+            default-overflowtarget="widget-overflow-list"
+            default-overflowpanel="widget-overflow"
+-           addon-webext-overflowbutton="unified-extensions-button"
+-           addon-webext-overflowtarget="overflowed-extensions-list"
++           addon-webext-overflowbutton="nav-bar-overflow-button"
++           addon-webext-overflowtarget="widget-overflow-list"
+            context="toolbar-context-menu">
+ 
+     <html:img id="taskbar-tabs-favicon" alt="" decoding="sync" />
+@@ -427,6 +444,14 @@
+                   data-l10n-id="urlbar-page-action-button">
+               <image class="urlbar-icon"/>
+             </hbox>
++            <!-- Nyx: Firefox's QR code for this page (src/nyx/modules/urlbar.js). -->
++            <hbox id="nyx-qr-button"
++                  class="urlbar-page-action"
++                  role="button"
++                  tabindex="0"
++                  data-l10n-id="nyx-qr-button">
++              <image class="urlbar-icon"/>
++            </hbox>
+             <hbox id="star-button-box"
+                   hidden="true"
+                   role="button"
+@@ -452,7 +477,6 @@
+                      key="key_openDownloads"
+                      data-l10n-id="navbar-downloads"
+                      removable="true"
+-                     overflows="false"
+                      cui-areatype="toolbar"
+                      hidden="true"
+                      tooltip="dynamic-shortcut-tooltip">
+@@ -492,7 +516,6 @@
+                      delegatesanchor="true"
+                      data-l10n-id="unified-extensions-button"
+                      hidden="true"
+-                     overflows="false"
+                      removable="false"/>
+     </hbox>
+ 
+@@ -537,6 +560,13 @@
+       </box>
+     </toolbarbutton>
+ 
++    <!-- Nyx: Settings stays beside the menu, past More tools (nyx/modules/appearance.js). -->
++    <toolbarseparator id="nyx-settings-separator"/>
++    <toolbarbutton id="nyx-settings-button"
++                   class="toolbarbutton-1"
++                   aria-haspopup="dialog"
++                   data-l10n-id="nyx-appearance-button"/>
++
+     <toolbaritem id="PanelUI-button"
+                  removable="false">
+       <toolbarbutton id="PanelUI-menu-button"

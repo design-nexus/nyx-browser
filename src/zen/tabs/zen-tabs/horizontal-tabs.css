@@ -1,0 +1,444 @@
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
+
+/* Nyx: tabs in a row (zen.tabs.vertical off). ZenVerticalTabsManager moves the tab strip
+ * (#titlebar) above the top bar, as Firefox has it; the sidebar column goes. The row is the space's chip, its
+ * essentials and pinned tabs, folders, the day's tabs and split groups, then a new tab, and
+ * tab search at the far end. Zen's vertical rules still apply to the same elements, so the
+ * row's own values come with the root's attribute. */
+
+:root[nyx-tabs-horizontal] {
+  /* The rows: the tab strip, the top bar and, when it's shown, the bookmarks bar. */
+  --zen-toolbar-height-with-bookmarks: calc(var(--zen-toolbar-height) + 36px);
+
+  &[zen-has-bookmarks] {
+    --zen-toolbar-height-with-bookmarks: calc(var(--zen-toolbar-height) + 36px + 30px);
+  }
+
+  & #navigator-toolbox,
+  & #zen-sidebar-top-buttons,
+  & #zen-sidebar-splitter {
+    display: none;
+  }
+
+  /* The window's top row, so it's where the window is dragged from. */
+  & #titlebar {
+    flex: none;
+    flex-direction: row;
+    height: 36px;
+    min-height: 36px;
+    padding: 0 8px;
+    align-items: center;
+    -moz-window-dragging: drag;
+  }
+
+  & #zen-toolbar-background {
+    display: none;
+  }
+
+  & #TabsToolbar {
+    flex: 1 1 0;
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+    height: 100%;
+    flex-direction: row;
+    align-items: center;
+    gap: 2px;
+  }
+
+  & #TabsToolbar > .toolbar-items,
+  & #TabsToolbar-customization-target {
+    flex: 1 1 0;
+    width: auto;
+    max-width: none;
+    min-width: 0;
+    height: 100%;
+    flex-direction: row;
+    align-items: center;
+  }
+
+  & #TabsToolbar .titlebar-spacer,
+  & #zen-sidebar-foot-buttons,
+  & #new-tab-button,
+  & #alltabs-button,
+  & #TabsToolbar-customization-target > toolbarspring {
+    display: none;
+  }
+
+  /* The space's chip */
+  & #nyx-workspace-chip {
+    display: flex;
+    flex: none;
+    height: 28px;
+    margin-inline-end: 6px;
+    padding: 0 10px 0 8px;
+    gap: 7px;
+    border-radius: var(--nyx-radius-small);
+    background: var(--nyx-tile);
+    color: var(--nyx-text);
+    font-weight: 600;
+    -moz-window-dragging: no-drag;
+
+    &:hover,
+    &[open] {
+      background: var(--nyx-hover-bg);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--nyx-accent);
+    }
+
+    & .nyx-workspace-chip-icon {
+      display: flex;
+      width: 16px;
+      height: 16px;
+      margin: 0;
+      align-items: center;
+      justify-content: center;
+      border-radius: 5px;
+      background: color-mix(in srgb, var(--nyx-accent) 20%, transparent);
+      color: var(--nyx-accent);
+      font-size: 10px;
+    }
+
+    & .nyx-workspace-chip-name {
+      margin: 0;
+      max-width: 160px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    & .nyx-workspace-menu-chevron {
+      width: 17px;
+      height: 17px;
+      list-style-image: url("chrome://browser/content/nyx/icons/chevron.svg");
+      -moz-context-properties: fill, fill-opacity;
+      fill: var(--nyx-tertiary);
+    }
+  }
+
+  & #nyx-row-tab-search {
+    display: flex;
+    --toolbarbutton-inner-padding: 6.5px;
+    list-style-image: url("chrome://browser/skin/zen-icons/search-glass.svg");
+    color: var(--nyx-dim);
+  }
+
+  /* The strip */
+  & #tabbrowser-tabs {
+    flex: 1 1 0;
+    width: auto;
+    max-width: none;
+    min-width: 0;
+    height: 36px;
+    min-height: 0;
+    flex-direction: row;
+    align-items: center;
+    --tab-min-height: 30px;
+  }
+
+  & #zen-essentials {
+    flex: none;
+    width: auto;
+    min-width: 0;
+    height: 100%;
+    margin: 0;
+    translate: none;
+  }
+
+  & .zen-essentials-container {
+    position: static;
+    display: flex !important; /* Zen's grid is !important too */
+    flex-direction: row;
+    align-items: center;
+    gap: 2px;
+    width: auto;
+    min-width: 0;
+    height: 100%;
+    padding: 0;
+  }
+
+  /* The spaces are positioned against this, so they start after the essentials. */
+  & #zen-tabs-wrapper {
+    position: relative;
+    flex: 1 1 0;
+    min-width: 0;
+    height: 100%;
+    width: auto;
+    margin: 0;
+    overflow: hidden;
+  }
+
+  & #tabbrowser-arrowscrollbox {
+    width: 100%;
+    height: 100%;
+  }
+
+  & zen-workspace {
+    flex-direction: row;
+    align-items: center;
+    inset-inline-start: 0;
+    width: 100%;
+    height: 100%;
+    /* Zen reserves the essentials' height above each space, inline. */
+    padding-top: 0 !important;
+  }
+
+  & .zen-current-workspace-indicator,
+  & .nyx-folders-header,
+  & .pinned-tabs-container-separator,
+  & .zen-workspace-empty-space,
+  & .zen-workspace-scroll-to-tab {
+    display: none;
+  }
+
+  & .workspace-arrowscrollbox {
+    flex: 1 1 0;
+    min-width: 0;
+    height: 100%;
+    max-height: none;
+
+    &::part(scrollbox) {
+      flex-direction: row;
+      align-items: center;
+      height: 100%;
+      overflow-y: hidden;
+      padding: 0;
+    }
+
+    &::part(items-wrapper) {
+      align-items: center;
+    }
+  }
+
+  /* As specific as Zen's column widths for the same sections. */
+  & .zen-workspace-tabs-section:not(.zen-current-workspace-indicator, .zen-essentials-container):is(.zen-workspace-pinned-tabs-section, .zen-workspace-normal-tabs-section) {
+    flex-direction: row;
+    align-items: center;
+    gap: 2px;
+    width: auto;
+    min-width: 0;
+    height: 100%;
+    padding: 0;
+  }
+
+  & .zen-workspace-pinned-tabs-section {
+    flex: none;
+    margin-inline-end: 2px;
+  }
+
+  /* The day's tabs share what's left of the row, and narrow to their least before it scrolls,
+   * as Firefox's do. */
+  & .zen-workspace-tabs-section.zen-workspace-normal-tabs-section {
+    flex: 1 1 auto;
+    min-width: auto;
+  }
+
+  /* Tabs */
+  & #tabbrowser-tabs .tabbrowser-tab {
+    flex: 100 100 auto;
+    width: auto;
+    min-width: 76px;
+    max-width: 176px;
+    height: 30px;
+    margin: 0 !important; /* over Zen's folder indent */
+    color: var(--nyx-dim);
+
+    &:hover,
+    &:is([visuallyselected], [multiselected]) {
+      color: var(--nyx-text);
+    }
+
+    & .tab-background {
+      margin: 0;
+      border-radius: var(--nyx-radius-small);
+    }
+
+    &[visuallyselected] > .tab-stack > .tab-background {
+      position: relative;
+
+      &::before {
+        content: "";
+        position: absolute;
+        inset-inline: 10px;
+        bottom: 0;
+        height: 2px;
+        border-radius: 2px;
+        background: var(--nyx-accent);
+      }
+    }
+
+    & .tab-content {
+      padding-inline: 8px 6px;
+      gap: 9px;
+    }
+
+    /* A title doesn't widen its tab: a tab is as wide as the row lets it be. */
+    & .tab-label-container {
+      width: 0;
+    }
+
+    & .tab-close-button {
+      visibility: collapse;
+    }
+
+    &:is(:hover, [visuallyselected]) .tab-close-button {
+      visibility: visible;
+    }
+  }
+
+  /* Essentials and pinned tabs are just their icons */
+  & #tabbrowser-tabs .tabbrowser-tab:is([zen-essential], [pinned]) {
+    flex: none;
+    width: 34px;
+    min-width: 34px;
+    max-width: 34px;
+
+    & .tab-background {
+      background: transparent;
+      box-shadow: none !important;
+    }
+
+    &:hover .tab-background {
+      background: var(--nyx-hover-bg);
+    }
+
+    &[visuallyselected] .tab-background {
+      background: var(--nyx-sel-bg);
+    }
+
+    & .tab-content {
+      justify-content: center;
+      padding: 0;
+    }
+
+    & :is(.tab-label-container, .tab-close-button, .tab-reset-button, .tab-reset-pin-button) {
+      display: none !important;
+    }
+  }
+
+  & .zen-workspace-pinned-tabs-section > .tabbrowser-tab[pinned] > .tab-stack > .tab-content::after {
+    display: none;
+  }
+
+  & #tabbrowser-tabs .tabbrowser-tab[zen-empty-tab] {
+    display: none;
+  }
+
+  /* Folders: a chip with the folder's name and count; its tabs follow when it's open */
+  & #tabbrowser-tabs zen-folder {
+    flex-direction: row;
+    flex: none;
+    align-items: center;
+    height: 100%;
+    margin: 0 !important;
+
+    & > .tab-group-label-container {
+      height: 30px;
+      padding: 0 8px;
+      border-radius: var(--nyx-radius-small);
+      background: var(--nyx-tile);
+
+      & .tab-group-folder-icon {
+        position: static;
+      }
+
+      & > .tab-group-label {
+        width: auto !important;
+        padding: 0 0 0 8px !important;
+      }
+
+      & > .nyx-folder-count {
+        margin: 0 0 0 6px !important;
+      }
+    }
+
+    & > .tab-group-container {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 2px;
+      height: 100%;
+      margin-inline-start: 2px;
+
+      & > * {
+        --zen-folder-indent: 0px !important; /* a row has no indent; Zen's JS sets it too */
+      }
+    }
+
+    &[collapsed] > .tab-group-container {
+      display: none;
+    }
+  }
+
+  /* Split groups: one chip of two tabs */
+  & #tabbrowser-tabs tab-group[split-view-group] {
+    display: flex;
+    /* Grows and narrows as two of the day's tabs. */
+    flex: 200 200 auto;
+    height: 100%;
+    align-items: center;
+    margin: 0 !important;
+
+    & .tab-group-container {
+      flex: 1 1 auto;
+      height: 30px;
+      margin: 0 !important;
+    }
+
+    & .tab-group-container > .tabbrowser-tab {
+      flex: 1 1 auto !important; /* Zen's own is !important */
+      width: auto;
+      min-width: 60px;
+      max-width: 150px;
+      height: 26px;
+    }
+  }
+
+  & #tabbrowser-arrowscrollbox-periphery {
+    flex: none;
+    width: 34px;
+    height: 30px;
+    margin: 0;
+
+    & #tabs-newtab-button {
+      width: 34px;
+      height: 30px;
+      margin: 0;
+      padding: 0;
+      justify-content: center;
+      color: var(--nyx-tertiary);
+      list-style-image: url("chrome://browser/skin/zen-icons/plus.svg");
+
+      & .toolbarbutton-text {
+        display: none;
+      }
+    }
+  }
+
+  /* A drag's marker stands between tabs (ZenDragAndDrop) */
+  & #zen-drag-indicator[orientation="vertical"] {
+    position: fixed;
+    left: var(--nyx-drop-x);
+    top: var(--nyx-drop-y);
+    width: 2px;
+    height: var(--nyx-drop-h);
+    transform: none;
+    border-radius: 2px;
+    z-index: 100;
+
+    &::before {
+      display: none;
+    }
+  }
+}
+
+/* The row's own chip and search exist only with tabs in a row. */
+:root:not([nyx-tabs-horizontal]) :is(#nyx-workspace-chip, #nyx-row-tab-search) {
+  display: none;
+}

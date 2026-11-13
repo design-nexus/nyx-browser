@@ -54,4 +54,11 @@
   @media -moz-pref('zen.view.compact.hide-toolbar') {
 %include toolbar.inc.css
   }
+
+  /* Nyx: with tabs in rows, the rows are the toolbar compact mode hides. */
+  @media not -moz-pref('zen.view.compact.hide-toolbar') {
+    &[nyx-tabs-horizontal] {
+%include toolbar.inc.css
+    }
+  }
 }

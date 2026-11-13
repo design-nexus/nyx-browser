@@ -132,7 +132,8 @@ def layout(b, horizontal):
         await sleep(600);
         const list = normal();
         return { tabs: list.map(box), names: names(list), win: [innerWidth, innerHeight], orient: gBrowser.tabContainer.getAttribute("orient"),
-                 page: box(document.getElementById("tabbrowser-tabbox")), strip: box(document.getElementById("tabbrowser-tabs")) };
+                 page: box(document.getElementById("tabbrowser-tabbox")), strip: box(document.getElementById("tabbrowser-tabs")),
+                 bar: box(document.getElementById("nav-bar")) };
         """,
     )
     check(d["orient"] == ("horizontal" if horizontal else "vertical"), "wrong orient", d["orient"])
@@ -142,7 +143,8 @@ def layout(b, horizontal):
         check(t["w"] > 40 and t["h"] > 20, "tab too small", t)
         check(0 <= t["x"] and t["x"] + t["w"] <= d["win"][0], "tab off screen", t)
     if horizontal:
-        check(d["strip"]["y"] + d["strip"]["h"] <= d["page"]["y"] + 1, "the row overlaps the page", d)
+        check(d["strip"]["y"] + d["strip"]["h"] <= d["bar"]["y"] + 1, "the tabs aren't above the address bar, as Firefox has them", d)
+        check(d["bar"]["y"] + d["bar"]["h"] <= d["page"]["y"] + 1, "the top bar overlaps the page", d)
         check(d["page"]["w"] > d["win"][0] - 40, "the page doesn't span the window", d["page"])
     else:
         check(d["page"]["x"] >= d["strip"]["x"] + d["strip"]["w"] - 1, "the sidebar overlaps the page", d)
@@ -553,21 +555,23 @@ def compact_mode(b, horizontal):
         await closeNormal();
         open("Compact");
         await sleep(300);
+        // The sidebar, or with tabs in rows the rows: the top bar's wrapper.
+        const bar = Services.prefs.getBoolPref("zen.tabs.vertical") ? gNavToolbox : document.getElementById("zen-appcontent-navbar-wrapper");
         const pageBefore = box(document.getElementById("tabbrowser-tabbox"));
         gZenCompactModeManager.preference = true;
         await sleep(1200);
-        const toolbox = box(gNavToolbox);
+        const toolbox = box(bar);
         const page = box(document.getElementById("tabbrowser-tabbox"));
-        const attrs = { hover: gNavToolbox.hasAttribute("zen-has-hover"), compact: document.documentElement.getAttribute("zen-compact-mode") };
-        gZenCompactModeManager._setElementExpandAttribute(gNavToolbox, true);
+        const attrs = { hover: bar.hasAttribute("zen-has-hover"), compact: document.documentElement.getAttribute("zen-compact-mode") };
+        gZenCompactModeManager._setElementExpandAttribute(bar, true);
         await sleep(900);
-        const shown = box(gNavToolbox);
-        const hovering = gNavToolbox.hasAttribute("zen-has-hover");
-        gNavToolbox.removeAttribute("zen-has-hover");
+        const shown = box(bar);
+        const hovering = bar.hasAttribute("zen-has-hover");
+        gZenCompactModeManager._setElementExpandAttribute(bar, false);
         gZenCompactModeManager.preference = false;
         await sleep(1200);
         const pageAfter = box(document.getElementById("tabbrowser-tabbox"));
-        const toolboxAfter = box(gNavToolbox);
+        const toolboxAfter = box(bar);
         return { pageBefore, toolbox, page, attrs, shown, hovering, pageAfter, toolboxAfter, win: [innerWidth, innerHeight] };
         """,
     )
@@ -577,7 +581,8 @@ def compact_mode(b, horizontal):
     t, u = d["toolbox"], d["shown"]
     check(d["hovering"], "hovering the edge wasn't noticed", d)
     if horizontal:
-        check(t["y"] + t["h"] <= 6, "compact mode didn't slide the rows away", d)
+        # Zen leaves a strip as tall as the frame's separation (8px) to reveal them from.
+        check(t["y"] + t["h"] <= 8, "compact mode didn't slide the rows away", d)
         check(u["y"] >= -1 and u["w"] >= d["win"][0] - 2 and u["h"] < 110, "hovering didn't bring back the rows", d)
     else:
         check(t["x"] + t["w"] <= 6, "compact mode didn't slide the sidebar away", d)

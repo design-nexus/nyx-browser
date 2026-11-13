@@ -1,0 +1,14 @@
+diff --git a/browser/components/tabbrowser/content/tab-context-menu.js b/browser/components/tabbrowser/content/tab-context-menu.js
+index eeb78f4..e1bb272 100644
+--- a/browser/components/tabbrowser/content/tab-context-menu.js
++++ b/browser/components/tabbrowser/content/tab-context-menu.js
+@@ -390,6 +390,9 @@ var TabContextMenu = {
+       }).arrange(aPopupMenu);
+       this._hideUnusedSectionItems(layout);
+       this._updateL10nIds(aPopupMenu, this._altTabContextMenu);
++      // Nyx: the moves can lose a pending translation (the Move Tab and Share submenus stayed
++      // blank on the menu's first showing), so the arranged menu is translated again.
++      document.l10n.translateFragment(aPopupMenu);
+     } catch (ex) {
+       console.error(ex);
+     }

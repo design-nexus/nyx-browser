@@ -1,8 +1,9 @@
 {
   "manifest_version": 3,
-  "name": "Nyx Integration",
+  "name": "Nyx",
   "description": "Share, Capture and Assistant from the Nyx apps on this computer, and a new tab page.",
-  "version": "0.2.0",
+  "version": "0.2.4",
+  "hidden": true,
   "browser_specific_settings": {
     "gecko": {
       "id": "nyx-integration@design-nexus.github.io",
@@ -24,5 +25,5 @@
     "capture-page": { "suggested_key": { "default": "Alt+Shift+C" }, "description": "Capture this page" },
     "open-assistant": { "suggested_key": { "default": "Alt+Shift+A" }, "description": "Open Assistant" }
   },
-  "icons": { "48": "icons/assistant.svg" }
+  "icons": { "48": "icons/browser.svg" }
 }

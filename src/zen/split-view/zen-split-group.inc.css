@@ -15,11 +15,7 @@ tab-group[split-view-group] {
       transition: var(--tab-dragover-transition), var(--zen-tabbox-element-indent-transition);
     }
   }
-  --zen-split-view-active-tab-bg: color-mix(
-    in srgb,
-    var(--zen-toolbar-element-bg),
-    transparent 40%
-  );
+  --zen-split-view-active-tab-bg: var(--nyx-sel-bg);
 
   --tab-collapsed-background-width: none;
 
@@ -36,13 +32,14 @@ tab-group[split-view-group] {
     flex-wrap: nowrap;
     align-items: center;
 
-    border-radius: var(--border-radius-medium);
-    padding: 0 var(--zen-space-2);
+    /* Nyx: a split group is one chip, tinted with the accent. */
+    border-radius: 8px;
+    padding: 2px;
+    gap: 2px;
     margin-block: var(--tab-margin-block);
     min-height: var(--tab-min-height);
-    outline: var(--tab-outline);
-    outline-offset: var(--tab-outline-offset);
-    outline-color: var(--tab-selected-outline-color);
+    background-color: color-mix(in srgb, var(--nyx-accent) 8%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--nyx-accent) 20%, transparent);
     transition: scale 0.1s ease;
     margin-inline: var(--zen-space-2) !important;
 
@@ -74,18 +71,11 @@ tab-group[split-view-group] {
       padding-inline: var(--zen-space-2) !important;
       overflow: clip;
 
-      &:not(:last-child)::after {
+      /* Nyx: side by side, the tabs' own backgrounds tell them apart. */
+      :root:not([zen-sidebar-expanded='true']) &:not(:last-child)::after {
         content: '';
-        width: 1px;
-        height: var(--size-item-small);
         background-color: var(--zen-split-view-tab-separator-background);
         position: absolute;
-        right: 0;
-        top: 50%;
-        transform: translateY(-50%);
-      }
-
-      :root:not([zen-sidebar-expanded='true']) &:not(:last-child)::after {
         width: var(--size-item-small);
         height: 1px;
         top: auto;
@@ -123,10 +113,6 @@ tab-group[split-view-group] {
     /* stylelint-disable-next-line stylelint-plugin-mozilla/no-has-selector -- must not scale while a tab icon inside is being pressed */
     &:active:not(:has(.tab-content > image:active)) {
       scale: var(--zen-active-tab-scale);
-    }
-
-    &:hover {
-      background-color: var(--zen-toolbar-element-bg);
     }
 
     & .tab-close-button,

@@ -78,10 +78,6 @@ window.gZenCompactModeManager = {
   ),
 
   preInit() {
-    this._wasInCompactMode = Services.prefs.getBoolPref(
-      "zen.view.compact.enable-at-startup",
-      false
-    );
     this._canDebugLog = Services.prefs.getBoolPref(
       "zen.view.compact.debug",
       false
@@ -143,9 +139,6 @@ window.gZenCompactModeManager = {
       true
     );
 
-    SessionStore.promiseAllWindowsRestored.then(() => {
-      this.preference = this._wasInCompactMode;
-    });
   },
 
   log(...args) {
@@ -187,6 +180,26 @@ window.gZenCompactModeManager = {
     this._stopTrackingMouseOutsideWindow();
     this.sidebar.removeAttribute("zen-user-show");
     this._updateEvent();
+  },
+
+  /**
+   * Nyx: the compact mode a window starts in, set without animating. With vertical tabs it's
+   * the sidebar's hidden mode (nyx.sidebar.mode), applied by sidebar.js; with horizontal tabs,
+   * what the last window had.
+   *
+   * @param {boolean} value
+   */
+  startIn(value) {
+    this._wasInCompactMode = value;
+    this.preference = value;
+    delete this._wasInCompactMode;
+  },
+
+  get startsCompact() {
+    return Services.prefs.getBoolPref(
+      "zen.view.compact.enable-at-startup",
+      false
+    );
   },
 
   get sidebarIsOnRight() {
@@ -339,7 +352,8 @@ window.gZenCompactModeManager = {
     // that are not allowed mainly due to the caption buttons not being accessible
     // at the top left/right of the window.
     const isSidebarExpanded = gZenVerticalTabsManager._prefsSidebarExpanded;
-    if (isSidebarExpanded) {
+    // Nyx: tabs in rows have no sidebar to collapse.
+    if (isSidebarExpanded || !gZenVerticalTabsManager._prefsVerticalTabs) {
       // Fast exit if the sidebar is expanded, as we dont have illegal states then
       return false;
     }
@@ -405,6 +419,8 @@ window.gZenCompactModeManager = {
     } else {
       ZenHasPolyfill.disconnectObserver(this.sidebarObserverId);
     }
+    // Nyx: the top bar is as wide as the sidebar left it; toolbars measure their overflow again.
+    window.dispatchEvent(new Event("resize"));
     window.dispatchEvent(
       new CustomEvent("ZenCompactMode:Toggled", { detail: this.preference })
     );
@@ -419,7 +435,9 @@ window.gZenCompactModeManager = {
 
   get canHideToolbar() {
     return (
-      Services.prefs.getBoolPref("zen.view.compact.hide-toolbar") &&
+      // Nyx: with tabs in rows, the rows are the toolbar.
+      (Services.prefs.getBoolPref("zen.view.compact.hide-toolbar") ||
+        !gZenVerticalTabsManager._prefsVerticalTabs) &&
       !gZenVerticalTabsManager._hasSetSingleToolbar
     );
   },
@@ -699,9 +717,7 @@ window.gZenCompactModeManager = {
         ((gZenVerticalTabsManager._hasSetSingleToolbar &&
           (element.hasAttribute("should-hide") ||
             document.documentElement.hasAttribute("zen-has-bookmarks"))) ||
-          (this.preference &&
-            Services.prefs.getBoolPref("zen.view.compact.hide-toolbar") &&
-            !gZenVerticalTabsManager._hasSetSingleToolbar))
+          (this.preference && this.canHideToolbar))
       ) {
         gBrowser.tabpanels.setAttribute("has-toolbar-hovered", "true");
       }

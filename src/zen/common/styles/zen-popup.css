@@ -8,13 +8,14 @@
 @import url("chrome://browser/content/zen-styles/zen-panels/dialog.css");
 
 :root {
-  --arrowpanel-menuitem-border-radius: 5px;
+  /* Nyx: Nyx Design's menu rows: 30 px, 7 px corners, 10 px in. */
+  --arrowpanel-menuitem-border-radius: var(--nyx-radius-small);
   --arrowpanel-menuitem-margin: var(--uc-arrowpanel-menuitem-margin-block) var(--uc-arrowpanel-menuitem-margin-inline);
-  --arrowpanel-menuitem-padding-block: 8px;
-  --arrowpanel-menuitem-padding-inline: 14px;
-  --uc-arrowpanel-menuicon-margin-inline: 14px;
-  --uc-arrowpanel-menuitem-margin-inline: 4px;
-  --uc-arrowpanel-menuitem-margin-block: 2px;
+  --arrowpanel-menuitem-padding-block: 7px;
+  --arrowpanel-menuitem-padding-inline: 10px;
+  --uc-arrowpanel-menuicon-margin-inline: 10px;
+  --uc-arrowpanel-menuitem-margin-inline: 6px;
+  --uc-arrowpanel-menuitem-margin-block: 0px;
   --panel-separator-margin-vertical: 2px;
   --panel-separator-margin-horizontal: 1px;
 
@@ -35,7 +36,17 @@ menupopup,
 panel {
   --panel-background-color: var(--arrowpanel-background);
   --menuitem-padding: 6px !important;
-  --panel-box-shadow-margin: 8px;
+  /* Nyx: room for the whole shadow below (6px down, 18px blur); a smaller margin cuts it off square. */
+  --panel-box-shadow-margin: 24px;
+
+  /* Nyx: Nyx Design's popovers: the popover surface, 15 px corners, a hairline and a soft shadow. */
+  --panel-border-radius: var(--nyx-radius-dialog);
+  --panel-border-color: var(--nyx-line);
+  --panel-box-shadow: 0 6px 18px color-mix(in srgb, var(--nyx-shadow) 60%, transparent);
+  --menuitem-border-radius: var(--nyx-radius-small);
+  --menuitem-padding-block: 7px;
+  --menuitem-padding-inline: 10px;
+  --menuitem-icon-fill: var(--nyx-dim);
 
   /* This should match GetMenuCornerRadius() on macOS, or be overridden below */
   @media (-moz-platform: macos) {
@@ -69,6 +80,15 @@ panel {
 .widget-overflow-list .toolbarbutton-1:not(.toolbarbutton-combined) > .toolbarbutton-text,
 .subviewbutton:not(#appMenu-zoom-controls > .subviewbutton) > .toolbarbutton-icon + .toolbarbutton-text {
   padding-inline-start: var(--uc-arrowpanel-menuicon-margin-inline);
+}
+
+/* Nyx: in More tools a tool says its shortcut at the row's end, as menus do (.menu-accel). */
+.widget-overflow-list .toolbarbutton-1[shortcut]::after {
+  content: attr(shortcut);
+  margin-inline-start: auto;
+  padding-inline-start: 16px;
+  color: var(--nyx-tertiary);
+  font-size: 11.5px;
 }
 
 /* special case menuitems with no icons */
@@ -418,4 +438,145 @@ menuseparator {
 
 .tab-preview-thumbnail-container > canvas {
   border-radius: calc(var(--border-radius-medium) / var(--zen-squircle-value));
+}
+
+/* Nyx: menus in Nyx Design's type and colors. */
+menupopup {
+  --panel-padding-block: 6px;
+  --panel-padding: 6px;
+  font-family: var(--nyx-font);
+  font-size: 13px;
+  color: var(--nyx-text);
+}
+
+menu,
+menuitem {
+  min-height: 30px;
+
+  &[_moz-menuactive]:not([disabled]) {
+    color: var(--nyx-text);
+    background-color: var(--nyx-hover-bg);
+  }
+
+  &[disabled] {
+    color: var(--nyx-tertiary);
+  }
+
+  &[type="checkbox"][checked] > .menu-icon,
+  &[type="radio"][checked] > .menu-icon {
+    fill: var(--nyx-accent);
+  }
+}
+
+.menu-accel {
+  color: var(--nyx-tertiary);
+  font-size: 11.5px;
+}
+
+menuseparator {
+  margin: 5px 8px !important;
+  padding: 0 !important;
+  border-top: 1px solid var(--nyx-line) !important;
+  appearance: none;
+
+  &::before {
+    display: none;
+  }
+}
+
+/* Nyx: a menu's heading, as the workspaces menu has. */
+.nyx-menu-title {
+  padding: 8px 10px 4px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--nyx-tertiary);
+}
+
+/* Nyx: the workspaces menu marks the current space with a check; the others have none. */
+#nyx-workspaces-menu {
+  min-width: 240px;
+}
+
+/* The current space is ticked and tinted; the others keep the tick's room. Firefox draws a
+ * native checkbox here on Linux. */
+#nyx-workspaces-menu .nyx-workspaces-menu-space > .menu-icon {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  visibility: hidden;
+}
+
+#nyx-workspaces-menu .nyx-workspaces-menu-space[checked] {
+  background-color: var(--nyx-sel-bg);
+
+  & > .menu-icon {
+    visibility: inherit;
+    content: url("chrome://browser/content/nyx/icons/check.svg");
+    -moz-context-properties: fill, fill-opacity;
+    fill: var(--nyx-accent);
+  }
+}
+
+/* Nyx: a bookmarks folder's "open all" rows carry an open folder. */
+.openintabs-menuitem {
+  list-style-image: url("chrome://browser/content/nyx/icons/folder-open.svg");
+  -moz-context-properties: fill, fill-opacity;
+  fill: var(--nyx-dim);
+}
+
+/* Nyx: one look for every dropdown, from the mockups (.pop, .menu, .panel): 13 px text; menus at
+ * least 240 px with 30 px rows; panels 336 px with 32 px rows and a 15 px semibold title. Rows sit
+ * 6 px in from the edge, and separators have 4 px either side. Extensions' own popups keep the
+ * size of their page. */
+panel,
+menupopup {
+  font-size: 13px !important;
+}
+
+menupopup:not(.in-menulist, #PlacesToolbar menupopup) {
+  min-width: 240px;
+}
+
+panel {
+  --arrowpanel-menuitem-padding-block: 7px;
+  --arrowpanel-menuitem-padding-inline: 10px;
+  --arrowpanel-menuitem-padding: 7px 10px;
+  --arrowpanel-menuitem-margin: 0 6px;
+  --panel-separator-margin-vertical: 4px;
+  --panel-separator-margin-horizontal: 6px;
+  --menu-panel-width: 336px;
+  --menu-panel-width-wide: 336px;
+}
+
+panel[type="arrow"] panelview:not([extension]),
+#downloadsPanel-mainView,
+#identity-popup-mainView,
+#permission-popup-mainView,
+#protections-popup-mainView {
+  width: 336px !important;
+  min-width: 336px !important;
+  max-width: 336px !important;
+}
+
+panel :is(.subviewbutton, .downloadsPanelFooterButton) {
+  min-height: 32px;
+}
+
+panel .panel-subview-footer-button {
+  padding: var(--arrowpanel-menuitem-padding) !important;
+}
+
+/* Firefox gives these a width in its strings. */
+#downloadsListBox,
+#emptyDownloads,
+#downloadsPanel .downloadsPanelFooter {
+  width: auto !important;
+  min-width: 0 !important;
+}
+
+.panel-header > h1 {
+  font-size: 15px !important;
+  font-weight: 600 !important;
 }

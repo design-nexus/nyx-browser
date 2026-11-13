@@ -48,7 +48,7 @@ def main():
                 systemDir: Services.dirsvc.get("XRESysNativeManifests", Ci.nsIFile).path,
                 bg: getComputedStyle(document.documentElement).getPropertyValue("--nyx-bg").trim(),
                 modules: !!window.NyxSidebar && !!window.NyxAppearance,
-                widgets: ["nyx-appearance-button", "nyx-share-button"].every(id => !!document.getElementById(id)),
+                widgets: ["nyx-settings-button", "nyx-share-button"].every(id => !!document.getElementById(id)),
                 addon: addon && { active: addon.isActive, builtin: addon.isBuiltin },
                 tabs: gBrowser.tabs.length,
               });

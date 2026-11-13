@@ -15,6 +15,7 @@ export class nsZenFolder extends MozTabbrowserTabGroup {
       <hbox class="tab-group-label-container zen-squircle-before zen-drop-target" pack="center">
         <html:div class="tab-group-folder-icon"/>
         <label class="tab-group-label" role="button"/>
+        <label class="nyx-folder-count" />
         <image class="tab-reset-button reset-icon" role="button" keyNav="false" data-l10n-id="zen-folders-unload-all-tooltip"/>
       </hbox>
       <html:div class="tab-group-container">
@@ -25,38 +26,21 @@ export class nsZenFolder extends MozTabbrowserTabGroup {
       </vbox>
     `;
 
+  // Nyx: Nyx Design's line folder, open while the folder is. Zen's code reaches into it for
+  // the state attribute, a user's icon (.icon image) and the active dots.
   static rawIcon = new DOMParser().parseFromString(
     `
-      <svg width="28" height="28" viewBox="0 0 27 27" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <linearGradient gradientUnits="userSpaceOnUse" x1="14" y1="5.625" x2="14" y2="22.375" id="gradient-0">
-            <stop offset="0" style="stop-color: rgb(255, 255, 255)"/>
-            <stop offset="1" style="stop-color: rgb(0% 0% 0%)"/>
-          </linearGradient>
-          <linearGradient gradientUnits="userSpaceOnUse" x1="14" y1="9.625" x2="14" y2="22.375" id="gradient-1">
-            <stop offset="0" style="stop-color: rgb(255, 255, 255)"/>
-            <stop offset="1" style="stop-color: rgb(0% 0% 0%)"/>
-          </linearGradient>
-        </defs>
-        <!--Back Folder (path)-->
-        <path class="back" d="M8 5.625H11.9473C12.4866 5.625 13.0105 5.80861 13.4316 6.14551L14.2881 6.83105C14.9308 7.34508 15.7298 7.625 16.5527 7.625H20C21.3117 7.625 22.375 8.68832 22.375 10V20C22.375 21.3117 21.3117 22.375 20 22.375H8C6.68832 22.375 5.625 21.3117 5.625 20V8C5.625 6.68832 6.68832 5.625 8 5.625Z" style="fill: var(--zen-folder-behind-bgcolor);">
-        </path>
-        <path class="back" d="M8 5.625H11.9473C12.4866 5.625 13.0105 5.80861 13.4316 6.14551L14.2881 6.83105C14.9308 7.34508 15.7298 7.625 16.5527 7.625H20C21.3117 7.625 22.375 8.68832 22.375 10V20C22.375 21.3117 21.3117 22.375 20 22.375H8C6.68832 22.375 5.625 21.3117 5.625 20V8C5.625 6.68832 6.68832 5.625 8 5.625Z" style="stroke-width: 1.5px; stroke: var(--zen-folder-stroke); fill: url(#gradient-0); fill-opacity: 0.1;">
-        </path>
-        <!--Front Folder (rect)-->
-        <rect class="front" x="5.625" y="9.625" width="16.75" height="12.75" rx="2.375" style="fill: var(--zen-folder-front-bgcolor);">
-        </rect>
-        <rect class="front" x="5.625" y="9.625" width="16.75" height="12.75" rx="2.375" style="stroke-width: 1.5px; stroke: var(--zen-folder-stroke); fill: url(#gradient-1); fill-opacity: 0.1;">
-        </rect>
-        <!--Icon (g)-->
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+           stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path class="closed" d="M4 7h6l2 2h8v9H4z"/>
+        <path class="open" d="M4 7h6l2 2h8v2M4 7v11h14l2-7H8l-2 7"/>
         <g class="icon">
-          <image href="" height="11" width="11"/>
+          <image href="" height="10" width="10" x="7" y="10"/>
         </g>
-        <!--End Icon (g)-->
-        <g class="dots" style="fill: var(--zen-folder-stroke);">
-          <ellipse cx="10" cy="16" rx="1.25" ry="1.25"/>
-          <ellipse cx="14" cy="16" rx="1.25" ry="1.25"/>
-          <ellipse cx="18" cy="16" rx="1.25" ry="1.25"/>
+        <g class="dots" style="fill: currentColor; stroke: none;">
+          <ellipse cx="9" cy="14" rx="1.1" ry="1.1"/>
+          <ellipse cx="12" cy="14" rx="1.1" ry="1.1"/>
+          <ellipse cx="15" cy="14" rx="1.1" ry="1.1"/>
         </g>
       </svg>`,
     "image/svg+xml"
@@ -89,6 +73,18 @@ export class nsZenFolder extends MozTabbrowserTabGroup {
     if (this.collapsed) {
       this.groupContainer.setAttribute("hidden", true);
     }
+
+    // Nyx: the folder's count of tabs, beside its name.
+    const updateCount = () => {
+      const count = this.querySelector(":scope > .tab-group-label-container > .nyx-folder-count");
+      if (count) {
+        count.textContent = this.tabs.filter(tab => !tab.hasAttribute("zen-empty-tab")).length || "";
+      }
+    };
+    for (const type of ["TabGrouped", "TabUngrouped", "TabClose", "TabOpen"]) {
+      this.addEventListener(type, () => setTimeout(updateCount));
+    }
+    setTimeout(updateCount);
   }
 
   get icon() {

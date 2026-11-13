@@ -1,0 +1,88 @@
+diff --git a/browser/base/content/browser-addons.js b/browser/base/content/browser-addons.js
+index e512a1f..2c06ce2 100644
+--- a/browser/base/content/browser-addons.js
++++ b/browser/base/content/browser-addons.js
+@@ -2247,7 +2247,9 @@ var gUnifiedExtensions = {
+   // If the new ID is not added in NOTIFICATION_IDS, consider handling the case
+   // in the "PopupNotificationsBeforeAnchor" handler elsewhere in this file.
+   getPopupAnchorID(aBrowser, aWindow) {
+-    const anchorID = "zen-site-data-icon-button";
++    // Nyx: extensions' prompts come from the Extensions button, as in Firefox; Zen's site
++    // data button isn't shown.
++    const anchorID = "unified-extensions-button";
+     const attr = anchorID + "popupnotificationanchor";
+ 
+     if (!aBrowser[attr]) {
+@@ -2258,7 +2260,7 @@ var gUnifiedExtensions = {
+         anchorID
+         // Anchor on the toolbar icon to position the popup right below the
+         // button.
+-      );
++      ).firstElementChild;
+     }
+ 
+     return anchorID;
+@@ -2744,7 +2746,14 @@ var gUnifiedExtensions = {
+ 
+   // `aEvent` and `reason` are optional. If `reason` is specified, it should be
+   // a valid argument to gUnifiedExtensions.recordButtonTelemetry().
+-  async togglePanel(aEvent, reason, panel = this._panel, view = "unified-extensions-view", button = this._button) {
++  async togglePanel(
++    aEvent,
++    reason,
++    panel = this._panel,
++    // Nyx: the panel's own view. Zen renames Firefox's list view, and its site data panel takes the old ID.
++    view = panel.querySelector("panelmultiview").getAttribute("mainViewId"),
++    button = this._button
++  ) {
+     if (!CustomizationHandler.isCustomizing()) {
+       if (aEvent) {
+         if (
+@@ -2764,10 +2773,10 @@ var gUnifiedExtensions = {
+         // The button should directly open `about:addons` when the user does not
+         // have any active extensions listed in the unified extensions panel,
+         // and no alternative content is available for display in the panel.
++        // Nyx: with no extensions too, and for Firefox's panel; Zen's site data panel has more.
+         const policies = this.getActivePolicies();
+         if (
+-          false &&
+-          policies.length &&
++          panel === this._panel &&
+           !this.hasExtensionsInPanel(policies) &&
+           !this.isPrivateWindowMissingExtensionsWithoutPBMAccess() &&
+           !(await this.getDisabledExtensionsInfo()).isAnyDisabled
+@@ -2782,13 +2791,12 @@ var gUnifiedExtensions = {
+       this.blocklistAttentionInfo =
+         await AddonManager.getBlocklistAttentionInfo();
+ 
+-      if (!this._listView) {
+-        this._listView = PanelMultiView.getViewNode(
+-          document,
+-          view,
+-        );
+-        this._listView.addEventListener("ViewShowing", this);
+-        this._listView.addEventListener("ViewHiding", this);
++      this._listViews ??= new WeakSet();
++      const listView = PanelMultiView.getViewNode(document, view);
++      if (!this._listViews.has(listView)) {
++        this._listViews.add(listView);
++        listView.addEventListener("ViewShowing", this);
++        listView.addEventListener("ViewHiding", this);
+       }
+ 
+       if (button.open) {
+@@ -2804,8 +2812,12 @@ var gUnifiedExtensions = {
+         panel.hidden = false;
+         this.recordButtonTelemetry(reason || "extensions_panel_showing");
+         this.ensureButtonShownBeforeAttachingPanel(panel);
+-        PanelMultiView.openPopup(panel, button, {
+-          position: gZenUIManager.panelUIPosition(panel, button),
++        // Nyx: from More tools, the panel opens under the More tools button.
++        const anchor =
++          CustomizableUI.getWidget(button.id)?.forWindow(window).anchor ??
++          button;
++        PanelMultiView.openPopup(panel, anchor, {
++          position: gZenUIManager.panelUIPosition(panel, anchor),
+           triggerEvent: aEvent,
+         });
+       }

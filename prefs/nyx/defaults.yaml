@@ -13,7 +13,7 @@
   value: true
 
 - name: zen.theme.content-element-separation
-  value: 6
+  value: 8
 
 - name: zen.theme.border-radius
   value: 11
@@ -49,3 +49,25 @@
 
 - name: browser.shareqrcode.enabled
   value: true
+
+# New tab sits at the end of the day's tabs.
+- name: zen.view.show-newtab-button-top
+  value: false
+
+# A page that isn't secure says so in words in the address field.
+- name: security.insecure_connection_text.enabled
+  value: true
+
+# The Nyx extension is part of Browser, so Firefox doesn't ask whether to keep the new tab page
+# it gives (ExtensionControlledPopup skips distribution add-ons).
+- name: extensions.installedDistroAddon.nyx-integration@design-nexus.github.io
+  value: true
+
+# The address field keeps Firefox's identity box (the lock, or "Not secure"), as the mockups
+# have it, rather than the newer trust panel's icon.
+- name: browser.urlbar.trustPanel.featureGate
+  value: false
+
+# Capture takes the screenshots (the Capture button and the page's menu), so Firefox's own is off.
+- name: screenshots.browser.component.enabled
+  value: false

@@ -1,0 +1,23 @@
+diff --git a/browser/modules/HomePage.sys.mjs b/browser/modules/HomePage.sys.mjs
+index 762962c..06318f4 100644
+--- a/browser/modules/HomePage.sys.mjs
++++ b/browser/modules/HomePage.sys.mjs
+@@ -5,6 +5,7 @@
+ const lazy = {};
+ 
+ ChromeUtils.defineESModuleGetters(lazy, {
++  AboutNewTab: "resource:///modules/AboutNewTab.sys.mjs",
+   CustomizableUI:
+     "moz-src:///browser/components/customizableui/CustomizableUI.sys.mjs",
+   ExtensionParent: "resource://gre/modules/ExtensionParent.sys.mjs",
+@@ -116,6 +117,10 @@ export let HomePage = {
+     if (homePages == "about:blank") {
+       homePages = "chrome://browser/content/blanktab.html";
+     }
++    // Nyx: Browser's own home is its new tab page, the Nyx dashboard.
++    if (homePages == kDefaultHomePage) {
++      homePages = lazy.AboutNewTab.newTabURL;
++    }
+ 
+     return homePages;
+   },

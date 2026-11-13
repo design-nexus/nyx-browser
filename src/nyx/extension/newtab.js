@@ -80,8 +80,19 @@ function moveFavorite(from, to) {
   save({ favorites: list }).then(render);
 }
 
-function favoritesSection() {
+/** Favicons Firefox has for the sites visited most, by host. */
+async function knownIcons() {
+  try {
+    const sites = await browser.topSites.get({ limit: 100, includeFavicon: true, onePerDomain: false });
+    return new Map(sites.filter(site => site.favicon).map(site => [hostOf(site.url), site.favicon]));
+  } catch {
+    return new Map();
+  }
+}
+
+async function favoritesSection() {
   const grid = element("div", { id: "favorites", class: "tiles" });
+  const icons = await knownIcons();
   settings.favorites.forEach((site, index) => {
     const remove = element("button", {
       class: "remove",
@@ -93,7 +104,17 @@ function favoritesSection() {
         save({ favorites: settings.favorites.filter((_, i) => i !== index) }).then(render);
       },
     }, "×");
-    const link = tile(site.url, site.title, null, [remove]);
+    const edit = element("button", {
+      class: "edit",
+      type: "button",
+      title: `Edit ${site.title || hostOf(site.url)}`,
+      "aria-label": `Edit ${site.title || hostOf(site.url)}`,
+      onclick: event => {
+        event.preventDefault();
+        openFavoriteDialog(index);
+      },
+    }, "✎");
+    const link = tile(site.url, site.title, icons.get(hostOf(site.url)), [edit, remove]);
     link.draggable = true;
     link.addEventListener("dragstart", event => event.dataTransfer.setData("application/x-nyx-favorite", String(index)));
     link.addEventListener("dragover", event => event.dataTransfer.types.includes("application/x-nyx-favorite") && event.preventDefault());
@@ -103,43 +124,111 @@ function favoritesSection() {
     });
     grid.append(link);
   });
-  const add = element("button", { class: "site add", type: "button", onclick: () => showAddForm(section) }, element("span", { class: "site-icon" }, "+"), element("span", {}, "Add"));
+  const add = element("button", { class: "site add", type: "button", onclick: () => openFavoriteDialog() }, element("span", { class: "site-icon" }, "+"), element("span", {}, "Add"));
   grid.append(add);
   const section = element("section", { "aria-label": SECTIONS.favorites }, heading("favorites"), grid);
   return section;
 }
 
-function showAddForm(section) {
-  if (section.querySelector(".add-form")) {
-    section.querySelector(".add-form input").focus();
-    return;
+/** The address as typed, made a web address, or null. */
+function webAddress(text) {
+  let url = text.trim();
+  if (!url) {
+    return null;
   }
-  const form = document.getElementById("favorite-form").content.firstElementChild.cloneNode(true);
-  form.addEventListener("submit", event => {
+  if (!WEB.test(url)) {
+    url = `https://${url}`;
+  }
+  try {
+    const parsed = new URL(url);
+    return parsed.hostname.includes(".") || parsed.hostname === "localhost" ? parsed.href : null;
+  } catch {
+    return null;
+  }
+}
+
+/** The title of the page at `url`, if it's in history. */
+async function knownTitle(url) {
+  try {
+    const visits = await browser.history.search({ text: hostOf(url), maxResults: 20, startTime: 0 });
+    const same = visits.find(v => v.url === url) || visits.find(v => hostOf(v.url) === hostOf(url));
+    return same?.title || "";
+  } catch {
+    return "";
+  }
+}
+
+/** Adds a favorite, or edits the one at `index`. */
+function openFavoriteDialog(index = -1) {
+  const dialog = document.getElementById("favorite-dialog");
+  const form = document.getElementById("favorite-form");
+  const { url: address, title: name } = form.elements;
+  const editing = settings.favorites[index];
+  const error = document.getElementById("favorite-error");
+  document.getElementById("favorite-heading").textContent = editing ? "Edit favorite" : "Add a favorite";
+  document.getElementById("favorite-submit").textContent = editing ? "Save" : "Add";
+  address.value = editing?.url || "";
+  name.value = editing?.title || "";
+  name.placeholder = "";
+  let suggested = "";
+
+  const showError = shown => {
+    error.hidden = !shown;
+    address.setAttribute("aria-invalid", String(shown));
+  };
+  const preview = () => {
+    const url = webAddress(address.value);
+    const label = name.value.trim() || suggested || (url ? hostOf(url) : "");
+    document.getElementById("favorite-preview-icon").textContent = (label || "?")[0].toUpperCase();
+    document.getElementById("favorite-preview-name").textContent = label || "New favorite";
+    document.getElementById("favorite-preview-host").textContent = url ? hostOf(url) : "Its address shows here";
+  };
+  const suggest = async () => {
+    const url = webAddress(address.value);
+    suggested = url ? await knownTitle(url) : "";
+    name.placeholder = suggested;
+    preview();
+  };
+  address.oninput = () => {
+    showError(false);
+    preview();
+  };
+  address.onchange = suggest;
+  name.oninput = preview;
+  document.getElementById("favorite-cancel").onclick = () => dialog.close();
+  form.onsubmit = event => {
     event.preventDefault();
-    let url = form.elements.url.value.trim();
-    if (!WEB.test(url)) {
-      url = `https://${url}`;
-    }
-    try {
-      url = new URL(url).href;
-    } catch {
-      form.elements.url.setCustomValidity("That isn't a web address.");
-      form.reportValidity();
+    const url = webAddress(address.value);
+    if (!url) {
+      showError(true);
+      address.focus();
       return;
     }
-    save({ favorites: [...settings.favorites, { url, title: form.elements.title.value.trim() }] }).then(render);
-  });
-  form.elements.url.addEventListener("input", () => form.elements.url.setCustomValidity(""));
-  section.append(form);
-  form.elements.url.focus();
+    const favorite = { url, title: name.value.trim() || suggested };
+    const favorites = [...settings.favorites];
+    if (editing) {
+      favorites[index] = favorite;
+    } else {
+      favorites.push(favorite);
+    }
+    dialog.close();
+    save({ favorites }).then(render);
+  };
+
+  showError(false);
+  preview();
+  if (editing) {
+    suggest();
+  }
+  dialog.showModal();
+  address.focus();
 }
 
 /* ---------- Frequently visited and recent tabs ---------- */
 
 async function frequentSection() {
   const grid = element("div", { class: "tiles" });
-  const sites = await browser.topSites.get({ limit: FREQUENT * 2, includeFavicon: true, onePerDomain: true, newtabpage: false });
+  const sites = await browser.topSites.get({ limit: FREQUENT * 2, includeFavicon: true, onePerDomain: true });
   const favorite = new Set(settings.favorites.map(f => f.url));
   for (const site of sites.filter(s => WEB.test(s.url) && !favorite.has(s.url)).slice(0, FREQUENT)) {
     grid.append(tile(site.url, site.title, site.favicon));
@@ -171,10 +260,12 @@ async function recentSection() {
     const visits = await browser.history.search({ text: "", maxResults: RECENT * 3, startTime: 0 });
     rows = visits.filter(v => WEB.test(v.url)).map(v => ({ url: v.url, title: v.title, when: v.lastVisitTime }));
   }
+  const seen = new Set();
+  rows = rows.filter(row => !seen.has(row.url) && seen.add(row.url));
   for (const row of rows.slice(0, RECENT)) {
     const link = element("a", { class: "row", href: row.url },
       siteIcon(row.favicon, row.title || hostOf(row.url)),
-      element("span", { class: "row-text" }, row.title || hostOf(row.url), element("span", { class: "row-sub" }, hostOf(row.url))),
+      element("span", { class: "row-text" }, row.title || hostOf(row.url)),
       element("span", { class: "when" }, row.when ? ago(row.when) : ""));
     if (row.sessionId) {
       // A closed tab comes back with its history, the way Ctrl+Shift+T brings it back.
@@ -196,7 +287,10 @@ const BUILDERS = { favorites: favoritesSection, frequent: frequentSection, recen
 
 async function render() {
   const shown = settings.sections.filter(key => BUILDERS[key] && !settings.hidden.includes(key));
-  const built = await Promise.all(shown.map(key => Promise.resolve(BUILDERS[key]()).catch(() => null)));
+  const built = await Promise.all(shown.map(key => Promise.resolve(BUILDERS[key]()).catch(error => {
+    console.error(`New tab: the ${key} section failed`, error);
+    return null;
+  })));
   document.getElementById("sections").replaceChildren(...built.filter(Boolean));
   renderOptions();
 }
@@ -236,6 +330,17 @@ function applyBackground() {
   root.style.setProperty("--picture", settings.background === "image" && settings.picture ? `url("${settings.picture}")` : "none");
 }
 
+/**
+ * "Calera · Clear sky 52°" from Weather's bar reading ("☾ 52°") and the first line of
+ * its details ("Calera · Alabama, United States — Clear sky").
+ */
+function weatherLine(text, details) {
+  const temperature = text.match(/-?\d+°\w?/)?.[0] ?? text;
+  const [place, condition] = (details.split("\n")[0] || "").split(" — ");
+  const town = place?.split(" · ")[0].trim();
+  return [town, [condition?.trim(), temperature].filter(Boolean).join(" ")].filter(Boolean).join(" · ");
+}
+
 /** What Weather last fetched. With no Weather app or no reading yet, it stays away. */
 async function showWeather() {
   const card = document.getElementById("weather");
@@ -245,9 +350,8 @@ async function showWeather() {
   }
   try {
     const { text, details } = await browser.runtime.sendMessage({ to: "background", action: "weather" });
-    document.getElementById("weather-now").textContent = text;
-    // The place and the day's range; the rest is more than this page needs.
-    document.getElementById("weather-details").textContent = (details || "").split("\n").filter(line => !/^(Wind|Temperature)/.test(line)).join(" · ");
+    document.getElementById("weather-now").textContent = weatherLine(text, details || "");
+    card.title = details || "";
     card.hidden = false;
   } catch {
     // Nothing to show.
@@ -310,4 +414,20 @@ async function start() {
   await Promise.allSettled([render(), showWeather()]);
 }
 
+/** The tab's icon: the page's own mark, in the theme's accent. */
+function setTabIcon() {
+  const accent = getComputedStyle(document.documentElement).getPropertyValue("--nyx-accent").trim() || "#3d8ae8";
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">` +
+    `<rect width="24" height="24" rx="6" fill="${accent}" fill-opacity="0.2"/>` +
+    `<path d="M6 8h12v8H6zM6 11h12" fill="none" stroke="${accent}" stroke-width="1.6" stroke-linejoin="round"/></svg>`;
+  let link = document.querySelector("link[rel=icon]");
+  if (!link) {
+    link = element("link", { rel: "icon", type: "image/svg+xml" });
+    document.head.append(link);
+  }
+  link.href = `data:image/svg+xml,${encodeURIComponent(svg)}`;
+}
+
+document.addEventListener("nyx-theme", setTabIcon);
+setTabIcon();
 start();

@@ -1,0 +1,58 @@
+diff --git a/browser/components/places/content/browserPlacesViews.js b/browser/components/places/content/browserPlacesViews.js
+index c646804..721c8f8 100644
+--- a/browser/components/places/content/browserPlacesViews.js
++++ b/browser/components/places/content/browserPlacesViews.js
+@@ -749,6 +749,9 @@ class PlacesViewBase {
+ 
+         aPopup.removeChild(aPopup._endOptSeparator);
+         aPopup._endOptSeparator = null;
++
++        aPopup._endOptOpenAllInSplit?.remove();
++        aPopup._endOptOpenAllInSplit = null;
+       }
+     } else if (!aPopup._endOptOpenAllInTabs) {
+       // Create a separator before options.
+@@ -758,7 +761,8 @@ class PlacesViewBase {
+ 
+       // Add the "Open All in Tabs" menuitem.
+       aPopup._endOptOpenAllInTabs = document.createXULElement("menuitem");
+-      aPopup._endOptOpenAllInTabs.className = "openintabs-menuitem";
++      // Nyx: with an icon, as Nyx Design's menus have.
++      aPopup._endOptOpenAllInTabs.className = "openintabs-menuitem menuitem-iconic";
+       aPopup._endOptOpenAllInTabs.setAttribute(
+         "label",
+         gNavigatorBundle.getString("menuOpenAllInTabs.label")
+@@ -771,6 +775,33 @@ class PlacesViewBase {
+         );
+       });
+       aPopup.appendChild(aPopup._endOptOpenAllInTabs);
++
++      // Nyx: the folder's pages side by side, in a split view.
++      if (window.gZenViewSplitter) {
++        aPopup._endOptOpenAllInSplit = document.createXULElement("menuitem");
++        aPopup._endOptOpenAllInSplit.className =
++          "openintabs-menuitem menuitem-iconic nyx-openinsplit-menuitem";
++        document.l10n.setAttributes(
++          aPopup._endOptOpenAllInSplit,
++          "nyx-bookmarks-open-all-split"
++        );
++        aPopup._endOptOpenAllInSplit.addEventListener("command", event => {
++          const urls = PlacesUtils.getURLsForContainerNode(
++            event.currentTarget.parentNode._placesNode
++          );
++          const tabs = urls
++            .slice(0, gZenViewSplitter.MAX_TABS)
++            .map(({ uri }) =>
++              gBrowser.addTab(uri, {
++                triggeringPrincipal:
++                  Services.scriptSecurityManager.getSystemPrincipal(),
++                inBackground: true,
++              })
++            );
++          gZenViewSplitter.splitTabs(tabs, "vsep", 0);
++        });
++        aPopup.appendChild(aPopup._endOptOpenAllInSplit);
++      }
+     }
+ 
+     // Share Folder should be visible if there is at least one uri and the feature is enabled.

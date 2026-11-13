@@ -1,0 +1,13 @@
+diff --git a/browser/locales/en-US/browser/browser.ftl b/browser/locales/en-US/browser/browser.ftl
+index bf5b327..b85e008 100644
+--- a/browser/locales/en-US/browser/browser.ftl
++++ b/browser/locales/en-US/browser/browser.ftl
+@@ -578,7 +578,7 @@ urlbar-search-mode-indicator-close =
+ # This placeholder is used when not in search mode and the user's default search
+ # engine is unknown.
+ urlbar-placeholder =
+-  .placeholder = Search or enter address
++  .placeholder = Search or enter an address
+ 
+ # This placeholder is used when not in search mode and searching in the urlbar
+ # is disabled via the keyword.enabled pref.

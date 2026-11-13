@@ -5,7 +5,9 @@ can't touch the user's browsers or show a window. It's the build in engine/obj-*
 the folder named by NYX_BROWSER_DIR (an installed copy, a release tarball).
 
 Its theme comes from a stand-in for `nyx-browser-bridge theme --watch` that serves whatever the
-test last wrote with write_tokens(), so tests can set any theme and change it live.
+test last wrote with write_tokens(), so tests can set any theme and change it live. The stand-in
+also answers the Share dropdown's `share-destinations`, from share-destinations.json in the home
+folder (Share is unavailable without it), and logs each `share-to` to share-sent.log there.
 """
 
 import base64
@@ -34,6 +36,20 @@ def default_build():
 FAKE_BRIDGE = """#!/usr/bin/env python3
 import json, os, sys, threading, time
 path = sys.argv[1]
+home = os.path.dirname(path)
+args = sys.argv[1:]
+if args[:1] == ["share-destinations"]:
+    try:
+        print(open(os.path.join(home, "share-destinations.json")).read())
+    except OSError:
+        print(json.dumps({"code": "unavailable", "error": "Share isn't available."}))
+        sys.exit(1)
+    sys.exit(0)
+if args[:1] == ["share-to"]:
+    with open(os.path.join(home, "share-sent.log"), "a") as log:
+        log.write(" ".join(args[1:]) + "\\n")
+    print("{}")
+    sys.exit(0)
 def eof():
     sys.stdin.read()
     os._exit(0)
@@ -68,11 +84,27 @@ class ScriptError(RuntimeError):
     pass
 
 
+PASSWORDS_XPI = Path("nyx-passwords/browser/nyx-passwords-firefox.xpi")
+
+
+def passwords_extension():
+    """Nyx Passwords' extension where this machine has it, or None."""
+    data_home = os.environ.get("XDG_DATA_HOME") or str(Path.home() / ".local/share")
+    dirs = [data_home, *(os.environ.get("XDG_DATA_DIRS") or "/usr/local/share:/usr/share").split(":")]
+    for d in filter(None, dirs):
+        xpi = Path(d) / PASSWORDS_XPI
+        if xpi.exists():
+            return xpi.resolve()
+    return None
+
+
 class Browser:
     """One headless browser with a scratch profile. Use as a context manager."""
 
-    def __init__(self, prefs=None, runtime=None, width=1440, height=900, port=2829, home=None, tokens=None, env=None):
+    def __init__(self, prefs=None, runtime=None, width=1440, height=900, port=2829, home=None, tokens=None, env=None, passwords=False):
         self.tokens = tokens
+        # Nyx Passwords' extension, from this machine's install, as the browser finds it there.
+        self.passwords = passwords_extension() if passwords else None
         self.extra_env = env or {}
         self.prefs = {**BASE_PREFS, **(prefs or {}), "marionette.port": port}
         self.runtime = Path(runtime) if runtime else default_build()
@@ -100,6 +132,11 @@ class Browser:
         (self.profile / "user.js").write_text("\n".join(lines) + "\n")
         if self.tokens is not None:
             self.write_tokens(self.tokens)
+        if self.passwords:
+            xpi = self.home / ".local/share" / PASSWORDS_XPI
+            xpi.parent.mkdir(parents=True, exist_ok=True)
+            if not xpi.exists():
+                xpi.symlink_to(self.passwords)
         bridge = self.home / "bin/nyx-browser-bridge"
         bridge.parent.mkdir(parents=True, exist_ok=True)
         bridge.write_text(FAKE_BRIDGE.replace("sys.argv[1]", json.dumps(str(self.tokens_file))))

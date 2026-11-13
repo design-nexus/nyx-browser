@@ -1,0 +1,16 @@
+diff --git a/browser/base/content/browser-sets.inc.xhtml b/browser/base/content/browser-sets.inc.xhtml
+index 2fd01ca..5dab7f1 100644
+--- a/browser/base/content/browser-sets.inc.xhtml
++++ b/browser/base/content/browser-sets.inc.xhtml
+@@ -287,9 +287,8 @@
+     <key id="addBookmarkAsKb" data-l10n-id="bookmark-this-page-shortcut" command="Browser:AddBookmarkAs" modifiers="accel"/>
+     <key id="bookmarkAllTabsKb"/>
+     <key id="manBookmarkKb" data-l10n-id="bookmark-show-library-shortcut" command="Browser:ShowAllBookmarks" modifiers="accel,shift"/>
+-    <key id="viewBookmarksSidebarKb"
+-         data-l10n-id="bookmark-show-sidebar-shortcut"
+-         modifiers="accel"/>
++    <!-- Nyx: Ctrl+B shows or hides Browser's sidebar (sidebar.js); the bookmarks panel has no key. -->
++    <key id="viewBookmarksSidebarKb"/>
+     <key id="viewBookmarksToolbarKb"
+          data-l10n-id="bookmark-show-toolbar-shortcut"
+          modifiers="accel,shift"/>

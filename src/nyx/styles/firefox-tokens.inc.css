@@ -1,0 +1,99 @@
+% This Source Code Form is subject to the terms of the Mozilla Public
+% License, v. 2.0. If a copy of the MPL was not distributed with this
+% file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+% Firefox's design tokens, from Nyx's, included by zen-theme.css. Every page built on Firefox's
+% tokens imports zen-theme.css (tokens-shared.css), and these, outside its layers and more
+% specific than a page's own :root, come first: Settings, Add-ons, Downloads, dialogs, panels and Firefox's own controls
+% follow the theme with the window.
+
+  color-scheme: var(--nyx-scheme, dark);
+
+  --background-color-canvas: var(--nyx-surface, var(--nyx-bg));
+  --background-color-box: var(--nyx-card);
+  --background-color-box-info: var(--nyx-tile);
+  --background-color-list-item-hover: var(--nyx-hover-bg);
+  --text-color: var(--nyx-text);
+  --text-color-deemphasized: var(--nyx-dim);
+  --text-color-disabled: var(--nyx-tertiary);
+  --text-color-error: var(--nyx-danger);
+  --text-color-list-item-hover: var(--nyx-text);
+  --icon-color: var(--nyx-dim);
+  --border-color: var(--nyx-line);
+  --border-color-deemphasized: var(--nyx-line);
+  --border-color-card: var(--nyx-line);
+  --border-color-interactive: var(--nyx-border);
+  --border-color-interactive-hover: var(--nyx-border);
+  --border-color-interactive-active: var(--nyx-accent);
+  --border-color-selected: var(--nyx-accent);
+  --border-color-error: var(--nyx-danger);
+
+  --color-accent-primary: var(--nyx-accent);
+  --color-accent-primary-hover: color-mix(in srgb, var(--nyx-accent) 88%, var(--nyx-text));
+  --color-accent-primary-active: color-mix(in srgb, var(--nyx-accent) 80%, var(--nyx-bg));
+  --color-accent-primary-selected: var(--nyx-accent);
+  --focus-outline-color: var(--nyx-accent);
+  --link-color: var(--nyx-accent);
+  --link-color-hover: color-mix(in srgb, var(--nyx-accent) 88%, var(--nyx-text));
+  --link-color-active: color-mix(in srgb, var(--nyx-accent) 80%, var(--nyx-bg));
+  --link-color-visited: var(--nyx-accent);
+
+  --border-radius-small: 5px;
+  --border-radius-medium: var(--nyx-radius-small);
+  --border-radius-large: var(--nyx-radius-card);
+  --border-radius-xlarge: var(--nyx-radius-dialog);
+
+  --button-border-color: transparent;
+  --button-border-color-hover: transparent;
+  --button-border-color-active: transparent;
+  --button-background-color: var(--nyx-tile);
+  --button-background-color-hover: var(--nyx-hover-bg);
+  --button-background-color-active: var(--nyx-sel-bg);
+  --button-background-color-selected: var(--nyx-sel-bg);
+  --button-text-color: var(--nyx-text);
+  --button-text-color-hover: var(--nyx-text);
+  --button-text-color-active: var(--nyx-text);
+  --button-background-color-primary: var(--nyx-accent);
+  --button-background-color-primary-hover: color-mix(in srgb, var(--nyx-accent) 88%, var(--nyx-text));
+  --button-background-color-primary-active: color-mix(in srgb, var(--nyx-accent) 80%, var(--nyx-bg));
+  --button-text-color-primary: var(--nyx-on-accent);
+  --button-text-color-primary-hover: var(--nyx-on-accent);
+  --button-text-color-primary-active: var(--nyx-on-accent);
+  --button-background-color-ghost-hover: var(--nyx-hover-bg);
+  --button-background-color-ghost-active: var(--nyx-sel-bg);
+  --button-background-color-destructive: var(--nyx-danger);
+  --button-text-color-destructive: var(--nyx-on-accent);
+
+  --input-background-color: var(--nyx-tile);
+  --input-border-color: var(--nyx-line);
+  --input-border-radius: var(--nyx-radius-small);
+
+  --card-background-color: var(--nyx-card);
+  --card-border-color: var(--nyx-line);
+  --card-border-radius: var(--nyx-radius-card);
+  --card-box-shadow: none;
+  --promo-background-color: var(--nyx-tile);
+  --promo-background-color-vibrant: color-mix(in srgb, var(--nyx-accent) var(--nyx-selection), var(--nyx-popover));
+  --promo-border-color: var(--nyx-line);
+  --promo-border-color-vibrant: color-mix(in srgb, var(--nyx-accent) 30%, transparent);
+  --promo-border-radius: var(--nyx-radius-card);
+  --promo-message-text-color: var(--nyx-text);
+  --promo-message-text-color-vibrant: var(--nyx-text);
+  --dialog-background-color: var(--nyx-popover);
+  --dialog-border-color: var(--nyx-line);
+  --dialog-border-radius: var(--nyx-radius-dialog);
+  --table-background-color: var(--nyx-card);
+  --table-border-color: var(--nyx-line);
+  --table-header-background-color: var(--nyx-tile);
+  --table-header-text-color: var(--nyx-dim);
+  --table-row-background-color: var(--nyx-card);
+  --table-row-background-color-alternate: var(--nyx-tile);
+
+  --panel-menuitem-padding-block: 7px;
+  --panel-menuitem-padding-inline: 10px;
+  --panel-menuitem-margin-inline: 6px;
+  --panel-menuitem-border-radius: var(--nyx-radius-small);
+  --panel-background-color: var(--nyx-popover);
+  --panel-text-color: var(--nyx-text);
+  --panel-border-color: var(--nyx-line);
+  --panel-separator-color: var(--nyx-line);

@@ -1,0 +1,16 @@
+diff --git a/browser/components/downloads/content/indicator.js b/browser/components/downloads/content/indicator.js
+index 3d7d4ae..43ee90c 100644
+--- a/browser/components/downloads/content/indicator.js
++++ b/browser/components/downloads/content/indicator.js
+@@ -73,6 +73,11 @@ const DownloadsButton = {
+     indicator.open = this._anchorRequested;
+ 
+     let widget = CustomizableUI.getWidget("downloads-button");
++    // Nyx: from More tools, the panel opens under the More tools button.
++    let instance = widget.forWindow(window);
++    if (instance.overflowed) {
++      return instance.anchor;
++    }
+     // Determine if the indicator is located on an invisible toolbar.
+     if (
+       !isElementVisible(indicator.parentNode) &&

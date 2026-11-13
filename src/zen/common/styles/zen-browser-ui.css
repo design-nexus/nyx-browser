@@ -279,11 +279,12 @@ body,
     margin-top: 0;
   }
 
-  &:not([zen-right-side="true"]) #zen-tabbox-wrapper {
+  /* Nyx: with tabs in rows there's no sidebar beside the page, which keeps its margin. */
+  &:not([zen-right-side="true"], [nyx-tabs-horizontal]) #zen-tabbox-wrapper {
     margin-left: 0;
   }
 
-  &[zen-right-side="true"] #zen-tabbox-wrapper {
+  &[zen-right-side="true"]:not([nyx-tabs-horizontal]) #zen-tabbox-wrapper {
     margin-right: 0;
   }
 }
@@ -450,5 +451,45 @@ body,
 @media (-moz-platform: macos) {
   :root[macOSNativeFullscreen][zen-compact-mode][zen-right-side] body {
     contain: none;
+  }
+}
+
+/* Nyx: the find bar in the theme's colours; Firefox draws it in the system's dialog colours. */
+findbar {
+  background-color: var(--nyx-panel) !important;
+  color: var(--nyx-text) !important;
+  border-top-color: var(--nyx-line) !important;
+
+  & .findbar-textbox {
+    background-color: var(--nyx-tile) !important;
+    color: var(--nyx-text) !important;
+    border: 1px solid var(--nyx-line) !important;
+    border-radius: var(--nyx-radius-small) !important;
+    box-shadow: none !important;
+    padding: 4px 8px !important;
+
+    &:focus {
+      border-color: transparent !important;
+      outline: 2px solid color-mix(in srgb, var(--nyx-accent) 60%, transparent) !important;
+      outline-offset: -1px !important;
+    }
+
+    &[status="notfound"] {
+      background-color: color-mix(in srgb, var(--nyx-danger) 18%, var(--nyx-tile)) !important;
+    }
+
+    &[flash="true"] {
+      background-color: color-mix(in srgb, var(--nyx-warning) 22%, var(--nyx-tile)) !important;
+    }
+  }
+
+  & .findbar-container > checkbox,
+  & .findbar-label,
+  & .found-matches {
+    color: var(--nyx-dim);
+  }
+
+  & .findbar-find-status[status="notfound"] {
+    color: var(--nyx-danger);
   }
 }

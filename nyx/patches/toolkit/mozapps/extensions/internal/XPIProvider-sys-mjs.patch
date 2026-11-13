@@ -1,0 +1,30 @@
+diff --git a/toolkit/mozapps/extensions/internal/XPIProvider.sys.mjs b/toolkit/mozapps/extensions/internal/XPIProvider.sys.mjs
+index f448b25..6f486d5 100644
+--- a/toolkit/mozapps/extensions/internal/XPIProvider.sys.mjs
++++ b/toolkit/mozapps/extensions/internal/XPIProvider.sys.mjs
+@@ -33,6 +33,7 @@ ChromeUtils.defineESModuleGetters(lazy, {
+   FileUtils: "resource://gre/modules/FileUtils.sys.mjs",
+   JSONFile: "resource://gre/modules/JSONFile.sys.mjs",
+   Langpack: "resource://gre/modules/Extension.sys.mjs",
++  NyxAddons: "resource://nyx/NyxAddons.sys.mjs",
+   TelemetrySession: "resource://gre/modules/TelemetrySession.sys.mjs",
+ });
+ 
+@@ -2791,6 +2792,17 @@ export var XPIProvider = {
+         );
+       }
+ 
++      // Nyx: Browser's own extensions. Passwords' goes when Passwords is uninstalled.
++      for (const { id, version, base } of lazy.NyxAddons.builtins()) {
++        if (base) {
++          this.maybeInstallBuiltinAddon(id, version, base);
++        } else if (BuiltInLocation.get(id)) {
++          this.databaseReady.then(async () =>
++            (await AddonManager.getAddonByID(id))?.uninstall()
++          );
++        }
++      }
++
+       resolveProviderReady(Promise.all(this.startupPromises));
+ 
+       if (AppConstants.MOZ_CRASHREPORTER) {

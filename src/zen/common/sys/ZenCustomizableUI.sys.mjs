@@ -9,6 +9,7 @@ ChromeUtils.defineESModuleGetters(lazy, {
   ZenKeyboardShortcuts:
     "resource:///modules/zen/kbs/ZenKeyboardShortcuts.sys.mjs",
   ZenLibraryWidget: "moz-src:///zen/library/ZenLibraryWidget.sys.mjs",
+  NyxWidgets: "chrome://browser/content/nyx/NyxWidgets.sys.mjs",
 });
 
 const kCollapseSidebarWidth = 60;
@@ -19,21 +20,34 @@ export const ZenCustomizableUI = new (class {
   constructor() {}
 
   TYPE_TOOLBAR = "toolbar";
-  defaultSidebarIcons = [
-    Services.prefs.getBoolPref("zen.library.enabled")
-      ? "zen-library-button"
-      : "downloads-button",
-    "zen-workspaces-button",
-    "zen-create-new-button",
-  ];
+  // Nyx: the foot is the workspaces and a new one; downloads are in the top bar.
+  defaultSidebarIcons = ["zen-workspaces-button", "zen-create-new-button"];
+
+  /**
+   * Nyx: the top bar's default buttons, from NyxWidgets.
+   *
+   * @param {string[]} firefoxPlacements Firefox's own, for anything Firefox adds conditionally.
+   * @returns {string[]}
+   */
+  navbarPlacements(firefoxPlacements) {
+    const conditional = firefoxPlacements.filter(
+      id => !["sidebar-button", "spring", "vertical-spacer"].includes(id) &&
+        !lazy.NyxWidgets.navbarPlacements.includes(id)
+    );
+    const placements = [...lazy.NyxWidgets.navbarPlacements];
+    placements.splice(placements.indexOf("urlbar-container") + 1, 0, ...conditional);
+    return placements;
+  }
 
   startup(CustomizableUIInternal) {
     CustomizableUIInternal.createBuiltinWidget(lazy.ZenLibraryWidget);
+    lazy.NyxWidgets.register(CustomizableUIInternal);
     CustomizableUIInternal.registerArea(
       "zen-sidebar-top-buttons",
       {
         type: this.TYPE_TOOLBAR,
-        defaultPlacements: ["zen-toggle-compact-mode"],
+        // Nyx: the sidebar button steps through the sidebar's modes, compact mode among them.
+        defaultPlacements: [lazy.NyxWidgets.SIDEBAR_BUTTON],
         defaultCollapsed: null,
         overflowable: true,
       },
@@ -58,7 +72,7 @@ export const ZenCustomizableUI = new (class {
 
   #addSidebarButtons(window) {
     const kDefaultSidebarWidth =
-      AppConstants.platform === "macosx" ? "230px" : "186px";
+      AppConstants.platform === "macosx" ? "230px" : "212px";
     const toolbox = window.gNavToolbox;
 
     // Set a splitter to navigator-toolbox
@@ -340,9 +354,7 @@ export const ZenCustomizableUI = new (class {
         wrapper.prepend(elem);
       }
     }
-    window.document
-      .getElementById("stop-reload-button")
-      .removeAttribute("overflows");
+    // Nyx: back, forward and reload stay in the top bar however narrow the window is.
   }
 
   #dispatchResizeEvent(window) {

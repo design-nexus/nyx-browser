@@ -1,0 +1,17 @@
+diff --git a/browser/components/urlbar/UrlbarValueFormatter.sys.mjs b/browser/components/urlbar/UrlbarValueFormatter.sys.mjs
+index 425abe1..70e9250 100644
+--- a/browser/components/urlbar/UrlbarValueFormatter.sys.mjs
++++ b/browser/components/urlbar/UrlbarValueFormatter.sys.mjs
+@@ -240,9 +240,10 @@ export class UrlbarValueFormatter {
+     // of the input value to de-emphasize as `preDomain`.
+     let url = inputValue;
+     let trimmedLength = 0;
+-    let trimmedProtocol = lazy.BrowserUIUtils.trimURLProtocol;
++    let trimmedProtocol =
++      lazy.BrowserUIUtils.getTrimmedURLProtocol(untrimmedValue);
+     if (
+-      untrimmedValue.startsWith(trimmedProtocol) &&
++      trimmedProtocol &&
+       !inputValue.startsWith(trimmedProtocol)
+     ) {
+       // The protocol has been trimmed, so we add it back.

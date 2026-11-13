@@ -63,8 +63,9 @@
   locked: true
   value: false
 
+# Nyx: Firefox's design, the window closes with its last tab. Settings can keep it open.
 - name: browser.tabs.closeWindowWithLastTab
-  value: false
+  value: true
 
 - name: browser.tabs.dragDrop.multiselectStacking
   value: false

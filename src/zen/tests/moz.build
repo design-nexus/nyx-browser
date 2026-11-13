@@ -15,6 +15,7 @@ BROWSER_CHROME_MANIFESTS += [
     "live-folders/browser.toml",
     "media/browser.toml",
     "migration/browser.toml",
+    "nyx/browser.toml",
     "performance/browser.toml",
     "pinned/browser.toml",
     "popover/browser.toml",
@@ -30,8 +31,6 @@ BROWSER_CHROME_MANIFESTS += [
     "welcome/browser.toml",
     "window_drag/browser.toml",
     "window_sync/browser.toml",
-    # Nyx Browser's own chrome.
-    "nyx/browser.toml",
 ]
 
 DIRS += [

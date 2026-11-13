@@ -8,6 +8,12 @@
 
 :root {
   --zen-squircle-value: 1;
+  /* Nyx: Settings in Nyx Design's type, with room for a setting's note beside its control. */
+  font-family: var(--nyx-font);
+}
+
+.pane-container {
+  width: min(100%, 720px);
 }
 
 .pane-container {

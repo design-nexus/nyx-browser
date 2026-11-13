@@ -1,0 +1,124 @@
+diff --git a/browser/components/urlbar/content/SmartbarInput.mjs b/browser/components/urlbar/content/SmartbarInput.mjs
+index 29acd7b..fa2da8e 100644
+--- a/browser/components/urlbar/content/SmartbarInput.mjs
++++ b/browser/components/urlbar/content/SmartbarInput.mjs
+@@ -360,6 +360,7 @@ ${
+   _applyingAutofill = false;
+   _resultForCurrentValue = null;
+   _untrimmedValue = "";
++  _trimmedProtocol = "";
+   _wwwIsTrimmed = false;
+   _enableAutofillPlaceholder = true;
+ 
+@@ -1301,7 +1302,7 @@ ${
+       end: this.value ? this.selectionEnd : Number.MAX_SAFE_INTEGER,
+       // When restoring a URI from an empty value, we don't want to untrim it.
+       shouldUntrim:
+-        this.value && !this._protocolIsTrimmed && !this._wwwIsTrimmed,
++        this.value && !this._trimmedProtocol && !this._wwwIsTrimmed,
+     };
+   }
+ 
+@@ -1421,7 +1422,10 @@ ${
+       valid =
+         !dueToSessionRestore &&
+         (!this.browserWindow.isBlankPageURL(uri.spec) ||
+-          lazy.ExtensionUtils.isExtensionUrl(uri) ||
++          // Nyx: the dashboard is Browser's own new tab page, not an extension's.
++          (lazy.ExtensionUtils.isExtensionUrl(uri) &&
++            WebExtensionPolicy.getByURI(uri)?.id !=
++              "nyx-integration@design-nexus.github.io") ||
+           isInitialPageControlledByWebContent);
+     } else if (
+       this.browserWindow.isInitialPage(value) &&
+@@ -1437,9 +1441,7 @@ ${
+     // When calculating the selection indices we must take into account any
+     // trimmed prefix (protocol and potentially "www.").
+     let offset =
+-      (this._protocolIsTrimmed
+-        ? lazy.BrowserUIUtils.trimURLProtocol.length
+-        : 0) + (this._wwwIsTrimmed ? "www.".length : 0);
++      this._trimmedProtocol.length + (this._wwwIsTrimmed ? "www.".length : 0);
+     const previousSelectionStart = this.selectionStart + offset;
+     const previousSelectionEnd = this.selectionEnd + offset;
+ 
+@@ -4447,7 +4449,7 @@ ${
+       val = originalUrl.displaySpec;
+     }
+     this._untrimmedValue = untrimmedValue ?? val;
+-    this._protocolIsTrimmed = false;
++    this._trimmedProtocol = "";
+     this._wwwIsTrimmed = false;
+     if (allowTrim) {
+       let oldVal = val;
+@@ -4458,9 +4460,8 @@ ${
+       // prefix was actually removed from the displayed value.
+       let trimmedPrefix = lazy.BrowserUIUtils.getTrimmedURLPrefix(oldVal);
+       if (trimmedPrefix && !val.startsWith(trimmedPrefix)) {
+-        this._protocolIsTrimmed = trimmedPrefix.startsWith(
+-          lazy.BrowserUIUtils.trimURLProtocol
+-        );
++        this._trimmedProtocol =
++          lazy.BrowserUIUtils.getTrimmedURLProtocol(trimmedPrefix);
+         this._wwwIsTrimmed = trimmedPrefix.endsWith("www.");
+       }
+     }
+@@ -4772,7 +4773,7 @@ ${
+     if (
+       this.selectionStart > 0 ||
+       selectedVal == "" ||
+-      (this.valueIsTyped && !this._protocolIsTrimmed && !this._wwwIsTrimmed)
++      (this.valueIsTyped && !this._trimmedProtocol && !this._wwwIsTrimmed)
+     ) {
+       return selectedVal;
+     }
+@@ -5349,7 +5350,7 @@ ${
+     // Check if we can untrim the current value.
+     if (
+       !UrlbarPrefs.getScotchBonnetPref("untrimOnUserInteraction.featureGate") ||
+-      (!this._protocolIsTrimmed && !this._wwwIsTrimmed) ||
++      (!this._trimmedProtocol && !this._wwwIsTrimmed) ||
+       !this.focused ||
+       (!ignoreSelection && this.#allTextSelected)
+     ) {
+@@ -5362,9 +5363,7 @@ ${
+     // Correct the selection taking the trimmed prefix (protocol and
+     // leading "www.") into account.
+     let offset =
+-      (this._protocolIsTrimmed
+-        ? lazy.BrowserUIUtils.trimURLProtocol.length
+-        : 0) + (this._wwwIsTrimmed ? "www.".length : 0);
++      this._trimmedProtocol.length + (this._wwwIsTrimmed ? "www.".length : 0);
+ 
+     // In case of autofill, we may have to adjust its boundaries.
+     if (this._autofillPlaceholder) {
+@@ -6124,9 +6123,8 @@ ${
+ 
+     let l10nId;
+     if (UrlbarPrefs.get("keyword.enabled")) {
+-      l10nId = engineName
+-        ? "urlbar-placeholder-with-name"
+-        : "urlbar-placeholder";
++      // Nyx: the address field doesn't name the search engine.
++      l10nId = "urlbar-placeholder";
+     } else {
+       l10nId = "urlbar-placeholder-keyword-disabled";
+     }
+@@ -6318,7 +6316,7 @@ ${
+     // value would execute a search instead of visiting the typed url.
+     // When "www." was trimmed we always untrim, so the user sees the full URL
+     // and has to explicitly remove the prefix to load the bare domain.
+-    if (this._protocolIsTrimmed || this._wwwIsTrimmed) {
++    if (this._trimmedProtocol || this._wwwIsTrimmed) {
+       let untrim = this._wwwIsTrimmed;
+       if (!untrim) {
+         let fixedDisplaySpec = UrlbarContentUtils.getFixupPrimitives(
+@@ -6497,7 +6495,7 @@ ${
+     let value = this.value;
+     this.valueIsTyped = true;
+     this._untrimmedValue = value;
+-    this._protocolIsTrimmed = false;
++    this._trimmedProtocol = "";
+     this._wwwIsTrimmed = false;
+     this._resultForCurrentValue = null;
+ 

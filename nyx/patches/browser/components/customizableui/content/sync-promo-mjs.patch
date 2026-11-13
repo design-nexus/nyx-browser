@@ -1,0 +1,14 @@
+diff --git a/browser/components/customizableui/content/sync-promo.mjs b/browser/components/customizableui/content/sync-promo.mjs
+index ab21f69..771e0e3 100644
+--- a/browser/components/customizableui/content/sync-promo.mjs
++++ b/browser/components/customizableui/content/sync-promo.mjs
+@@ -163,9 +163,6 @@ export default class SyncPromo extends MozLitElement {
+       <moz-promo
+         type="vibrant"
+         dismissable
+-        imagesrc=${variant.image}
+-        imagealignment="start"
+-        imagedisplay="padded"
+         data-l10n-id=${variant.heading}
+         data-l10n-attrs="heading"
+         @promo:user-dismissed=${this.#onDismiss}

@@ -2,18 +2,17 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-/* Built-in values are Catppuccin Mocha, NyxOS's default, for the moment before the theme arrives
- * or without a host. */
+/* Built-in values are Nyx Dark, for a page the theme hasn't reached, as in another browser. */
 :root {
-  --nyx-bg: #1e1e2e;
-  --nyx-card: #282839;
-  --nyx-raised: #2e2f40;
-  --nyx-text: #cdd6f4;
-  --nyx-dim: #a6adc8;
-  --nyx-tertiary: #7f849c;
-  --nyx-accent: #89b4fa;
-  --nyx-on-accent: #1e1e2e;
-  --nyx-danger: #f38ba8;
+  --nyx-bg: #0d0e12;
+  --nyx-card: #191a21;
+  --nyx-raised: #1f2028;
+  --nyx-text: #e7e8ee;
+  --nyx-dim: #a2a5ba;
+  --nyx-tertiary: #8a8ea8;
+  --nyx-accent: #3d8ae8;
+  --nyx-on-accent: #0d0e12;
+  --nyx-danger: #f2655f;
   --nyx-hover: 6%;
   --nyx-selection: 16%;
   --nyx-radius-small: 7px;
@@ -31,7 +30,8 @@ html,
 body {
   margin: 0;
   height: 100%;
-  background: var(--nyx-bg);
+  /* The page's surface, as the dashboard, Settings and the sidebar have it. */
+  background: var(--nyx-surface, var(--nyx-bg));
   color: var(--nyx-text);
   font: 13px/1.4 var(--nyx-font);
 }
@@ -48,6 +48,29 @@ input {
 :focus-visible {
   outline: 2px solid var(--nyx-accent);
   outline-offset: 1px;
+}
+
+/* A dialog's or card's buttons; the primary one in the accent. */
+.button {
+  height: 32px;
+  padding: 0 14px;
+  border-radius: var(--nyx-radius-small);
+  background: var(--nyx-raised);
+  cursor: pointer;
+
+  &:hover {
+    background: var(--nyx-hover-bg);
+  }
+
+  &.primary {
+    background: var(--nyx-accent);
+    color: var(--nyx-on-accent);
+    font-weight: 500;
+
+    &:hover {
+      background: color-mix(in srgb, var(--nyx-accent) 88%, var(--nyx-text));
+    }
+  }
 }
 
 .icon-button {

@@ -5,6 +5,8 @@
  */
 
 @import url('chrome://browser/content/zen-styles/zen-tabs/vertical-tabs.css');
+/* Nyx: tabs in a row. */
+@import url('chrome://browser/content/zen-styles/zen-tabs/horizontal-tabs.css');
 
 #zen-tabbox-wrapper {
   position: relative;
@@ -114,7 +116,8 @@
     }
 
     & #nav-bar {
-      width: calc(100% + var(--zen-toolbox-max-width) - var(--zen-element-separation));
+      /* Nyx: as wide as the margin below pulls it, so its end stays at the window's. */
+      width: calc(100% + var(--zen-toolbox-max-width) - var(--zen-element-separation) - 4px);
 
       /**
        * We only want it when the window buttons are on the left side, in other

@@ -1,0 +1,15 @@
+diff --git a/browser/locales/en-US/chrome/browser/browser.properties b/browser/locales/en-US/chrome/browser/browser.properties
+index 14d9616..aa99fa3 100644
+--- a/browser/locales/en-US/chrome/browser/browser.properties
++++ b/browser/locales/en-US/chrome/browser/browser.properties
+@@ -122,8 +122,8 @@ identity.ev.contentOwner2=Certificate issued to: %S
+ # LOCALIZATION NOTE (identity.notSecure.label):
+ # Keep this string as short as possible, this is displayed in the URL bar
+ # use a synonym for "safe" or "private" if "secure" is too long.
+-identity.notSecure.label=Not Secure
+-identity.notSecure.tooltip=Connection is not secure
++identity.notSecure.label=Not secure
++identity.notSecure.tooltip=The connection to this site isn’t secure
+ 
+ identity.extension.label=Extension (%S)
+ identity.extension.tooltip=Loaded by extension: %S

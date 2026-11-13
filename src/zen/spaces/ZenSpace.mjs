@@ -68,12 +68,19 @@ export class nsZenWorkspace extends MozXULElement {
             <hbox class="zen-current-workspace-indicator-icon" />
           </stack>
           <label class="zen-current-workspace-indicator-name" />
+          <image class="nyx-workspace-menu-chevron" />
           <toolbarbutton class="toolbarbutton-1 chromeclass-toolbar-additional zen-workspaces-actions" context="zenWorkspaceMoreActions" />
+          <toolbarbutton class="toolbarbutton-1 nyx-tab-search-button" data-l10n-id="nyx-tab-search-button" />
         </vbox>
         <arrowscrollbox orient="vertical" class="workspace-arrowscrollbox">
           <vbox class="zen-workspace-tabs-section zen-workspace-pinned-tabs-section" hide-separator="true">
             <html:div class="zen-tab-group-start space-fake-collapsible-start" style="order: -9999;" />
+            <hbox class="nyx-folders-header" align="center">
+              <label class="nyx-section-label" data-l10n-id="nyx-sidebar-folders" />
+              <toolbarbutton class="toolbarbutton-1 nyx-new-folder-button" command="cmd_zenOpenFolderCreation" data-l10n-id="nyx-sidebar-new-folder" />
+            </hbox>
             <hbox class="pinned-tabs-container-separator">
+              <label class="nyx-section-label" data-l10n-id="nyx-sidebar-today" />
               <toolbarseparator flex="1" />
               <toolbarbutton command="cmd_zenCloseUnpinnedTabs"
                              tooltip="dynamic-shortcut-tooltip"
@@ -89,7 +96,7 @@ export class nsZenWorkspace extends MozXULElement {
                              class="toolbarbutton-1"
                              command="cmd_newNavigatorTab"
                              tooltip="dynamic-shortcut-tooltip"
-                             data-l10n-id="tabs-toolbar-new-tab">
+                             data-l10n-id="nyx-sidebar-new-tab">
                 <box class="zen-newtab-sublabel-anchor">
                   <label class="zen-tab-sublabel" crop="end" role="presentation"/>
                 </box>
@@ -105,6 +112,16 @@ export class nsZenWorkspace extends MozXULElement {
           <image class="zen-workspace-scroll-to-tab-arrow" />
         </hbox>
       `;
+  }
+
+  #placeFoldersHeader() {
+    const header = this.foldersHeader;
+    const before =
+      this.pinnedTabsContainer.querySelector(":scope > zen-folder") ||
+      this.pinnedTabsContainer.separatorElement;
+    if (header && before && header.nextElementSibling !== before) {
+      before.before(header);
+    }
   }
 
   static get moveTabToButtonMarkup() {
@@ -164,6 +181,14 @@ export class nsZenWorkspace extends MozXULElement {
       this.pinnedTabsContainer.querySelector(
         ".pinned-tabs-container-separator"
       );
+    // Nyx: the Folders heading stands above the first folder, after the pinned tabs.
+    this.foldersHeader = this.pinnedTabsContainer.querySelector(
+      ".nyx-folders-header"
+    );
+    new MutationObserver(() => this.#placeFoldersHeader()).observe(
+      this.pinnedTabsContainer,
+      { childList: true }
+    );
     this.initializeAttributeInheritance();
 
     this.scrollbox = this.querySelector("arrowscrollbox");
@@ -213,11 +238,20 @@ export class nsZenWorkspace extends MozXULElement {
         gZenWorkspaces.changeWorkspaceIcon();
       });
 
+    // Nyx: the row opens the workspaces menu; its search button searches tabs.
     this.indicator.addEventListener("click", event => {
-      if (this.hasPinnedTabs && event.button === 0) {
-        event.stopPropagation();
-        this.collapsiblePins.toggle();
+      if (event.button !== 0) {
+        return;
       }
+      event.stopPropagation();
+      if (event.target.closest(".nyx-tab-search-button")) {
+        gTabsPanel.searchTabs();
+        return;
+      }
+      if (event.target.closest(".zen-workspaces-actions")) {
+        return;
+      }
+      gZenWorkspaces.openWorkspacesMenu(this.indicator);
     });
 
     if (!gZenWorkspaces.currentWindowIsSyncing) {

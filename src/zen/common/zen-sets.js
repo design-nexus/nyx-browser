@@ -37,6 +37,8 @@
 
     // Spaces
     cmd_zenWorkspaceForward: () => gZenWorkspaces.changeWorkspaceShortcut(),
+    // Nyx: "Edit <space>…" in the workspaces menu.
+    cmd_nyxEditWorkspace: () => gZenWorkspaces.openWorkspaceSettingsMenu(),
     cmd_zenWorkspaceBackward: () => gZenWorkspaces.changeWorkspaceShortcut(-1),
     cmd_zenChangeWorkspaceTab: event =>
       gZenWorkspaces.changeTabWorkspace(

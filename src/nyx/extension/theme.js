@@ -2,46 +2,28 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-/* Applies the suite's theme to this extension's pages: asked of the native host, and remembered
- * so a page paints in the right colors before the host answers. */
+/* Browser puts the suite's theme on this extension's pages itself (NyxTheme.sys.mjs). A page
+ * that draws something from it, such as its tab icon, hears "nyx-theme" when it changes. */
 "use strict";
 
-const TOKEN = /^\s*--nyx-([a-z0-9-]+):\s*([^;{}]+);\s*$/;
-
-function applyTokens(css) {
-  for (const line of (css || "").split("\n")) {
-    const match = TOKEN.exec(line);
-    if (match) {
-      document.documentElement.style.setProperty(`--nyx-${match[1]}`, match[2].trim());
-    }
-  }
-}
-
-async function followTheme() {
-  try {
-    const { tokens } = await browser.storage.local.get("tokens");
-    applyTokens(tokens);
-  } catch {
-    // Storage off: the first answer below paints it.
-  }
+function followTheme() {
+  const read = () => {
+    const style = getComputedStyle(document.documentElement);
+    return ["--nyx-scheme", "--nyx-bg", "--nyx-text", "--nyx-accent"].map(name => style.getPropertyValue(name)).join();
+  };
   let last = null;
-  const refresh = async () => {
-    try {
-      const { tokens } = await browser.runtime.sendMessage({ to: "background", action: "theme" });
-      if (tokens && tokens !== last) {
-        last = tokens;
-        applyTokens(tokens);
-        browser.storage.local.set({ tokens }).catch(() => {});
-      }
-    } catch {
-      // No host, as in another browser: the page's built-in colors stay.
+  const check = () => {
+    const now = read();
+    if (now !== last) {
+      last = now;
+      document.dispatchEvent(new Event("nyx-theme"));
     }
   };
-  refresh();
-  // Appearance and the suite can change while this page stays open and focused.
-  setInterval(refresh, 1000);
-  document.addEventListener("visibilitychange", () => document.hidden || refresh());
-  window.addEventListener("focus", refresh);
+  check();
+  // Appearance and the suite can change while this page stays open.
+  setInterval(check, 1000);
+  document.addEventListener("visibilitychange", () => document.hidden || check());
+  window.addEventListener("focus", check);
 }
 
 followTheme();

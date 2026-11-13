@@ -23,7 +23,6 @@
 <section id="weather" aria-label="Weather" hidden>
   <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18h10a4 4 0 0 0 .5-8A6 6 0 0 0 6 11a3.5 3.5 0 0 0 1 7z"/></svg>
   <span id="weather-now"></span>
-  <span id="weather-details"></span>
 </section>
 
 <button id="customize" type="button" aria-expanded="false" aria-controls="options">
@@ -42,13 +41,31 @@
   <label class="check"><input type="checkbox" id="show-weather"> Weather</label>
 </div>
 
-<template id="favorite-form">
-  <form class="add-form">
-    <input name="url" type="text" placeholder="Address" aria-label="Address" required>
-    <input name="title" type="text" placeholder="Name (optional)" aria-label="Name">
-    <button type="submit">Add</button>
+<dialog id="favorite-dialog" aria-labelledby="favorite-heading">
+  <form id="favorite-form" method="dialog" novalidate>
+    <h2 id="favorite-heading">Add a favorite</h2>
+    <div class="favorite-preview" aria-hidden="true">
+      <span class="site-icon" id="favorite-preview-icon">?</span>
+      <span class="favorite-preview-text">
+        <span id="favorite-preview-name">New favorite</span>
+        <span id="favorite-preview-host">Its address shows here</span>
+      </span>
+    </div>
+    <label class="field">
+      <span class="field-label">Address</span>
+      <input name="url" type="text" placeholder="example.com" autocomplete="off" spellcheck="false" aria-describedby="favorite-error">
+      <span class="field-error" id="favorite-error" role="alert" hidden>Enter a web address, like example.com.</span>
+    </label>
+    <label class="field">
+      <span class="field-label">Name <span class="field-optional">Optional</span></span>
+      <input name="title" type="text" autocomplete="off">
+    </label>
+    <div class="dialog-buttons">
+      <button type="button" class="button" value="cancel" id="favorite-cancel">Cancel</button>
+      <button type="submit" class="button primary" id="favorite-submit">Add</button>
+    </div>
   </form>
-</template>
+</dialog>
 
 <script src="theme.js"></script>
 <script src="newtab.js"></script>
