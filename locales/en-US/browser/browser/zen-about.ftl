@@ -3,7 +3,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 # The engine this build is based on, not meant to be translated.
--zen-engine-name = Firefox
 
 zen-about-dialog-title =
     .title = About { -brand-full-name }
@@ -23,7 +22,7 @@ zen-about-version-button =
 zen-about-copied = Copied
 # Variables:
 #   $firefoxVersion (String): engine version this build is based on, e.g. 159.0
-zen-about-firefox-version = Based on { -zen-engine-name } { $firefoxVersion }
+zen-about-firefox-version = Engine { $firefoxVersion }
 
 ## Update status
 
@@ -55,10 +54,7 @@ zen-about-update-learn-more = Learn more
 ## Links
 
 zen-about-release-notes = What’s new
-zen-about-donate = Donate
 zen-about-report-issue = Report an issue
 
-zen-about-community = { -brand-short-name } is free and open source, built on { -zen-engine-name } by a <a data-l10n-name="github-link">community of contributors</a>.
+zen-about-community = { -brand-short-name } is free and open source, made by <a data-l10n-name="github-link">Design Nexus</a>.
 zen-about-license = License
-zen-about-rights = Your rights
-zen-about-privacy = Privacy

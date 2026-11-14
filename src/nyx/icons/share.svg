@@ -1,4 +1,4 @@
 <!-- This Source Code Form is subject to the terms of the Mozilla Public
    - License, v. 2.0. If a copy of the MPL was not distributed with this
    - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="context-fill" stroke-opacity="context-fill-opacity" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M8 7l4-4 4 4M5 13v6h14v-6"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="context-fill" stroke-opacity="context-fill-opacity" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11 M8 8l4-4 4 4 M5.5 13v5.5h13V13"/></svg>

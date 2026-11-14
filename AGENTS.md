@@ -7,8 +7,20 @@ interface; Mozilla and Zen remain the source for the engine and security fixes. 
 - Nyx's code: `src/nyx/` (chrome modules, styles, icons, the extension), `nyx/` (native host,
   tests, install, Nyx's engine patches in `nyx/patches/`, docs), `prefs/nyx/`, `configs/branding/nyx/`,
   `mozconfig`. Edits in Zen's own files are small and carry a `Nyx:` comment.
-- Structure is code: orientation, sidebar modes, toolbar layout and overflow live in JavaScript
-  (Zen's managers or `src/nyx/modules`). CSS is for appearance and layout styling.
+- Structure is code: the layouts (Studio, Focus, Workbench in `nyx.layout`, `src/nyx/modules/layout.js`,
+  which sets Zen's orientation and single toolbar), sidebar modes, toolbar layout and overflow live
+  in JavaScript (Zen's managers or `src/nyx/modules`). CSS is for appearance and layout styling.
+- Icons come from Umbra's symbolic glyphs: `nyx/tools/umbra-icons.py` draws `src/nyx/icons` and
+  `zen-icons/nyx` (every icon on Linux) from an umbra-icons checkout; a new name in its tables is a
+  new file. Icons Umbra doesn't draw keep Browser's own.
+- Settings shows only Browser's panes (`src/nyx/preferences/`); Firefox's and Zen's pane names lead
+  to them (`nyxPaneFor`). The Library and Extensions are Browser's pages, `about:library` and
+  `about:extensions` (`src/nyx/library/`, registered by `NyxAbout.sys.mjs`); Firefox's ways into its
+  Library window and add-ons manager open them.
+- No Firefox, Mozilla or Zen names in what Browser shows: `nyx/tools/audit-names.py` lists any in
+  the built strings, with the few left on purpose and why.
+- A new file under `src/` needs its link in `engine/` (as `nyx/tools/import.sh` makes them) and
+  `./mach build-backend` before `build faster` packages it.
 - `engine/` is generated (Firefox's source plus every patch): never edit it except to write a
   patch with `nyx/tools/make-patch.sh`.
 - Never modify the system's Zen or Firefox, a user's profile or the default browser, except through

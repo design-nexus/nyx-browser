@@ -2,7 +2,16 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-# Tab orientation is Zen's zen.tabs.vertical; these are Browser's own.
+# Browser's own prefs. Zen's zen.tabs.vertical and zen.view.use-single-toolbar follow nyx.layout.
+
+# The window's layout: studio (tab sidebar and a header), focus (sidebar only) or workbench (tabs
+# in a row, a rail beside the page). src/nyx/modules/layout.js.
+- name: nyx.layout
+  value: studio
+
+# Focus's bookmarks shelf, folded down to its heading.
+- name: nyx.bookmarks.shelf-folded
+  value: false
 
 # expanded, compact, hidden or auto (follows the window's width).
 - name: nyx.sidebar.mode
@@ -15,9 +24,9 @@
 - name: nyx.sidebar.auto.compact-from
   value: 900
 
-# Frosted menus and panels, blurred by the compositor where it can.
+# Frosted menus and panels, blurred by the compositor where it can (the layouts' mockups have them).
 - name: nyx.effects.frosted
-  value: false
+  value: true
 
 # The bookmarks bar shows bookmarks as just their icon (the name on hover); folders keep names.
 - name: nyx.bookmarks.icons-only
@@ -157,3 +166,63 @@
 
 - name: nyx.vpn.nordvpn-api
   value: https://api.nordvpn.com/v1
+
+# The address field's dropdown (address.js): Ctrl+Enter opens a result in a new tab, and history
+# and bookmarks say when you last visited or saved them.
+- name: browser.urlbar.ctrlCanonizesURLs
+  value: false
+
+- name: browser.urlbar.resultExplanations.featureGate
+  value: true
+
+# Zen's Share, which uploads tabs to Zen's server (ZenShareManager.mjs). Nyx Share sends pages.
+- name: zen.share.enabled
+  value: false
+
+# Zen's Boosts (per-site styles and zapping) aren't part of Browser.
+- name: zen.boosts.enabled
+  value: false
+
+# No Firefox password card on the protections page (Nyx Passwords keeps passwords), and no
+# Firefox Relay email masks.
+- name: browser.contentblocking.report.lockwise.enabled
+  value: false
+
+- name: signon.firefoxRelay.feature
+  value: disabled
+
+# YouTube (Settings › YouTube, NyxYouTubeChild): theater mode always; no mini player when
+# scrolling or leaving a video; default quality (a YouTube level such as hd1080, "" its own
+# choice), speed ("" its own) and volume (0-100, -1 its own); the mouse wheel over the video for
+# volume, with Ctrl for speed; pausing other tabs' videos when one plays; turning off "autoplay
+# next"; hiding cards and end screens; Shorts in the normal player. Background tabs not
+# autoplaying is Firefox's media.block-autoplay-until-in-foreground.
+- name: nyx.youtube.theater
+  value: true
+
+- name: nyx.youtube.no-miniplayer
+  value: true
+
+- name: nyx.youtube.quality
+  value: ""
+
+- name: nyx.youtube.speed
+  value: ""
+
+- name: nyx.youtube.volume
+  value: -1
+
+- name: nyx.youtube.wheel
+  value: true
+
+- name: nyx.youtube.pause-others
+  value: true
+
+- name: nyx.youtube.no-autoplay-next
+  value: false
+
+- name: nyx.youtube.hide-cards
+  value: true
+
+- name: nyx.youtube.shorts-player
+  value: false

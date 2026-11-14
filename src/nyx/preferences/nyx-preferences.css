@@ -5,12 +5,24 @@
 /* Browser's settings panes (nyxPanes.inc.xhtml) in Nyx Design: each section a card of rows,
  * segmented controls for a choice of a few, switches for on and off. */
 
-/* A pane's title, as Firefox's own panes have theirs (moz-page-header.css). */
-.subcategory[data-category^="paneNyx"] h1 {
+/* A pane's title and the line under it. */
+.nyx-pane-head,
+.nyx-find-head {
   margin: 0 0 18px;
-  font-size: 20px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
+  padding: 0 4px;
+
+  & h1 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+}
+
+.nyx-pane-sub {
+  margin: 2px 0 0;
+  color: var(--nyx-dim, GrayText);
+  font-size: 13px;
 }
 
 .nyx-nav-heading {
@@ -86,8 +98,9 @@
     }
   }
 
-  /* Buttons and menus in a row, small and outlined; Browser's main action keeps its fill. */
-  & :is(button:not(.nyx-primary, .nyx-chip-remove), menulist) {
+  /* Buttons and menus in a row, small and outlined; Browser's main action keeps its fill.
+   * Container colour/icon pickers have their own styles. */
+  & :is(button:not(.nyx-primary, .nyx-chip-remove, .nyx-container-dot, .nyx-container-icon), menulist) {
     min-height: 30px;
     margin: 0;
     padding: 0 12px;
@@ -170,7 +183,112 @@ radiogroup.nyx-seg {
   }
 }
 
-/* A switch: a checkbox with its name first and the switch at the row's end. */
+/* Tabs & Sidebar › Layout: Browser's layouts as cards, each a small drawing of its window. */
+.nyx-layout-row {
+  gap: 10px !important;
+}
+
+radiogroup.nyx-layouts {
+  flex-direction: row;
+  gap: 12px;
+  margin: 0;
+
+  & > radio.nyx-layout-card {
+    --nyx-thumb-bar: color-mix(in srgb, var(--nyx-text) 16%, transparent);
+    --nyx-thumb-page: color-mix(in srgb, var(--nyx-text) 7%, var(--nyx-card, Canvas));
+    flex: 1 1 0;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    color: var(--nyx-dim);
+    font-size: 12.5px;
+    font-weight: 600;
+
+    &::before {
+      content: "";
+      display: block;
+      width: 100%;
+      height: 96px;
+      border-radius: 10px;
+      background-color: var(--nyx-tile);
+      background-repeat: no-repeat;
+      box-shadow: inset 0 0 0 1px var(--nyx-line);
+    }
+
+    & .radio-check {
+      display: none;
+    }
+
+    & .radio-label-box {
+      margin: 0;
+      padding: 0 2px;
+    }
+
+    &:hover {
+      color: var(--nyx-text);
+    }
+
+    &[selected] {
+      color: var(--nyx-text);
+
+      &::before {
+        box-shadow: inset 0 0 0 2px var(--nyx-accent);
+      }
+    }
+
+    &:focus-visible::before {
+      outline: 2px solid var(--nyx-accent);
+      outline-offset: 2px;
+    }
+  }
+
+  /* The header across the top, the bookmarks bar under it, the sidebar, the page. */
+  & > radio[value="studio"]::before {
+    background-image:
+      linear-gradient(var(--nyx-thumb-bar), var(--nyx-thumb-bar)),
+      repeating-linear-gradient(90deg, var(--nyx-thumb-bar) 0 12px, transparent 12px 16px),
+      repeating-linear-gradient(180deg, var(--nyx-thumb-bar) 0 6px, transparent 6px 10px),
+      linear-gradient(var(--nyx-thumb-page), var(--nyx-thumb-page));
+    background-position: 32% 7px, right 8px top 17px, 7px 17px, right 6px bottom 6px;
+    background-size: 38% 7px, 68% 4px, 18% 62px, 72% 68px;
+  }
+
+  /* The sidebar: the address, the shelf, the tabs; the page the full height. */
+  & > radio[value="focus"]::before {
+    background-image:
+      linear-gradient(var(--nyx-thumb-bar), var(--nyx-thumb-bar)),
+      repeating-linear-gradient(90deg, var(--nyx-thumb-bar) 0 5px, transparent 5px 7px),
+      repeating-linear-gradient(180deg, var(--nyx-thumb-bar) 0 6px, transparent 6px 10px),
+      linear-gradient(var(--nyx-thumb-page), var(--nyx-thumb-page));
+    background-position: 7px 7px, 7px 19px, 7px 30px, right 6px top 6px;
+    background-size: 20% 8px, 20% 6px, 20% 56px, 72% 84px;
+  }
+
+  /* The tab bar, the address bar, the bookmarks bar, the rail and the page. */
+  & > radio[value="workbench"]::before {
+    background-image:
+      repeating-linear-gradient(90deg, var(--nyx-thumb-bar) 0 22px, transparent 22px 26px),
+      linear-gradient(var(--nyx-thumb-bar), var(--nyx-thumb-bar)),
+      repeating-linear-gradient(90deg, var(--nyx-thumb-bar) 0 12px, transparent 12px 16px),
+      repeating-linear-gradient(180deg, var(--nyx-thumb-bar) 0 6px, transparent 6px 10px),
+      linear-gradient(var(--nyx-thumb-page), var(--nyx-thumb-page));
+    background-position: 6px 5px, 6px 15px, 6px 25px, 6px 33px, right 6px bottom 6px;
+    background-size: calc(100% - 12px) 6px, calc(100% - 12px) 6px, calc(100% - 12px) 4px, 6px 50px, calc(100% - 22px) 57px;
+  }
+}
+
+/* Zen's own layout chooser writes the prefs Browser's layouts set. */
+#zenVerticalTabsGroup > label:first-of-type,
+#zenVerticalTabsGroup > description:first-of-type,
+#zenLayoutList {
+  display: none;
+}
+
+/* A switch: Design 2.0 Segment — a track with a hairline and a raised rounded
+ * knob; on, the knob is the accent and the track a tint of it. The check is an
+ * image (no pseudo-elements), so the knob is an SVG painted with context-fill. */
 checkbox.nyx-switch {
   flex-direction: row-reverse;
   justify-content: space-between;
@@ -180,25 +298,33 @@ checkbox.nyx-switch {
     margin: 0;
   }
 
-  /* The knob is drawn in the track's background: the check is an image, which has no
-   * pseudo-elements. */
   & .checkbox-check {
     appearance: none;
-    width: 34px;
-    height: 20px;
+    width: 38px;
+    height: 22px;
     margin: 0 0 0 14px;
     border: 0;
-    border-radius: 10px;
+    border-radius: 7px;
     list-style-image: none;
-    background: radial-gradient(circle at 10px 50%, #fff 6.5px, transparent 7px), var(--nyx-muted);
+    -moz-context-properties: fill;
+    fill: color-mix(in srgb, var(--nyx-text) 26%, var(--nyx-bg));
+    background-color: var(--nyx-muted);
+    background-image: url("chrome://browser/content/nyx/icons/switch-knob.svg");
+    background-size: 16px 16px;
+    background-position: 3px 3px;
+    background-repeat: no-repeat;
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--nyx-text) 6%, transparent);
   }
 
   &[checked] .checkbox-check {
-    background: radial-gradient(circle at 24px 50%, #fff 6.5px, transparent 7px), var(--nyx-accent);
+    fill: var(--nyx-accent);
+    background-color: color-mix(in srgb, var(--nyx-accent) 22%, var(--nyx-muted));
+    background-position: 19px 3px;
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--nyx-accent) 45%, transparent);
   }
 
   &:focus-visible .checkbox-check {
-    outline: 2px solid var(--nyx-accent);
+    outline: 2px solid color-mix(in srgb, var(--nyx-accent) 60%, transparent);
     outline-offset: 2px;
   }
 }
@@ -305,6 +431,12 @@ checkbox.nyx-switch {
 }
 
 button.nyx-primary {
+  min-height: 30px;
+  margin: 0;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 8px;
+  font-size: 12.5px;
   background: var(--nyx-accent) !important;
   color: var(--nyx-on-accent) !important;
   font-weight: 600;
@@ -318,4 +450,821 @@ button.nyx-primary {
 #nyxVpnAddGroup:not([data-open]),
 #nyxVpnAddGroup:not([nyx-provider="proxy"]) .nyx-vpn-proxy-only {
   display: none !important;
+}
+
+/* ---------- The navigation: Find, then Browser's sections as tinted tiles ---------- */
+
+/* Fill the Settings column and scroll the section list; 100vh is taller than the tab, so
+ * About was clipped with no scrollbar. */
+#preferences-stack,
+#preferences-stack > hbox {
+  min-height: 0 !important;
+  height: 100%;
+}
+
+#categories {
+  --page-nav-width: 236px;
+  box-sizing: border-box;
+  width: 236px;
+  height: 100% !important;
+  max-height: 100% !important;
+  min-height: 0 !important;
+  align-self: stretch;
+  overflow: hidden !important;
+  padding: 18px 12px !important;
+  box-shadow: inset -1px 0 var(--nyx-line);
+
+  /* Firefox's and Zen's own sections, and the links under them, aren't Browser's. */
+  & > moz-page-nav-button:not([id^="category-nyx-"]),
+  & > .nav-separator {
+    display: none !important;
+  }
+}
+
+.nyx-find {
+  margin: 0 0 6px;
+
+  & input {
+    box-sizing: border-box;
+    width: 100%;
+    height: 32px;
+    margin: 0;
+    padding: 0 10px 0 32px;
+    border: 0;
+    border-radius: 8px;
+    background: var(--nyx-tile) url("chrome://browser/content/nyx/icons/search.svg") 10px center / 14px no-repeat;
+    -moz-context-properties: fill;
+    fill: var(--nyx-tertiary);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--nyx-text) 6%, transparent);
+    color: var(--nyx-text);
+    font: inherit;
+    font-size: 13px;
+    outline: none;
+
+    &:focus {
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--nyx-accent) 60%, transparent);
+    }
+  }
+}
+
+/* Firefox's search box at the top of the page gives way to Find in the navigation. */
+#search-container > #searchInput {
+  display: none;
+}
+
+.nyx-nav-heading {
+  padding: 14px 8px 6px;
+}
+
+/* Each section's tile: its colour, faint, under its icon in that colour. */
+#category-nyx-general { --nyx-nav-tile: var(--nyx-swatch-graphite, #6b6f7e); }
+#category-nyx-appearance, #category-nyx-passwords, #category-nyx-extensions { --nyx-nav-tile: var(--nyx-swatch-violet, #8b5cf6); }
+#category-nyx-tabs, #category-nyx-downloads { --nyx-nav-tile: var(--nyx-swatch-blue, #3d8ae8); }
+#category-nyx-start, #category-nyx-vpn { --nyx-nav-tile: var(--nyx-swatch-teal, #2bb3a8); }
+#category-nyx-search, #category-nyx-gestures { --nyx-nav-tile: var(--nyx-swatch-amber, #e0a21b); }
+#category-nyx-blocking { --nyx-nav-tile: var(--nyx-swatch-coral, #f07b58); }
+#category-nyx-permissions, #category-nyx-sync { --nyx-nav-tile: var(--nyx-swatch-green, #3fb96b); }
+#category-nyx-selection, #category-nyx-styles { --nyx-nav-tile: var(--nyx-swatch-pink, #e3549b); }
+#category-nyx-scripts { --nyx-nav-tile: var(--nyx-swatch-graphite, #6b6f7e); }
+#category-nyx-youtube { --nyx-nav-tile: #e53935; }
+#category-nyx-about { --nyx-nav-tile: var(--nyx-swatch-graphite, #6b6f7e); }
+
+/* ---------- Layout & tabs: the layouts as cards over the pane ---------- */
+
+.nyx-layouts-box {
+  margin: 0 0 18px;
+  padding: 0;
+  border: 0;
+  background: none;
+}
+
+/* ---------- Rows made from lists (engines, extensions) ---------- */
+
+.nyx-list {
+  gap: 0;
+  min-width: 0;
+  max-width: 100%;
+  padding: 0 !important;
+}
+
+.nyx-list-row {
+  box-sizing: border-box;
+  gap: 12px;
+  min-width: 0;
+  max-width: 100%;
+  padding: 9px 14px;
+
+  & + .nyx-list-row {
+    border-top: 1px solid var(--nyx-line);
+  }
+
+  &[nyx-off] > :not(checkbox) {
+    opacity: 0.5;
+  }
+}
+
+.nyx-engine-icon {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+}
+
+button.nyx-keyword {
+  min-width: 0 !important;
+  min-height: 22px !important;
+  padding: 0 7px !important;
+  font: 500 11.5px var(--nyx-font-mono, monospace) !important;
+}
+
+/* A switch alone at a row's end, its name being the row's. */
+checkbox.nyx-switch-only .checkbox-label-box {
+  display: none;
+}
+
+.nyx-chip-ok {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--nyx-success, #3fb96b) 16%, transparent);
+  color: var(--nyx-success, #3fb96b);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Sync's choices wait for an account. */
+#nyxSyncEnginesGroup[nyx-disabled] > .nyx-row {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* ---------- Find in Settings ---------- */
+
+body[nyx-finding] {
+  & .nyx-row.nyx-unfound,
+  & .nyx-card-note {
+    display: none !important;
+  }
+
+  /* The rows left are one card: its corners and outline on the first and last of them. */
+  & .nyx-card > .nyx-row {
+    border-radius: 0 !important;
+    box-shadow: inset 1px 0 var(--nyx-line), inset -1px 0 var(--nyx-line) !important;
+
+    &.nyx-first {
+      border-top: 0;
+      border-start-start-radius: var(--nyx-radius-card, 11px) !important;
+      border-start-end-radius: var(--nyx-radius-card, 11px) !important;
+      box-shadow: inset 1px 0 var(--nyx-line), inset -1px 0 var(--nyx-line), inset 0 1px var(--nyx-line) !important;
+    }
+
+    &.nyx-last {
+      border-end-start-radius: var(--nyx-radius-card, 11px) !important;
+      border-end-end-radius: var(--nyx-radius-card, 11px) !important;
+      box-shadow: inset 1px 0 var(--nyx-line), inset -1px 0 var(--nyx-line), inset 0 -1px var(--nyx-line) !important;
+    }
+
+    &.nyx-first.nyx-last {
+      box-shadow: inset 0 0 0 1px var(--nyx-line) !important;
+    }
+  }
+
+  /* Each pane's matches under the pane's name, in place of the section's. */
+  & .nyx-found-pane::before {
+    content: attr(data-pane-title);
+    display: block;
+    margin: 0 0 8px 4px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--nyx-tertiary, GrayText);
+  }
+
+  & .nyx-card > .nyx-card-title {
+    display: none;
+  }
+
+  & .nyx-layouts-box {
+    display: none !important;
+  }
+}
+
+mark.nyx-mark {
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--nyx-warning, #e0a21b) 35%, transparent);
+  color: inherit;
+}
+
+/* ---- Gestures › Keyboard shortcuts (#nyxGestures-keys): the pane shows one view or the other ---- */
+
+:root[nyx-keys] [data-category="paneNyxGestures"]:not(.nyx-keys-part),
+:root:not([nyx-keys]) .nyx-keys-part {
+  display: none !important;
+}
+
+.nyx-crumb {
+  align-self: flex-start;
+  min-height: 0 !important;
+  margin: 0 0 6px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: none !important;
+  color: var(--nyx-accent) !important;
+  font-size: 12.5px !important;
+}
+
+.nyx-keys-find {
+  height: 34px;
+  margin: 0 0 6px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 9px;
+  background: var(--nyx-tile);
+  box-shadow: inset 0 0 0 1px var(--nyx-line);
+  color: var(--nyx-text);
+  font: inherit;
+
+  &:focus {
+    outline: 2px solid color-mix(in srgb, var(--nyx-accent) 60%, transparent);
+  }
+}
+
+.nyx-key-row {
+  gap: 8px;
+
+  & button {
+    min-width: 0;
+  }
+
+  &:not([nyx-changed]) .nyx-keys-reset {
+    display: none;
+  }
+
+  &[nyx-recording] {
+    background: color-mix(in srgb, var(--nyx-accent) 10%, transparent);
+
+    & .nyx-kbd {
+      padding: 3px 8px;
+      border-radius: 8px;
+      box-shadow: inset 0 0 0 1.5px var(--nyx-accent);
+    }
+  }
+}
+
+.nyx-kbd {
+  display: inline-flex;
+  gap: 3px;
+  color: var(--nyx-tertiary);
+  font-size: 12px;
+
+  & kbd {
+    padding: 1px 6px;
+    border-radius: 5px;
+    background: color-mix(in srgb, var(--nyx-text) 7%, transparent);
+    box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--nyx-text) 10%, transparent);
+    color: var(--nyx-dim);
+    font: 500 11.5px var(--nyx-font);
+  }
+}
+
+/* ---- About Browser ---- */
+
+.nyx-about-hero {
+  gap: 16px;
+  padding-block: 14px !important;
+}
+
+.nyx-about-logo {
+  width: 56px;
+  height: 56px;
+}
+
+.nyx-about-name {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.nyx-about-update {
+  margin-top: 2px;
+
+  &[data-state="ok"] {
+    color: var(--nyx-success);
+  }
+
+  &[data-state="failed"],
+  &[data-state="blocked"] {
+    color: var(--nyx-warning);
+  }
+}
+
+/* ---- Layout & tabs › Containers ---- */
+
+.nyx-card-note {
+  margin: -4px 0 6px;
+  padding-inline: 16px;
+}
+
+.nyx-container-tile {
+  width: 28px;
+  height: 28px;
+  padding: 6px;
+  border-radius: 8px;
+  background-color: color-mix(in srgb, var(--c) 18%, transparent);
+  -moz-context-properties: fill;
+  fill: var(--c);
+}
+
+.nyx-container-editor {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  gap: 10px;
+  padding: 12px 14px !important;
+  border-radius: 10px;
+  background: var(--nyx-tile);
+  box-shadow: inset 0 0 0 1px var(--nyx-line);
+
+  & > hbox {
+    gap: 10px;
+    min-width: 0;
+    max-width: 100%;
+  }
+}
+
+.nyx-container-name {
+  flex: 1;
+  min-width: 0;
+  width: auto;
+  max-width: 280px;
+  height: 32px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--nyx-bg);
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--nyx-accent) 60%, transparent);
+  color: var(--nyx-text);
+  font: inherit;
+}
+
+.nyx-container-choices {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.nyx-container-choices-label {
+  flex: 0 0 52px;
+  width: 52px;
+  color: var(--nyx-dim);
+  font-size: 12px;
+}
+
+/* Square pickers — lock every axis so card/button styles can't stretch them. */
+.nyx-container-dot,
+.nyx-container-icon {
+  appearance: none !important;
+  -moz-appearance: none !important;
+  box-sizing: border-box !important;
+  flex: 0 0 28px !important;
+  -moz-box-flex: 0 !important;
+  display: grid !important;
+  place-items: center !important;
+  width: 28px !important;
+  height: 28px !important;
+  min-width: 28px !important;
+  max-width: 28px !important;
+  min-height: 28px !important;
+  max-height: 28px !important;
+  aspect-ratio: 1 / 1 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 7px !important;
+  box-shadow: none !important;
+}
+
+.nyx-container-dot {
+  background: var(--c) !important;
+
+  &:hover {
+    background: var(--c) !important;
+    filter: brightness(1.1);
+  }
+
+  &[selected] {
+    box-shadow: 0 0 0 2px var(--nyx-tile), 0 0 0 3.5px var(--c) !important;
+  }
+}
+
+.nyx-container-icon {
+  background: color-mix(in srgb, var(--nyx-text) 6%, transparent) !important;
+
+  & img {
+    width: 14px;
+    height: 14px;
+    -moz-context-properties: fill;
+    fill: var(--nyx-dim);
+  }
+
+  &:hover {
+    background: color-mix(in srgb, var(--nyx-text) 10%, transparent) !important;
+  }
+
+  &[selected] {
+    box-shadow: inset 0 0 0 1.5px var(--nyx-accent) !important;
+
+    & img {
+      fill: var(--nyx-accent);
+    }
+  }
+}
+
+/* ---- Site styles & Scripts ---- */
+
+:root[nyx-styles-edit] #nyxStylesList,
+:root:not([nyx-styles-edit]) #nyxStylesEditor,
+:root[nyx-scripts-edit] #nyxScriptsList,
+:root:not([nyx-scripts-edit]) #nyxScriptsEditor {
+  display: none !important;
+}
+
+/* Import and New: identical control size (same height, same min-width, same padding). */
+.nyx-pane-actions {
+  gap: 8px;
+  align-items: center;
+
+  & > button {
+    appearance: none !important;
+    -moz-appearance: none !important;
+    box-sizing: border-box !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex: none !important;
+    /* Fixed width so Import matches New style / New script exactly. */
+    min-width: 120px !important;
+    width: 120px !important;
+    max-width: 120px !important;
+    min-height: 34px !important;
+    height: 34px !important;
+    max-height: 34px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 8px !important;
+    font: 600 13px var(--nyx-font, inherit) !important;
+  }
+
+  & > button > .button-box {
+    margin: 0 !important;
+    padding: 0 !important;
+    min-height: 34px !important;
+    height: 34px !important;
+    width: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  & > button > .button-box > .button-text {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  & > button.nyx-primary {
+    background: var(--nyx-accent) !important;
+    color: var(--nyx-on-accent) !important;
+    box-shadow: none !important;
+  }
+
+  & > button:not(.nyx-primary) {
+    /* Solid fill so Import reads the same size as the blue New button, not a thin outline. */
+    background: color-mix(in srgb, var(--nyx-text) 10%, var(--nyx-bg)) !important;
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--nyx-text) 16%, transparent) !important;
+    color: var(--nyx-text) !important;
+
+    &:hover {
+      background: color-mix(in srgb, var(--nyx-text) 14%, var(--nyx-bg)) !important;
+    }
+  }
+}
+
+/* Scripts' Check for updates — same control size as the find field beside it. */
+#nyxScriptsList > .nyx-row {
+  gap: 8px;
+  margin: 0 0 12px;
+  padding: 0;
+  background: none;
+  box-shadow: none;
+}
+
+#nyxScriptsCheck {
+  appearance: none !important;
+  -moz-appearance: none !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: none;
+  min-width: 0 !important;
+  min-height: 34px !important;
+  height: 34px !important;
+  max-height: 34px !important;
+  margin: 0 0 8px 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 9px !important;
+  background: var(--nyx-tile) !important;
+  box-shadow: inset 0 0 0 1px var(--nyx-line) !important;
+  color: var(--nyx-text) !important;
+  font: 500 13px var(--nyx-font, inherit) !important;
+
+  & > .button-box {
+    margin: 0 !important;
+    padding: 0 14px !important;
+    min-height: 34px !important;
+    height: 34px !important;
+    display: flex !important;
+    align-items: center !important;
+  }
+
+  &:hover {
+    background: var(--nyx-hover-bg, var(--nyx-tile)) !important;
+  }
+}
+
+.nyx-group-label {
+  margin: 14px 4px 7px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--nyx-tertiary);
+}
+
+/* Option A: Browser's styles as a two-column grid of rows */
+.nyx-styles-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding: 4px 0;
+  column-gap: 0;
+
+  & > .nyx-row {
+    min-height: 44px;
+    padding-block: 8px;
+  }
+
+  & > .nyx-row:nth-child(odd) {
+    box-shadow: inset -1px 0 0 var(--nyx-line);
+  }
+}
+
+.nyx-style-ico {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--nyx-accent) 22%, var(--nyx-tile));
+  color: var(--nyx-accent);
+  font: 700 12px var(--nyx-font, inherit);
+  flex: none;
+}
+
+.nyx-style-ico.lg {
+  width: 40px;
+  height: 40px;
+  border-radius: 11px;
+  font-size: 17px;
+}
+
+.nyx-editor-head {
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.nyx-editor-name,
+.nyx-editor-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--nyx-text);
+}
+
+.nyx-editor-cols {
+  gap: 16px;
+  align-items: stretch;
+  min-height: 420px;
+}
+
+.nyx-editor-code {
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--nyx-shadow) 18%, var(--nyx-card));
+  box-shadow: inset 0 0 0 1px var(--nyx-line);
+  overflow: hidden;
+  min-height: 360px;
+}
+
+.nyx-cm,
+.nyx-cm-fallback {
+  flex: 1;
+  min-height: 320px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.nyx-cm-fallback {
+  margin: 0;
+  padding: 12px;
+  border: 0;
+  background: transparent;
+  color: var(--nyx-text);
+  font: 12.5px/1.55 var(--nyx-mono, ui-monospace, monospace);
+  resize: none;
+}
+
+.nyx-editor-bar {
+  gap: 8px;
+  padding: 8px 10px;
+  border-top: 1px solid var(--nyx-line);
+}
+
+.nyx-editor-side {
+  width: 268px;
+  flex: none;
+}
+
+.nyx-tabs {
+  gap: 4px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid var(--nyx-line);
+}
+
+.nyx-tab {
+  appearance: none;
+  margin: 0;
+  padding: 8px 12px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  color: var(--nyx-dim);
+  font: inherit;
+
+  &[selected] {
+    color: var(--nyx-text);
+    border-bottom-color: var(--nyx-accent);
+  }
+}
+
+.nyx-find-field {
+  flex: 1;
+  height: 34px;
+  margin: 0 8px 8px 0;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 9px;
+  background: var(--nyx-tile);
+  box-shadow: inset 0 0 0 1px var(--nyx-line);
+  color: var(--nyx-text);
+  font: inherit;
+}
+
+.nyx-mono {
+  font-family: var(--nyx-mono, ui-monospace, monospace);
+  font-size: 12px;
+}
+
+.nyx-dim {
+  color: var(--nyx-dim);
+}
+
+.nyx-var-field {
+  width: 120px;
+  height: 30px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--nyx-tile);
+  box-shadow: inset 0 0 0 1px var(--nyx-line);
+  color: var(--nyx-text);
+  font: inherit;
+}
+
+.nyx-icon-btn {
+  min-width: 28px !important;
+  width: 28px;
+  height: 28px;
+  margin: 0;
+  padding: 0;
+}
+
+/* Design 2.0 Bar slider — filled bar with a slim handle */
+.nyx-bar {
+  appearance: none;
+  width: 110px;
+  height: 22px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  flex: none;
+}
+
+.nyx-bar::-moz-range-track {
+  height: 22px;
+  border: 0;
+  border-radius: 7px;
+  background: var(--nyx-muted);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--nyx-text) 6%, transparent);
+}
+
+.nyx-bar::-moz-range-progress {
+  height: 22px;
+  border: 0;
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--nyx-accent) 34%, var(--nyx-muted));
+  box-shadow: inset -1px 0 0 color-mix(in srgb, var(--nyx-accent) 60%, transparent);
+}
+
+.nyx-bar::-moz-range-thumb {
+  width: 4px;
+  height: 12px;
+  border: 0;
+  border-radius: 2px;
+  background: var(--nyx-text);
+  box-shadow: none;
+}
+
+.nyx-bar-value {
+  width: 52px;
+  text-align: end;
+  font-size: 11.5px;
+  color: var(--nyx-dim);
+  flex: none;
+}
+
+/* Design 2.0 Tinted checkbox (install / import lists) */
+checkbox.nyx-check {
+  margin: 0;
+
+  & .checkbox-check {
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    border: 0;
+    border-radius: 5px;
+    list-style-image: none;
+    background-color: var(--nyx-tile);
+    background-image: none;
+    box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--nyx-text) 22%, transparent);
+    -moz-context-properties: fill, stroke;
+    fill: transparent;
+    stroke: transparent;
+  }
+
+  &[checked] .checkbox-check {
+    background-color: color-mix(in srgb, var(--nyx-accent) 22%, var(--nyx-tile));
+    box-shadow: inset 0 0 0 1.5px var(--nyx-accent);
+    stroke: var(--nyx-accent);
+    background-image: url("chrome://browser/content/nyx/icons/check.svg");
+    background-size: 12px 12px;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+}
+
+/* Design 2.0 Tinted radio */
+radio.nyx-radio {
+  margin: 0;
+
+  & .radio-check {
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    border: 0;
+    border-radius: 50%;
+    list-style-image: none;
+    background: var(--nyx-tile);
+    box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--nyx-text) 22%, transparent);
+  }
+
+  &[selected] .radio-check {
+    background: radial-gradient(circle, var(--nyx-accent) 3.5px, transparent 4px),
+      color-mix(in srgb, var(--nyx-accent) 22%, var(--nyx-tile));
+    box-shadow: inset 0 0 0 1.5px var(--nyx-accent);
+  }
 }

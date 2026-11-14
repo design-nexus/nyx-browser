@@ -7,21 +7,29 @@ ChromeUtils.defineESModuleGetters(this, {
   UrlbarTestUtils: "resource://testing-common/UrlbarTestUtils.sys.mjs",
 });
 
+// Nyx: the address opens over the page in Focus, and in place in Studio and Workbench (address.js).
 add_task(async function test_Floating_Urlbar() {
-  gURLBar.blur();
+  for (const [layout, floating] of [["studio", false], ["focus", true]]) {
+    await SpecialPowers.pushPrefEnv({ set: [["nyx.layout", layout]] });
+    await TestUtils.waitForCondition(() => document.documentElement.getAttribute("nyx-layout") === layout);
+    gURLBar.blur();
 
-  await SimpleTest.promiseFocus(window);
-  document.getElementById("Browser:OpenLocation").doCommand();
-  await UrlbarTestUtils.promiseAutocompleteResultPopup({
-    window,
-    waitForFocus: SimpleTest.waitForFocus,
-    value: "https://example.com/",
-  });
+    await SimpleTest.promiseFocus(window);
+    document.getElementById("Browser:OpenLocation").doCommand();
+    await UrlbarTestUtils.promiseAutocompleteResultPopup({
+      window,
+      waitForFocus: SimpleTest.waitForFocus,
+      value: "https://example.com/",
+    });
 
-  ok(
-    gURLBar.hasAttribute("zen-floating-urlbar"),
-    "URL bar should be in floating mode"
-  );
+    is(
+      gURLBar.hasAttribute("zen-floating-urlbar"),
+      floating,
+      `The URL bar floats in ${layout} only if that layout floats it`
+    );
+    await UrlbarTestUtils.promisePopupClose(window, () => gURLBar.blur());
+    await SpecialPowers.popPrefEnv();
+  }
 });
 
 add_task(async function test_Click_Shoudnt_FLoat_Urlbar() {

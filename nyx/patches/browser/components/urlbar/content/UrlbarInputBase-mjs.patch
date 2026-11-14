@@ -1,5 +1,5 @@
 diff --git a/browser/components/urlbar/content/UrlbarInputBase.mjs b/browser/components/urlbar/content/UrlbarInputBase.mjs
-index e2695a7..b321ce6 100644
+index e2695a7..d193088 100644
 --- a/browser/components/urlbar/content/UrlbarInputBase.mjs
 +++ b/browser/components/urlbar/content/UrlbarInputBase.mjs
 @@ -383,6 +383,7 @@ ${
@@ -42,7 +42,23 @@ index e2695a7..b321ce6 100644
      const previousSelectionStart = this.selectionStart + offset;
      const previousSelectionEnd = this.selectionEnd + offset;
  
-@@ -3803,7 +3805,7 @@ ${
+@@ -3709,13 +3711,8 @@ ${
+       return;
+     }
+ 
+-    this.style.top = px(
+-      this.browserWindow.gZenVerticalTabsManager._hasSetSingleToolbar
+-        ? getUntransformedTop(this.parentNode)
+-        : UrlbarContentUtils.getPlatform() == "macosx"
+-          ? -2
+-          : -5
+-    );
++    // Nyx: where the address is, whatever the layout puts above it (Workbench's tabs).
++    this.style.top = px(getUntransformedTop(this.parentNode));
+   }
+ 
+   #releasePopoverAnchor() {
+@@ -3803,7 +3800,7 @@ ${
      // Don't expose internal about:reader URLs to the user.
      val = UrlbarContentUtils.getReaderOriginalDisplaySpec(val) ?? val;
      this._untrimmedValue = untrimmedValue ?? val;
@@ -51,7 +67,7 @@ index e2695a7..b321ce6 100644
      this._wwwIsTrimmed = false;
      // `_trimValue` only trims in the address bar, so elsewhere there is no
      // prefix to derive and `BrowserUIUtils` (chrome-only) is not needed.
-@@ -3816,9 +3818,8 @@ ${
+@@ -3816,9 +3813,8 @@ ${
        // prefix was actually removed from the displayed value.
        let trimmedPrefix = lazy.BrowserUIUtils.getTrimmedURLPrefix(oldVal);
        if (trimmedPrefix && !val.startsWith(trimmedPrefix)) {
@@ -63,7 +79,7 @@ index e2695a7..b321ce6 100644
          this._wwwIsTrimmed = trimmedPrefix.endsWith("www.");
        }
      }
-@@ -4187,7 +4188,7 @@ ${
+@@ -4187,7 +4183,7 @@ ${
      if (
        this.selectionStart > 0 ||
        selectedVal == "" ||
@@ -72,7 +88,7 @@ index e2695a7..b321ce6 100644
      ) {
        return selectedVal;
      }
-@@ -4751,7 +4752,7 @@ ${
+@@ -4751,7 +4747,7 @@ ${
      // Check if we can untrim the current value.
      if (
        !UrlbarPrefs.getScotchBonnetPref("untrimOnUserInteraction.featureGate") ||
@@ -81,7 +97,7 @@ index e2695a7..b321ce6 100644
        !this.focused ||
        (!ignoreSelection && this.#allTextSelected)
      ) {
-@@ -4764,9 +4765,7 @@ ${
+@@ -4764,9 +4760,7 @@ ${
      // Correct the selection taking the trimmed prefix (protocol and
      // leading "www.") into account.
      let offset =
@@ -92,7 +108,7 @@ index e2695a7..b321ce6 100644
  
      // In case of autofill, we may have to adjust its boundaries.
      if (this._autofillPlaceholder) {
-@@ -5523,9 +5522,8 @@ ${
+@@ -5523,9 +5517,8 @@ ${
  
      let l10nId;
      if (UrlbarShared.keywordEnabled(this.#sapName)) {
@@ -104,7 +120,7 @@ index e2695a7..b321ce6 100644
      } else {
        l10nId = "urlbar-placeholder-keyword-disabled";
      }
-@@ -5742,7 +5740,7 @@ ${
+@@ -5742,7 +5735,7 @@ ${
      // value would execute a search instead of visiting the typed url.
      // When "www." was trimmed we always untrim, so the user sees the full URL
      // and has to explicitly remove the prefix to load the bare domain.
@@ -113,7 +129,7 @@ index e2695a7..b321ce6 100644
        let untrim = this._wwwIsTrimmed;
        if (!untrim) {
          let fixedDisplaySpec = UrlbarContentUtils.getFixupPrimitives(
-@@ -5936,7 +5934,7 @@ ${
+@@ -5936,7 +5929,7 @@ ${
      let value = this.value;
      this.valueIsTyped = true;
      this._untrimmedValue = value;

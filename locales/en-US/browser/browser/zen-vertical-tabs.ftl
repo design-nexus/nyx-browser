@@ -20,7 +20,7 @@ zen-toolbar-context-compact-mode-hide-both =
     .accesskey = H
 
 zen-toolbar-context-move-to-folder =
-    .label = Move to Folder
+    .label = Move to folder
     .accesskey = M
 
 zen-toolbar-context-new-folder =

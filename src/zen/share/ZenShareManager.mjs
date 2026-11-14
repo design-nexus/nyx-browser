@@ -46,7 +46,8 @@ class nsZenShareManager extends nsZenDOMOperatedFeature {
   }
 
   get enabled() {
-    return !gZenWorkspaces.privateWindowOrDisabled;
+    // Nyx: sharing uploads tabs to Zen's server, so it's off unless asked for.
+    return Services.prefs.getBoolPref("zen.share.enabled", false) && !gZenWorkspaces.privateWindowOrDisabled;
   }
 
   // Mark: sharing

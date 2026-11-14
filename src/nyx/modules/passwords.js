@@ -150,10 +150,14 @@
   let popupFrame = null;
   function popupView(view) {
     if (!popupFrame) {
-      popupFrame = frame("popup", 760, 560);
+      popupFrame = frame("popup", 640, 560);
       view.querySelector(".panel-subview-body").append(popupFrame);
     }
-    go(popupFrame, `${PAGES}popup.html`);
+    const url = `${PAGES}popup.html`;
+    go(popupFrame, url);
+    // More tools moves its views into its own panel as they show, and a frame that moves starts
+    // again empty; the popup loads again once it's there.
+    view.addEventListener("ViewShown", () => popupFrame.currentURI?.spec !== url && go(popupFrame, url), { once: true });
     view.addEventListener("ViewHiding", () => go(popupFrame, "about:blank"), { once: true });
   }
 
@@ -257,6 +261,13 @@
   }
 
   window.NyxPasswordsUI = { popupView, showMenu, fieldLeft, showBar, showPasskey, openPopup };
+
+  // Firefox's password manager (the app menu's Passwords, Firefox's own links to it) is Passwords.
+  const { LoginHelper } = ChromeUtils.importESModule("resource://gre/modules/LoginHelper.sys.mjs");
+  if (!LoginHelper.nyxOpensPasswords) {
+    LoginHelper.nyxOpensPasswords = true;
+    LoginHelper.openPasswordManager = win => (win?.NyxPasswordsUI ?? Services.wm.getMostRecentWindow("navigator:browser")?.NyxPasswordsUI)?.openPopup();
+  }
 
   // ---- the theme, for the pages and for the key in pages' fields ----
 

@@ -2,16 +2,139 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-# Browser's own settings panes, included in about:preferences by nyx/patches. Each section is a
-# card of rows, as Nyx Design's settings are: a setting's name and note on the left, its control
-# on the right. Strings are in browser/preferences/nyx-preferences.ftl; styles in
-# nyx-preferences.css.
+# Settings: Browser's own panes, the only ones its navigation shows (nyx/patches). Each pane is a
+# title, a line under it, and sections that are cards of rows: a setting's name and note on the
+# left, its control on the right. Strings are in browser/preferences/nyx-preferences.ftl; styles
+# in nyx-preferences.css; the panes' code in nyx-settings.js.
 
 <script type="text/javascript" src="chrome://browser/content/preferences/nyx-settings.js"/>
+<script type="text/javascript" src="chrome://browser/content/preferences/nyx-sitekit-settings.js"/>
+
+<html:template id="template-paneNyxGeneral">
+<hbox class="subcategory nyx-pane-head" hidden="true" data-category="paneNyxGeneral">
+  <vbox>
+    <html:h1 data-l10n-id="pane-nyx-general-title"/>
+    <html:p class="nyx-pane-sub" data-l10n-id="pane-nyx-general-sub"/>
+  </vbox>
+</hbox>
+
+<groupbox id="nyxStartupGroup" class="nyx-card" data-category="paneNyxGeneral" hidden="true">
+  <label class="nyx-card-title"><html:h2 data-l10n-id="nyx-general-group-startup"/></label>
+  <hbox class="nyx-row" align="center">
+    <label class="nyx-row-text" flex="1" data-l10n-id="nyx-tabs-startup"/>
+    <menulist id="nyxStartup" preference="browser.startup.page">
+      <menupopup>
+        <menuitem value="3" data-l10n-id="nyx-general-startup-restore"/>
+        <menuitem value="1" data-l10n-id="nyx-general-startup-home"/>
+        <menuitem value="0" data-l10n-id="nyx-general-startup-blank"/>
+      </menupopup>
+    </menulist>
+  </hbox>
+  <hbox class="nyx-row" align="center">
+    <vbox class="nyx-row-text" flex="1">
+      <label data-l10n-id="nyx-general-default"/>
+      <description class="nyx-row-note" data-l10n-id="nyx-general-default-note"/>
+    </vbox>
+    <html:span id="nyxDefaultYes" class="nyx-chip nyx-chip-ok" data-l10n-id="nyx-general-default-yes" hidden="true"/>
+    <button id="nyxDefaultMake" data-l10n-id="nyx-general-default-make"/>
+  </hbox>
+  <hbox class="nyx-row" align="center">
+    <vbox class="nyx-row-text" flex="1">
+      <label data-l10n-id="nyx-tabs-sessions"/>
+      <description id="nyxSessionsNote" class="nyx-row-note" data-l10n-id="nyx-tabs-sessions-description"/>
+    </vbox>
+    <button id="nyxSessionSave" data-l10n-id="nyx-tabs-sessions-save"/>
+    <button id="nyxSessionList" type="menu" data-l10n-id="nyx-tabs-sessions-list">
+      <menupopup id="nyxSessionMenu"/>
+    </button>
+  </hbox>
+</groupbox>
+
+<groupbox id="nyxDownloadsFilesGroup" class="nyx-card" data-category="paneNyxGeneral" hidden="true">
+  <label class="nyx-card-title"><html:h2 data-l10n-id="nyx-general-group-files"/></label>
+  <hbox class="nyx-row" align="center">
+    <vbox class="nyx-row-text" flex="1">
+      <label data-l10n-id="nyx-downloads-folder"/>
+      <description id="nyxDownloadsFolder" class="nyx-row-note"/>
+    </vbox>
+    <button id="nyxDownloadsFolderChange" data-l10n-id="nyx-downloads-change"/>
+  </hbox>
+  <hbox class="nyx-row" align="center">
+    <checkbox class="nyx-switch" flex="1" preference="browser.download.useDownloadDir" data-l10n-id="nyx-downloads-ask"/>
+  </hbox>
+  <hbox class="nyx-row" align="center">
+    <label class="nyx-row-text" flex="1" data-l10n-id="nyx-general-pdf"/>
+    <menulist id="nyxPdf" preference="pdfjs.disabled">
+      <menupopup>
+        <menuitem value="false" data-l10n-id="nyx-general-pdf-browser"/>
+        <menuitem value="true" data-l10n-id="nyx-general-pdf-app"/>
+      </menupopup>
+    </menulist>
+  </hbox>
+</groupbox>
+
+<groupbox id="nyxLanguageGroup" class="nyx-card" data-category="paneNyxGeneral" hidden="true">
+  <label class="nyx-card-title"><html:h2 data-l10n-id="nyx-general-group-language"/></label>
+  <hbox class="nyx-row" align="center">
+    <label class="nyx-row-text" flex="1" data-l10n-id="nyx-general-language"/>
+    <menulist id="nyxLocale"><menupopup id="nyxLocalePopup"/></menulist>
+  </hbox>
+  <hbox class="nyx-row" align="center">
+    <vbox class="nyx-row-text" flex="1">
+      <label data-l10n-id="nyx-general-web-languages"/>
+      <description class="nyx-row-note" data-l10n-id="nyx-general-web-languages-note"/>
+    </vbox>
+    <button id="nyxWebLanguages" data-l10n-id="nyx-general-choose"/>
+  </hbox>
+  <vbox class="nyx-row">
+    <checkbox class="nyx-switch" preference="browser.translations.automaticallyPopup" data-l10n-id="nyx-general-translate"/>
+    <description class="nyx-row-note" data-l10n-id="nyx-general-translate-note"/>
+  </vbox>
+  <hbox class="nyx-row" align="center">
+    <checkbox id="nyxSpellcheck" class="nyx-switch" flex="1" data-l10n-id="nyx-general-spellcheck"/>
+  </hbox>
+</groupbox>
+
+<groupbox id="nyxIntegrationsGroup" class="nyx-card" data-category="paneNyxGeneral" hidden="true">
+  <label class="nyx-card-title"><html:h2 data-l10n-id="nyx-general-group-apps"/></label>
+  <description class="nyx-card-note" data-l10n-id="nyx-integrations-description"/>
+  <vbox class="nyx-row">
+    <checkbox id="nyxIntegrationShare" class="nyx-switch" data-l10n-id="nyx-integrations-share"/>
+    <description class="nyx-row-note" data-l10n-id="nyx-integrations-share-description"/>
+  </vbox>
+  <vbox class="nyx-row">
+    <checkbox id="nyxIntegrationCapture" class="nyx-switch" data-l10n-id="nyx-integrations-capture"/>
+    <description class="nyx-row-note" data-l10n-id="nyx-integrations-capture-description"/>
+  </vbox>
+  <vbox class="nyx-row">
+    <checkbox id="nyxIntegrationAssistant" class="nyx-switch" data-l10n-id="nyx-integrations-assistant"/>
+    <description class="nyx-row-note" data-l10n-id="nyx-integrations-assistant-description"/>
+  </vbox>
+  <description id="nyxIntegrationsUnreadable" class="nyx-card-note" hidden="true" data-l10n-id="nyx-integrations-unreadable"/>
+</groupbox>
+
+<groupbox id="nyxSystemGroup" class="nyx-card" data-category="paneNyxGeneral" hidden="true">
+  <label class="nyx-card-title"><html:h2 data-l10n-id="nyx-general-group-system"/></label>
+  <vbox class="nyx-row">
+    <checkbox id="nyxAcceleration" class="nyx-switch" preference="layers.acceleration.disabled" data-l10n-id="nyx-general-acceleration"/>
+    <description class="nyx-row-note" data-l10n-id="nyx-general-acceleration-note"/>
+  </vbox>
+  <hbox class="nyx-row" align="center">
+    <vbox class="nyx-row-text" flex="1">
+      <label data-l10n-id="nyx-general-connection"/>
+      <description class="nyx-row-note" data-l10n-id="nyx-general-connection-note"/>
+    </vbox>
+    <button id="nyxConnection" data-l10n-id="nyx-general-settings-button"/>
+  </hbox>
+</groupbox>
+</html:template>
 
 <html:template id="template-paneNyxAppearance">
-<hbox class="subcategory" hidden="true" data-category="paneNyxAppearance">
-  <html:h1 data-l10n-id="pane-nyx-appearance-title"/>
+<hbox class="subcategory nyx-pane-head" hidden="true" data-category="paneNyxAppearance">
+  <vbox>
+    <html:h1 data-l10n-id="pane-nyx-appearance-title"/>
+    <html:p class="nyx-pane-sub" data-l10n-id="pane-nyx-appearance-sub"/>
+  </vbox>
 </hbox>
 
 <groupbox id="nyxThemeGroup" class="nyx-card" data-category="paneNyxAppearance" hidden="true">
@@ -21,27 +144,15 @@
       <label data-l10n-id="nyx-appearance-theme"/>
       <description class="nyx-row-note" data-l10n-id="nyx-appearance-theme-description"/>
     </vbox>
-    <radiogroup id="nyxTheme" class="nyx-seg" orient="horizontal" aria-labelledby="nyxThemeGroup">
-      <radio value="follow" data-l10n-id="nyx-appearance-theme-follow"/>
-      <radio value="nyx-dark" data-l10n-id="nyx-appearance-theme-dark"/>
-      <radio value="nyx-light" data-l10n-id="nyx-appearance-theme-light"/>
-    </radiogroup>
+    <button id="nyxAllThemes" data-l10n-id="nyx-appearance-all-themes"/>
+    <menulist id="nyxTheme" aria-labelledby="nyxThemeGroup">
+      <menupopup/>
+    </menulist>
   </hbox>
   <hbox class="nyx-row" align="center">
     <label class="nyx-row-text" flex="1" control="nyxAccent" data-l10n-id="nyx-appearance-accent"/>
     <menulist id="nyxAccent">
-      <menupopup>
-        <menuitem value="" label="Theme default"/>
-        <menuitem value="blue" label="Blue"/>
-        <menuitem value="violet" label="Violet"/>
-        <menuitem value="pink" label="Pink"/>
-        <menuitem value="red" label="Red"/>
-        <menuitem value="coral" label="Coral"/>
-        <menuitem value="amber" label="Amber"/>
-        <menuitem value="green" label="Green"/>
-        <menuitem value="teal" label="Teal"/>
-        <menuitem value="graphite" label="Graphite"/>
-      </menupopup>
+      <menupopup/>
     </menulist>
   </hbox>
   <hbox class="nyx-row" align="center">
@@ -62,27 +173,103 @@
     <description class="nyx-row-note" data-l10n-id="nyx-appearance-frosted-description"/>
   </vbox>
 </groupbox>
-</html:template>
 
-<html:template id="template-paneNyxTabs">
-<hbox class="subcategory" hidden="true" data-category="paneNyxTabs">
-  <html:h1 data-l10n-id="pane-nyx-tabs-title"/>
-</hbox>
-
-<groupbox id="nyxTabsGroup" class="nyx-card" data-category="paneNyxTabs" hidden="true">
-  <label class="nyx-card-title"><html:h2 data-l10n-id="nyx-tabs-group-tabs"/></label>
+<groupbox id="nyxPagesGroup" class="nyx-card" data-category="paneNyxAppearance" hidden="true">
+  <label class="nyx-card-title"><html:h2 data-l10n-id="nyx-appearance-group-pages"/></label>
   <hbox class="nyx-row" align="center">
     <vbox class="nyx-row-text" flex="1">
-      <label data-l10n-id="nyx-tabs-orientation"/>
-      <description class="nyx-row-note" data-l10n-id="nyx-tabs-orientation-description"/>
+      <label data-l10n-id="nyx-appearance-sites"/>
+      <description class="nyx-row-note" data-l10n-id="nyx-appearance-sites-note"/>
     </vbox>
-    <radiogroup id="nyxOrientation" class="nyx-seg" preference="zen.tabs.vertical" orient="horizontal">
-      <radio value="true" data-l10n-id="nyx-tabs-vertical"/>
-      <radio value="false" data-l10n-id="nyx-tabs-horizontal"/>
+    <radiogroup id="nyxSiteScheme" class="nyx-seg" preference="layout.css.prefers-color-scheme.content-override" orient="horizontal">
+      <radio value="2" data-l10n-id="nyx-appearance-sites-auto"/>
+      <radio value="1" data-l10n-id="nyx-appearance-sites-light"/>
+      <radio value="0" data-l10n-id="nyx-appearance-sites-dark"/>
     </radiogroup>
   </hbox>
   <hbox class="nyx-row" align="center">
-    <checkbox id="nyxMiddleClick" class="nyx-switch" flex="1" preference="nyx.tabs.middle-click-close" data-l10n-id="nyx-tabs-middle-click"/>
+    <label class="nyx-row-text" flex="1" data-l10n-id="nyx-appearance-fonts"/>
+    <button id="nyxFonts" data-l10n-id="nyx-general-customize"/>
+  </hbox>
+</groupbox>
+</html:template>
+
+<html:template id="template-paneNyxTabs">
+<hbox class="subcategory nyx-pane-head" hidden="true" data-category="paneNyxTabs">
+  <vbox>
+    <html:h1 data-l10n-id="pane-nyx-tabs-title"/>
+    <html:p class="nyx-pane-sub" data-l10n-id="pane-nyx-tabs-sub"/>
+  </vbox>
+</hbox>
+
+<groupbox id="nyxLayoutGroup" class="nyx-layouts-box" data-category="paneNyxTabs" hidden="true">
+  <!-- Nyx: Browser's layouts (src/nyx/modules/layout.js), each drawn as a small window. -->
+    <radiogroup id="nyxLayout" class="nyx-layouts" preference="nyx.layout" orient="horizontal">
+      <radio value="studio" class="nyx-layout-card" data-l10n-id="nyx-layout-studio"/>
+      <radio value="focus" class="nyx-layout-card" data-l10n-id="nyx-layout-focus"/>
+      <radio value="workbench" class="nyx-layout-card" data-l10n-id="nyx-layout-workbench"/>
+    </radiogroup>
+</groupbox>
+
+<groupbox id="nyxInLayoutGroup" class="nyx-card" data-category="paneNyxTabs" hidden="true">
+  <label class="nyx-card-title"><html:h2 data-l10n-id="nyx-tabs-group-in-layout"/></label>
+  <hbox class="nyx-row" data-layouts="studio" align="center">
+    <vbox class="nyx-row-text" flex="1">
+      <label data-l10n-id="nyx-sidebar-mode"/>
+      <description class="nyx-row-note" data-l10n-id="nyx-sidebar-mode-description"/>
+    </vbox>
+    <radiogroup id="nyxSidebarMode" class="nyx-seg" preference="nyx.sidebar.mode" orient="horizontal">
+      <radio value="auto" data-l10n-id="nyx-sidebar-auto"/>
+      <radio value="expanded" data-l10n-id="nyx-sidebar-expanded"/>
+      <radio value="compact" data-l10n-id="nyx-sidebar-compact"/>
+      <radio value="hidden" data-l10n-id="nyx-sidebar-hidden"/>
+    </radiogroup>
+  </hbox>
+  <hbox class="nyx-row" data-layouts="studio" align="center">
+    <checkbox id="nyxSidebarReveal" class="nyx-switch" flex="1" preference="zen.view.compact.show-sidebar-and-toolbar-on-hover" data-l10n-id="nyx-sidebar-reveal"/>
+  </hbox>
+  <hbox class="nyx-row" align="center" data-layouts="focus">
+    <vbox class="nyx-row-text" flex="1">
+      <label data-l10n-id="nyx-tabs-shelf"/>
+      <description class="nyx-row-note" data-l10n-id="nyx-tabs-shelf-note"/>
+    </vbox>
+    <radiogroup id="nyxShelf" class="nyx-seg" orient="horizontal">
+      <radio value="shown" data-l10n-id="nyx-tabs-shelf-shown"/>
+      <radio value="folded" data-l10n-id="nyx-tabs-shelf-folded"/>
+      <radio value="hidden" data-l10n-id="nyx-tabs-shelf-hidden"/>
+    </radiogroup>
+  </hbox>
+  <hbox class="nyx-row" data-layouts="studio workbench" align="center">
+    <label class="nyx-row-text" flex="1" data-l10n-id="nyx-bookmarks-show"/>
+    <radiogroup id="nyxBookmarksVisibility" class="nyx-seg" preference="browser.toolbars.bookmarks.visibility" orient="horizontal">
+      <radio value="always" data-l10n-id="nyx-bookmarks-always"/>
+      <radio value="newtab" data-l10n-id="nyx-bookmarks-newtab"/>
+      <radio value="never" data-l10n-id="nyx-bookmarks-never"/>
+    </radiogroup>
+  </hbox>
+  <vbox class="nyx-row" data-layouts="studio workbench">
+    <checkbox id="nyxBookmarksIconsOnly" class="nyx-switch" preference="nyx.bookmarks.icons-only" data-l10n-id="nyx-bookmarks-icons-only"/>
+    <description class="nyx-row-note" data-l10n-id="nyx-bookmarks-icons-only-description"/>
+  </vbox>
+  <hbox class="nyx-row" data-layouts="workbench" align="center">
+    <vbox class="nyx-row-text" flex="1">
+      <label data-l10n-id="nyx-tabs-overflow"/>
+      <description class="nyx-row-note" data-l10n-id="nyx-tabs-overflow-description"/>
+    </vbox>
+    <radiogroup id="nyxTabOverflow" class="nyx-seg" preference="nyx.tabs.overflow" orient="horizontal">
+      <radio value="shrink" data-l10n-id="nyx-tabs-overflow-shrink"/>
+      <radio value="scroll" data-l10n-id="nyx-tabs-overflow-scroll"/>
+    </radiogroup>
+  </hbox>
+  <hbox class="nyx-row" align="center">
+    <vbox class="nyx-row-text" flex="1">
+      <label data-l10n-id="nyx-toolbar-buttons"/>
+      <description class="nyx-row-note" data-l10n-id="nyx-toolbar-buttons-description"/>
+    </vbox>
+    <button id="nyxCustomize" data-l10n-id="nyx-toolbar-customize"/>
+  </hbox>
+  <hbox class="nyx-row" align="center">
+    <checkbox id="nyxQrButton" class="nyx-switch" flex="1" preference="nyx.toolbar.qr-button" data-l10n-id="nyx-toolbar-qr"/>
   </hbox>
 </groupbox>
 
@@ -170,19 +357,6 @@
     </radiogroup>
   </hbox>
   <hbox class="nyx-row" align="center">
-    <vbox class="nyx-row-text" flex="1">
-      <label data-l10n-id="nyx-tabs-overflow"/>
-      <description class="nyx-row-note" data-l10n-id="nyx-tabs-overflow-description"/>
-    </vbox>
-    <radiogroup id="nyxTabOverflow" class="nyx-seg" preference="nyx.tabs.overflow" orient="horizontal">
-      <radio value="shrink" data-l10n-id="nyx-tabs-overflow-shrink"/>
-      <radio value="scroll" data-l10n-id="nyx-tabs-overflow-scroll"/>
-    </radiogroup>
-  </hbox>
-  <hbox class="nyx-row" align="center">
-    <checkbox id="nyxWheelSwitch" class="nyx-switch" flex="1" preference="toolkit.tabbox.switchByScrolling" data-l10n-id="nyx-tabs-wheel"/>
-  </hbox>
-  <hbox class="nyx-row" align="center">
     <checkbox id="nyxHoverPreview" class="nyx-switch" flex="1" preference="browser.tabs.hoverPreview.enabled" data-l10n-id="nyx-tabs-hover-preview"/>
   </hbox>
   <vbox class="nyx-row">
@@ -230,275 +404,266 @@
   </hbox>
 </groupbox>
 
-<groupbox id="nyxStartupGroup" class="nyx-card" data-category="paneNyxTabs" hidden="true">
-  <label class="nyx-card-title"><html:h2 data-l10n-id="nyx-tabs-group-startup"/></label>
-  <hbox class="nyx-row" align="center">
-    <label class="nyx-row-text" flex="1" data-l10n-id="nyx-tabs-startup"/>
-    <radiogroup id="nyxStartup" class="nyx-seg" preference="browser.startup.page" orient="horizontal">
-      <radio value="3" data-l10n-id="nyx-tabs-startup-restore"/>
-      <radio value="1" data-l10n-id="nyx-tabs-startup-home"/>
-    </radiogroup>
-  </hbox>
-  <hbox class="nyx-row" align="center">
-    <vbox class="nyx-row-text" flex="1">
-      <label data-l10n-id="nyx-tabs-sessions"/>
-      <description id="nyxSessionsNote" class="nyx-row-note" data-l10n-id="nyx-tabs-sessions-description"/>
-    </vbox>
-    <button id="nyxSessionSave" data-l10n-id="nyx-tabs-sessions-save"/>
-    <button id="nyxSessionList" type="menu" data-l10n-id="nyx-tabs-sessions-list">
-      <menupopup id="nyxSessionMenu"/>
-    </button>
-  </hbox>
-</groupbox>
-
-<groupbox id="nyxSidebarGroup" class="nyx-card" data-category="paneNyxTabs" hidden="true">
-  <label class="nyx-card-title"><html:h2 data-l10n-id="nyx-tabs-group-sidebar"/></label>
-  <hbox class="nyx-row" align="center">
-    <vbox class="nyx-row-text" flex="1">
-      <label data-l10n-id="nyx-sidebar-mode"/>
-      <description class="nyx-row-note" data-l10n-id="nyx-sidebar-mode-description"/>
-    </vbox>
-    <radiogroup id="nyxSidebarMode" class="nyx-seg" preference="nyx.sidebar.mode" orient="horizontal">
-      <radio value="auto" data-l10n-id="nyx-sidebar-auto"/>
-      <radio value="expanded" data-l10n-id="nyx-sidebar-expanded"/>
-      <radio value="compact" data-l10n-id="nyx-sidebar-compact"/>
-      <radio value="hidden" data-l10n-id="nyx-sidebar-hidden"/>
-    </radiogroup>
-  </hbox>
-  <hbox class="nyx-row" align="center">
-    <checkbox id="nyxSidebarReveal" class="nyx-switch" flex="1" preference="zen.view.compact.show-sidebar-and-toolbar-on-hover" data-l10n-id="nyx-sidebar-reveal"/>
-  </hbox>
-</groupbox>
-
 <groupbox id="nyxWorkspacesGroup" class="nyx-card" data-category="paneNyxTabs" hidden="true">
   <label class="nyx-card-title"><html:h2 data-l10n-id="nyx-tabs-group-workspaces"/></label>
   <hbox class="nyx-row" align="center">
     <checkbox id="nyxFootSpaces" class="nyx-switch" flex="1" preference="nyx.sidebar.foot-spaces" data-l10n-id="nyx-sidebar-foot-spaces"/>
   </hbox>
 </groupbox>
-</html:template>
 
-<html:template id="template-paneNyxToolbar">
-<hbox class="subcategory" hidden="true" data-category="paneNyxToolbar">
-  <html:h1 data-l10n-id="pane-nyx-toolbar-title"/>
-</hbox>
-
-<groupbox id="nyxTopBarGroup" class="nyx-card" data-category="paneNyxToolbar" hidden="true">
-  <label class="nyx-card-title"><html:h2 data-l10n-id="nyx-toolbar-group-top"/></label>
+<!-- Containers: each with its colour and icon and how many tabs it has open, edited in its row,
+     removed, or a new one (gNyxTabsPane.containers, through ContextualIdentityService). -->
+<groupbox id="nyxContainersGroup" class="nyx-card" data-category="paneNyxTabs" hidden="true">
+  <label class="nyx-card-title"><html:h2 data-l10n-id="nyx-containers-group"/></label>
+  <description class="nyx-row-note nyx-card-note" data-l10n-id="nyx-containers-note"/>
+  <vbox id="nyxContainersList" class="nyx-list"/>
   <hbox class="nyx-row" align="center">
-    <vbox class="nyx-row-text" flex="1">
-      <label data-l10n-id="nyx-toolbar-buttons"/>
-      <description class="nyx-row-note" data-l10n-id="nyx-toolbar-buttons-description"/>
-    </vbox>
-    <button id="nyxCustomize" data-l10n-id="nyx-toolbar-customize"/>
-  </hbox>
-  <hbox class="nyx-row" align="center">
-    <checkbox id="nyxQrButton" class="nyx-switch" flex="1" preference="nyx.toolbar.qr-button" data-l10n-id="nyx-toolbar-qr"/>
-  </hbox>
-</groupbox>
-
-<groupbox id="nyxBookmarksGroup" class="nyx-card" data-category="paneNyxToolbar" hidden="true">
-  <label class="nyx-card-title"><html:h2 data-l10n-id="nyx-toolbar-group-bookmarks"/></label>
-  <hbox class="nyx-row" align="center">
-    <label class="nyx-row-text" flex="1" data-l10n-id="nyx-bookmarks-show"/>
-    <radiogroup id="nyxBookmarksVisibility" class="nyx-seg" preference="browser.toolbars.bookmarks.visibility" orient="horizontal">
-      <radio value="always" data-l10n-id="nyx-bookmarks-always"/>
-      <radio value="newtab" data-l10n-id="nyx-bookmarks-newtab"/>
-      <radio value="never" data-l10n-id="nyx-bookmarks-never"/>
-    </radiogroup>
-  </hbox>
-  <vbox class="nyx-row">
-    <checkbox id="nyxBookmarksIconsOnly" class="nyx-switch" preference="nyx.bookmarks.icons-only" data-l10n-id="nyx-bookmarks-icons-only"/>
-    <description class="nyx-row-note" data-l10n-id="nyx-bookmarks-icons-only-description"/>
-  </vbox>
-</groupbox>
-</html:template>
-
-<html:template id="template-paneNyxIntegrations">
-<hbox class="subcategory" hidden="true" data-category="paneNyxIntegrations">
-  <html:h1 data-l10n-id="pane-nyx-integrations-title"/>
-</hbox>
-
-<groupbox id="nyxIntegrationsGroup" class="nyx-card" data-category="paneNyxIntegrations" hidden="true">
-  <label class="nyx-card-title"><html:h2 data-l10n-id="nyx-integrations-group-apps"/></label>
-  <description class="nyx-card-note" data-l10n-id="nyx-integrations-description"/>
-  <vbox class="nyx-row">
-    <checkbox id="nyxIntegrationShare" class="nyx-switch" data-l10n-id="nyx-integrations-share"/>
-    <description class="nyx-row-note" data-l10n-id="nyx-integrations-share-description"/>
-  </vbox>
-  <vbox class="nyx-row">
-    <checkbox id="nyxIntegrationCapture" class="nyx-switch" data-l10n-id="nyx-integrations-capture"/>
-    <description class="nyx-row-note" data-l10n-id="nyx-integrations-capture-description"/>
-  </vbox>
-  <vbox class="nyx-row">
-    <checkbox id="nyxIntegrationAssistant" class="nyx-switch" data-l10n-id="nyx-integrations-assistant"/>
-    <description class="nyx-row-note" data-l10n-id="nyx-integrations-assistant-description"/>
-  </vbox>
-  <description id="nyxIntegrationsUnreadable" class="nyx-card-note" hidden="true" data-l10n-id="nyx-integrations-unreadable"/>
-</groupbox>
-
-<groupbox id="nyxPasswordsGroup" class="nyx-card" data-category="paneNyxIntegrations" hidden="true">
-  <label class="nyx-card-title"><html:h2 data-l10n-id="nyx-integrations-group-passwords"/></label>
-  <description id="nyxPasswordsState" class="nyx-row nyx-row-note"/>
-</groupbox>
-</html:template>
-
-<html:template id="template-paneNyxSelection">
-<hbox class="subcategory" hidden="true" data-category="paneNyxSelection">
-  <html:h1 data-l10n-id="pane-nyx-selection-title"/>
-</hbox>
-
-<groupbox id="nyxSelectionPopupGroup" class="nyx-card" data-category="paneNyxSelection" hidden="true">
-  <label class="nyx-card-title"><html:h2 data-l10n-id="nyx-selection-group-popup"/></label>
-  <hbox class="nyx-row" align="center">
-    <vbox class="nyx-row-text" flex="1">
-      <label data-l10n-id="nyx-selection-mode"/>
-      <description class="nyx-row-note" data-l10n-id="nyx-selection-mode-description"/>
-    </vbox>
-    <radiogroup id="nyxSelectionMode" class="nyx-seg" preference="nyx.selection.mode" orient="horizontal">
-      <radio value="selection" data-l10n-id="nyx-selection-mode-selection"/>
-      <radio value="alt" data-l10n-id="nyx-selection-mode-alt"/>
-      <radio value="middle" data-l10n-id="nyx-selection-mode-middle"/>
-      <radio value="off" data-l10n-id="nyx-selection-mode-off"/>
-    </radiogroup>
-  </hbox>
-  <vbox class="nyx-row">
-    <checkbox id="nyxSelectionTextbox" class="nyx-switch" preference="nyx.selection.textbox" data-l10n-id="nyx-selection-textbox"/>
-    <description class="nyx-row-note" data-l10n-id="nyx-selection-textbox-description"/>
-  </vbox>
-  <hbox class="nyx-row" align="center">
-    <label class="nyx-row-text" flex="1" data-l10n-id="nyx-selection-size"/>
-    <radiogroup id="nyxSelectionSize" class="nyx-seg" preference="nyx.selection.icon-size" orient="horizontal">
-      <radio value="small" data-l10n-id="nyx-selection-size-small"/>
-      <radio value="medium" data-l10n-id="nyx-selection-size-medium"/>
-      <radio value="large" data-l10n-id="nyx-selection-size-large"/>
-    </radiogroup>
-  </hbox>
-</groupbox>
-
-<groupbox id="nyxSelectionEnginesGroup" class="nyx-card" data-category="paneNyxSelection" hidden="true">
-  <label class="nyx-card-title"><html:h2 data-l10n-id="nyx-selection-group-engines"/></label>
-  <hbox id="nyxSelectionEnginesFoot" class="nyx-row" align="center">
-    <description class="nyx-row-note" flex="1" data-l10n-id="nyx-selection-engines-description"/>
-    <button id="nyxSelectionManage" data-l10n-id="nyx-selection-manage"/>
-  </hbox>
-</groupbox>
-
-<groupbox id="nyxSelectionResultsGroup" class="nyx-card" data-category="paneNyxSelection" hidden="true">
-  <label class="nyx-card-title"><html:h2 data-l10n-id="nyx-selection-group-results"/></label>
-  <hbox class="nyx-row" align="center">
-    <vbox class="nyx-row-text" flex="1">
-      <label data-l10n-id="nyx-selection-open"/>
-      <description class="nyx-row-note" data-l10n-id="nyx-selection-open-description"/>
-    </vbox>
-    <radiogroup id="nyxSelectionOpen" class="nyx-seg" preference="nyx.selection.open" orient="horizontal">
-      <radio value="tab" data-l10n-id="nyx-selection-open-tab"/>
-      <radio value="background" data-l10n-id="nyx-selection-open-background"/>
-      <radio value="current" data-l10n-id="nyx-selection-open-current"/>
-    </radiogroup>
-  </hbox>
-  <hbox class="nyx-row" align="center">
-    <vbox class="nyx-row-text" flex="1">
-      <label data-l10n-id="nyx-selection-off"/>
-      <description id="nyxSelectionOffNone" class="nyx-row-note" data-l10n-id="nyx-selection-off-none"/>
-    </vbox>
-    <html:div id="nyxSelectionOffSites" class="nyx-chips"/>
-    <button id="nyxSelectionOffAdd" data-l10n-id="nyx-chip-add"/>
+    <spacer flex="1"/>
+    <button id="nyxContainersNew" data-l10n-id="nyx-containers-new"/>
   </hbox>
 </groupbox>
 </html:template>
 
-<html:template id="template-paneNyxDownloads">
-<hbox class="subcategory" hidden="true" data-category="paneNyxDownloads">
-  <html:h1 data-l10n-id="pane-nyx-downloads-title"/>
+<html:template id="template-paneNyxStart">
+<hbox class="subcategory nyx-pane-head" hidden="true" data-category="paneNyxStart">
+  <vbox>
+    <html:h1 data-l10n-id="pane-nyx-start-title"/>
+    <html:p class="nyx-pane-sub" data-l10n-id="pane-nyx-start-sub"/>
+  </vbox>
 </hbox>
 
-<groupbox id="nyxDownloadsFilesGroup" class="nyx-card" data-category="paneNyxDownloads" hidden="true">
-  <label class="nyx-card-title"><html:h2 data-l10n-id="nyx-downloads-group-files"/></label>
+<groupbox id="nyxStartGroup" class="nyx-card" data-category="paneNyxStart" hidden="true">
+  <label class="nyx-card-title"><html:h2 data-l10n-id="nyx-start-group-pages"/></label>
   <hbox class="nyx-row" align="center">
     <vbox class="nyx-row-text" flex="1">
-      <label data-l10n-id="nyx-downloads-folder"/>
-      <description id="nyxDownloadsFolder" class="nyx-row-note"/>
+      <label data-l10n-id="nyx-start-home"/>
+      <description class="nyx-row-note" data-l10n-id="nyx-start-home-note"/>
     </vbox>
-    <button id="nyxDownloadsFolderChange" data-l10n-id="nyx-downloads-change"/>
-  </hbox>
-  <hbox class="nyx-row" align="center">
-    <checkbox class="nyx-switch" flex="1" preference="browser.download.useDownloadDir" data-l10n-id="nyx-downloads-ask"/>
-  </hbox>
-  <hbox class="nyx-row" align="center">
-    <checkbox class="nyx-switch" flex="1" preference="browser.download.alwaysOpenPanel" data-l10n-id="nyx-downloads-open-panel"/>
-  </hbox>
-</groupbox>
-
-<groupbox id="nyxDownloadsVideoGroup" class="nyx-card" data-category="paneNyxDownloads" hidden="true">
-  <label class="nyx-card-title"><html:h2 data-l10n-id="nyx-downloads-group-videos"/></label>
-  <vbox class="nyx-row">
-    <checkbox class="nyx-switch" preference="nyx.video.offer" data-l10n-id="nyx-video-offer"/>
-    <description class="nyx-row-note" data-l10n-id="nyx-video-offer-description"/>
-  </vbox>
-  <hbox class="nyx-row" align="center">
-    <label class="nyx-row-text" flex="1" data-l10n-id="nyx-video-quality"/>
-    <menulist preference="nyx.video.quality">
+    <menulist id="nyxHomepage">
       <menupopup>
-        <menuitem value="best" data-l10n-id="nyx-video-quality-best"/>
-        <menuitem value="2160p" label="2160p (4K)"/>
-        <menuitem value="1440p" label="1440p"/>
-        <menuitem value="1080p" label="1080p"/>
-        <menuitem value="720p" label="720p"/>
-        <menuitem value="480p" label="480p"/>
-        <menuitem value="audio" data-l10n-id="nyx-video-quality-audio"/>
+        <menuitem value="start" data-l10n-id="nyx-start-page"/>
+        <menuitem value="blank" data-l10n-id="nyx-start-blank"/>
+        <menuitem value="custom" data-l10n-id="nyx-start-custom"/>
+      </menupopup>
+    </menulist>
+  </hbox>
+  <hbox id="nyxHomepageCustomRow" class="nyx-row" align="center" hidden="true">
+    <label class="nyx-row-text" flex="1" data-l10n-id="nyx-start-custom-address"/>
+    <html:input id="nyxHomepageCustom" class="nyx-input" type="url" spellcheck="false" placeholder="https://"/>
+  </hbox>
+  <hbox class="nyx-row" align="center">
+    <label class="nyx-row-text" flex="1" data-l10n-id="nyx-start-new-tabs"/>
+    <radiogroup id="nyxNewTabPage" class="nyx-seg" preference="browser.newtabpage.enabled" orient="horizontal">
+      <radio value="true" data-l10n-id="nyx-start-page"/>
+      <radio value="false" data-l10n-id="nyx-start-blank"/>
+    </radiogroup>
+  </hbox>
+</groupbox>
+
+<groupbox id="nyxStartShowsGroup" class="nyx-card" data-category="paneNyxStart" hidden="true">
+  <label class="nyx-card-title"><html:h2 data-l10n-id="nyx-start-group-shows"/></label>
+  <hbox class="nyx-row" align="center">
+    <vbox class="nyx-row-text" flex="1">
+      <label data-l10n-id="nyx-start-customize"/>
+      <description class="nyx-row-note" data-l10n-id="nyx-start-customize-note"/>
+    </vbox>
+    <button id="nyxStartOpen" data-l10n-id="nyx-start-open"/>
+  </hbox>
+</groupbox>
+</html:template>
+
+<html:template id="template-paneNyxSearch">
+<hbox class="subcategory nyx-pane-head" hidden="true" data-category="paneNyxSearch">
+  <vbox>
+    <html:h1 data-l10n-id="pane-nyx-search-title"/>
+    <html:p class="nyx-pane-sub" data-l10n-id="pane-nyx-search-sub"/>
+  </vbox>
+</hbox>
+
+<groupbox id="nyxEngineGroup" class="nyx-card" data-category="paneNyxSearch" hidden="true">
+  <label class="nyx-card-title"><html:h2 data-l10n-id="nyx-search-group-default"/></label>
+  <hbox class="nyx-row" align="center">
+    <label class="nyx-row-text" flex="1" data-l10n-id="nyx-search-default"/>
+    <menulist id="nyxEngine"><menupopup/></menulist>
+  </hbox>
+  <hbox class="nyx-row" align="center">
+    <label class="nyx-row-text" flex="1" data-l10n-id="nyx-search-default-private"/>
+    <menulist id="nyxPrivateEngine"><menupopup/></menulist>
+  </hbox>
+</groupbox>
+
+<groupbox id="nyxSuggestGroup" class="nyx-card" data-category="paneNyxSearch" hidden="true">
+  <label class="nyx-card-title"><html:h2 data-l10n-id="nyx-search-group-suggestions"/></label>
+  <vbox class="nyx-row">
+    <checkbox class="nyx-switch" preference="browser.search.suggest.enabled" data-l10n-id="nyx-search-suggestions"/>
+    <description class="nyx-row-note" data-l10n-id="nyx-search-suggestions-note"/>
+  </vbox>
+  <hbox class="nyx-row" align="center">
+    <checkbox id="nyxSuggestPlaces" class="nyx-switch" flex="1" data-l10n-id="nyx-search-places"/>
+  </hbox>
+  <vbox class="nyx-row">
+    <checkbox class="nyx-switch" preference="zen.urlbar.suggestions.quick-actions" data-l10n-id="nyx-search-commands"/>
+    <description class="nyx-row-note" data-l10n-id="nyx-search-commands-note"/>
+  </vbox>
+</groupbox>
+
+<groupbox id="nyxKeywordsGroup" class="nyx-card" data-category="paneNyxSearch" hidden="true">
+  <label class="nyx-card-title"><html:h2 data-l10n-id="nyx-search-group-keywords"/></label>
+  <vbox id="nyxEngineList" class="nyx-row nyx-list"/>
+  <hbox class="nyx-row" align="center">
+    <description class="nyx-row-note" flex="1" data-l10n-id="nyx-search-keywords-note"/>
+    <button id="nyxEngineRestore" data-l10n-id="nyx-search-restore"/>
+    <button id="nyxEngineAdd" data-l10n-id="nyx-search-add"/>
+  </hbox>
+</groupbox>
+</html:template>
+
+<html:template id="template-paneNyxBlocking">
+<hbox class="subcategory nyx-pane-head" hidden="true" data-category="paneNyxBlocking">
+  <vbox>
+    <html:h1 data-l10n-id="pane-nyx-blocking-title"/>
+    <html:p class="nyx-pane-sub" data-l10n-id="pane-nyx-blocking-sub"/>
+  </vbox>
+</hbox>
+
+<groupbox id="nyxBlockingGroup" class="nyx-card" data-category="paneNyxBlocking" hidden="true">
+  <label class="nyx-card-title"><html:h2 data-l10n-id="nyx-blocking-group"/></label>
+  <hbox class="nyx-row" align="center">
+    <vbox class="nyx-row-text" flex="1">
+      <label data-l10n-id="nyx-blocking-on"/>
+      <description id="nyxBlockingVersion" class="nyx-row-note"/>
+    </vbox>
+    <checkbox id="nyxBlockingOn" class="nyx-switch" aria-labelledby="nyxBlockingGroup"/>
+  </hbox>
+  <hbox class="nyx-row" align="center">
+    <vbox class="nyx-row-text" flex="1">
+      <label data-l10n-id="nyx-blocking-lists"/>
+      <description class="nyx-row-note" data-l10n-id="nyx-blocking-lists-description"/>
+    </vbox>
+    <button id="nyxBlockingLists" data-l10n-id="nyx-blocking-open-lists"/>
+  </hbox>
+  <hbox class="nyx-row" align="center">
+    <vbox class="nyx-row-text" flex="1">
+      <label data-l10n-id="nyx-blocking-trusted"/>
+      <description class="nyx-row-note" data-l10n-id="nyx-blocking-trusted-description"/>
+    </vbox>
+    <button id="nyxBlockingTrusted" data-l10n-id="nyx-blocking-open-trusted"/>
+  </hbox>
+</groupbox>
+
+<groupbox id="nyxBlockingAlsoGroup" class="nyx-card" data-category="paneNyxBlocking" hidden="true">
+  <label class="nyx-card-title"><html:h2 data-l10n-id="nyx-blocking-group-also"/></label>
+  <vbox class="nyx-row">
+    <checkbox id="nyxCookieBanners" class="nyx-switch" data-l10n-id="nyx-blocking-cookie-banners"/>
+    <description class="nyx-row-note" data-l10n-id="nyx-blocking-cookie-banners-description"/>
+  </vbox>
+  <vbox class="nyx-row">
+    <checkbox class="nyx-switch" preference="privacy.query_stripping.enabled" data-l10n-id="nyx-blocking-query-stripping"/>
+    <description class="nyx-row-note" data-l10n-id="nyx-blocking-query-stripping-description"/>
+  </vbox>
+</groupbox>
+
+<groupbox id="nyxCookiesGroup" class="nyx-card" data-category="paneNyxBlocking" hidden="true">
+  <label class="nyx-card-title"><html:h2 data-l10n-id="nyx-privacy-group-cookies"/></label>
+  <hbox class="nyx-row" align="center">
+    <label class="nyx-row-text" flex="1" data-l10n-id="nyx-privacy-third-party"/>
+    <menulist id="nyxCookies" preference="network.cookie.cookieBehavior">
+      <menupopup>
+        <menuitem value="5" data-l10n-id="nyx-privacy-cookies-partitioned"/>
+        <menuitem value="1" data-l10n-id="nyx-privacy-cookies-blocked"/>
+        <menuitem value="0" data-l10n-id="nyx-privacy-cookies-allowed"/>
+      </menupopup>
+    </menulist>
+  </hbox>
+  <vbox class="nyx-row">
+    <checkbox id="nyxClearOnClose" class="nyx-switch" data-l10n-id="nyx-privacy-clear-on-close"/>
+    <description class="nyx-row-note" data-l10n-id="nyx-privacy-clear-on-close-note"/>
+  </vbox>
+  <hbox class="nyx-row" align="center">
+    <vbox class="nyx-row-text" flex="1">
+      <label data-l10n-id="nyx-privacy-exceptions"/>
+      <description class="nyx-row-note" data-l10n-id="nyx-privacy-exceptions-note"/>
+    </vbox>
+    <button id="nyxCookieExceptions" data-l10n-id="nyx-privacy-manage"/>
+  </hbox>
+  <hbox class="nyx-row" align="center">
+    <vbox class="nyx-row-text" flex="1">
+      <label data-l10n-id="nyx-privacy-stored"/>
+      <description id="nyxSiteDataNote" class="nyx-row-note"/>
+    </vbox>
+    <button id="nyxSiteData" data-l10n-id="nyx-privacy-manage"/>
+  </hbox>
+</groupbox>
+
+<groupbox id="nyxHistoryGroup" class="nyx-card" data-category="paneNyxBlocking" hidden="true">
+  <label class="nyx-card-title"><html:h2 data-l10n-id="nyx-privacy-group-history"/></label>
+  <hbox class="nyx-row" align="center">
+    <label class="nyx-row-text" flex="1" data-l10n-id="nyx-privacy-keep-history"/>
+    <radiogroup id="nyxKeepHistory" class="nyx-seg" preference="places.history.enabled" orient="horizontal">
+      <radio value="true" data-l10n-id="nyx-privacy-history-remember"/>
+      <radio value="false" data-l10n-id="nyx-privacy-history-never"/>
+    </radiogroup>
+  </hbox>
+  <hbox class="nyx-row" align="center">
+    <label class="nyx-row-text" flex="1" data-l10n-id="nyx-privacy-clear-history"/>
+    <button id="nyxClearHistory" data-l10n-id="nyx-privacy-clear"/>
+  </hbox>
+</groupbox>
+
+<groupbox id="nyxSecurityGroup" class="nyx-card" data-category="paneNyxBlocking" hidden="true">
+  <label class="nyx-card-title"><html:h2 data-l10n-id="nyx-privacy-group-security"/></label>
+  <vbox class="nyx-row">
+    <checkbox id="nyxStrict" class="nyx-switch" data-l10n-id="nyx-privacy-strict"/>
+    <description class="nyx-row-note" data-l10n-id="nyx-privacy-strict-note"/>
+  </vbox>
+  <hbox class="nyx-row" align="center">
+    <vbox class="nyx-row-text" flex="1">
+      <label data-l10n-id="nyx-privacy-https"/>
+      <description class="nyx-row-note" data-l10n-id="nyx-privacy-https-note"/>
+    </vbox>
+    <menulist id="nyxHttpsOnly">
+      <menupopup>
+        <menuitem value="all" data-l10n-id="nyx-privacy-https-all"/>
+        <menuitem value="private" data-l10n-id="nyx-privacy-https-private"/>
+        <menuitem value="off" data-l10n-id="nyx-privacy-https-off"/>
       </menupopup>
     </menulist>
   </hbox>
   <hbox class="nyx-row" align="center">
-    <label class="nyx-row-text" flex="1" data-l10n-id="nyx-video-audio"/>
-    <radiogroup class="nyx-seg" preference="nyx.video.audio-format" orient="horizontal">
-      <radio value="opus" label="Opus"/>
-      <radio value="m4a" label="M4A"/>
-      <radio value="mp3" label="MP3"/>
-    </radiogroup>
-  </hbox>
-  <hbox class="nyx-row" align="center">
     <vbox class="nyx-row-text" flex="1">
-      <label data-l10n-id="nyx-video-folder"/>
-      <description id="nyxVideoFolder" class="nyx-row-note"/>
+      <label data-l10n-id="nyx-privacy-dns"/>
+      <description class="nyx-row-note" data-l10n-id="nyx-privacy-dns-note"/>
     </vbox>
-    <button id="nyxVideoFolderChange" data-l10n-id="nyx-downloads-change"/>
-  </hbox>
-  <hbox class="nyx-row" align="center">
-    <vbox class="nyx-row-text" flex="1">
-      <label data-l10n-id="nyx-video-names"/>
-      <description id="nyxVideoNamesExample" class="nyx-row-note"/>
-    </vbox>
-    <menulist id="nyxVideoNames" preference="nyx.video.names">
+    <menulist id="nyxDns" preference="network.trr.mode">
       <menupopup>
-        <menuitem value="title-channel" data-l10n-id="nyx-video-names-title-channel"/>
-        <menuitem value="title" data-l10n-id="nyx-video-names-title"/>
-        <menuitem value="channel-title" data-l10n-id="nyx-video-names-channel-title"/>
-        <menuitem value="date-title" data-l10n-id="nyx-video-names-date-title"/>
+        <menuitem value="0" data-l10n-id="nyx-privacy-dns-default"/>
+        <menuitem value="2" data-l10n-id="nyx-privacy-dns-increased"/>
+        <menuitem value="3" data-l10n-id="nyx-privacy-dns-max"/>
+        <menuitem value="5" data-l10n-id="nyx-privacy-dns-off"/>
       </menupopup>
     </menulist>
   </hbox>
-  <hbox class="nyx-row" align="center">
-    <checkbox class="nyx-switch" flex="1" preference="nyx.video.embed" data-l10n-id="nyx-video-embed"/>
-  </hbox>
   <vbox class="nyx-row">
-    <checkbox class="nyx-switch" preference="nyx.video.cookies" data-l10n-id="nyx-video-cookies"/>
-    <description class="nyx-row-note" data-l10n-id="nyx-video-cookies-description"/>
+    <checkbox id="nyxSafeBrowsing" class="nyx-switch" data-l10n-id="nyx-privacy-safe-browsing"/>
+    <description class="nyx-row-note" data-l10n-id="nyx-privacy-safe-browsing-note"/>
+  </vbox>
+  <vbox class="nyx-row">
+    <checkbox class="nyx-switch" preference="privacy.globalprivacycontrol.enabled" data-l10n-id="nyx-privacy-gpc"/>
+    <description class="nyx-row-note" data-l10n-id="nyx-privacy-gpc-note"/>
   </vbox>
   <hbox class="nyx-row" align="center">
-    <vbox class="nyx-row-text" flex="1">
-      <label value="yt-dlp"/>
-      <description id="nyxVideoVersion" class="nyx-row-note"/>
-    </vbox>
+    <label class="nyx-row-text" flex="1" data-l10n-id="nyx-privacy-certificates"/>
+    <button id="nyxCertificates" data-l10n-id="nyx-privacy-view"/>
   </hbox>
 </groupbox>
 </html:template>
-
 
 <html:template id="template-paneNyxPasswords">
-<hbox class="subcategory" hidden="true" data-category="paneNyxPasswords">
-  <html:h1 data-l10n-id="pane-nyx-passwords-title"/>
+<hbox class="subcategory nyx-pane-head" hidden="true" data-category="paneNyxPasswords">
+  <vbox>
+    <html:h1 data-l10n-id="pane-nyx-passwords-title"/>
+    <html:p class="nyx-pane-sub" data-l10n-id="pane-nyx-passwords-sub"/>
+  </vbox>
 </hbox>
 
 <groupbox id="nyxPasswordsStatusGroup" class="nyx-card" data-category="paneNyxPasswords" hidden="true">
@@ -565,52 +730,91 @@
 </groupbox>
 </html:template>
 
-<html:template id="template-paneNyxBlocking">
-<hbox class="subcategory" hidden="true" data-category="paneNyxBlocking">
-  <html:h1 data-l10n-id="pane-nyx-blocking-title"/>
+<html:template id="template-paneNyxPermissions">
+<hbox class="subcategory nyx-pane-head" hidden="true" data-category="paneNyxPermissions">
+  <vbox>
+    <html:h1 data-l10n-id="pane-nyx-permissions-title"/>
+    <html:p class="nyx-pane-sub" data-l10n-id="pane-nyx-permissions-sub"/>
+  </vbox>
 </hbox>
 
-<groupbox id="nyxBlockingGroup" class="nyx-card" data-category="paneNyxBlocking" hidden="true">
-  <label class="nyx-card-title"><html:h2 data-l10n-id="nyx-blocking-group"/></label>
+<groupbox id="nyxPermissionsGroup" class="nyx-card" data-category="paneNyxPermissions" hidden="true">
+  <label class="nyx-card-title"><html:h2 data-l10n-id="nyx-permissions-group-ask"/></label>
   <hbox class="nyx-row" align="center">
     <vbox class="nyx-row-text" flex="1">
-      <label data-l10n-id="nyx-blocking-on"/>
-      <description id="nyxBlockingVersion" class="nyx-row-note"/>
+      <label data-l10n-id="nyx-permissions-location"/>
+      <description id="nyxPerm-geo" class="nyx-row-note"/>
     </vbox>
-    <checkbox id="nyxBlockingOn" class="nyx-switch" aria-labelledby="nyxBlockingGroup"/>
+    <button class="nyx-perm-manage" data-permission="geo" data-l10n-id="nyx-privacy-manage"/>
   </hbox>
   <hbox class="nyx-row" align="center">
     <vbox class="nyx-row-text" flex="1">
-      <label data-l10n-id="nyx-blocking-lists"/>
-      <description class="nyx-row-note" data-l10n-id="nyx-blocking-lists-description"/>
+      <label data-l10n-id="nyx-permissions-camera"/>
+      <description id="nyxPerm-camera" class="nyx-row-note"/>
     </vbox>
-    <button id="nyxBlockingLists" data-l10n-id="nyx-blocking-open-lists"/>
+    <button class="nyx-perm-manage" data-permission="camera" data-l10n-id="nyx-privacy-manage"/>
   </hbox>
   <hbox class="nyx-row" align="center">
     <vbox class="nyx-row-text" flex="1">
-      <label data-l10n-id="nyx-blocking-trusted"/>
-      <description class="nyx-row-note" data-l10n-id="nyx-blocking-trusted-description"/>
+      <label data-l10n-id="nyx-permissions-microphone"/>
+      <description id="nyxPerm-microphone" class="nyx-row-note"/>
     </vbox>
-    <button id="nyxBlockingTrusted" data-l10n-id="nyx-blocking-open-trusted"/>
+    <button class="nyx-perm-manage" data-permission="microphone" data-l10n-id="nyx-privacy-manage"/>
+  </hbox>
+  <hbox class="nyx-row" align="center">
+    <vbox class="nyx-row-text" flex="1">
+      <label data-l10n-id="nyx-permissions-notifications"/>
+      <description id="nyxPerm-desktop-notification" class="nyx-row-note"/>
+    </vbox>
+    <button class="nyx-perm-manage" data-permission="desktop-notification" data-l10n-id="nyx-privacy-manage"/>
+  </hbox>
+  <hbox class="nyx-row" align="center">
+    <vbox class="nyx-row-text" flex="1">
+      <label data-l10n-id="nyx-permissions-vr"/>
+      <description id="nyxPerm-xr" class="nyx-row-note"/>
+    </vbox>
+    <button class="nyx-perm-manage" data-permission="xr" data-l10n-id="nyx-privacy-manage"/>
   </hbox>
 </groupbox>
 
-<groupbox id="nyxBlockingAlsoGroup" class="nyx-card" data-category="paneNyxBlocking" hidden="true">
-  <label class="nyx-card-title"><html:h2 data-l10n-id="nyx-blocking-group-also"/></label>
-  <vbox class="nyx-row">
-    <checkbox id="nyxCookieBanners" class="nyx-switch" data-l10n-id="nyx-blocking-cookie-banners"/>
-    <description class="nyx-row-note" data-l10n-id="nyx-blocking-cookie-banners-description"/>
-  </vbox>
-  <vbox class="nyx-row">
-    <checkbox class="nyx-switch" preference="privacy.query_stripping.enabled" data-l10n-id="nyx-blocking-query-stripping"/>
-    <description class="nyx-row-note" data-l10n-id="nyx-blocking-query-stripping-description"/>
-  </vbox>
+<groupbox id="nyxPermissionsPagesGroup" class="nyx-card" data-category="paneNyxPermissions" hidden="true">
+  <label class="nyx-card-title"><html:h2 data-l10n-id="nyx-permissions-group-pages"/></label>
+  <hbox class="nyx-row" align="center">
+    <label class="nyx-row-text" flex="1" data-l10n-id="nyx-permissions-autoplay"/>
+    <menulist id="nyxAutoplay" preference="media.autoplay.default">
+      <menupopup>
+        <menuitem value="0" data-l10n-id="nyx-permissions-autoplay-allow"/>
+        <menuitem value="1" data-l10n-id="nyx-permissions-autoplay-audio"/>
+        <menuitem value="5" data-l10n-id="nyx-permissions-autoplay-all"/>
+      </menupopup>
+    </menulist>
+    <button class="nyx-perm-manage" data-permission="autoplay-media" data-l10n-id="nyx-privacy-manage"/>
+  </hbox>
+  <hbox class="nyx-row" align="center">
+    <vbox class="nyx-row-text" flex="1">
+      <label data-l10n-id="nyx-permissions-popups"/>
+      <description class="nyx-row-note" data-l10n-id="nyx-permissions-popups-note"/>
+    </vbox>
+    <checkbox class="nyx-switch nyx-switch-only" preference="dom.disable_open_during_load" data-l10n-id="nyx-permissions-popups-switch"/>
+    <button class="nyx-perm-manage" data-permission="popup" data-dialog="permission" data-l10n-id="nyx-permissions-exceptions"/>
+  </hbox>
+  <hbox class="nyx-row" align="center">
+    <vbox class="nyx-row-text" flex="1">
+      <label data-l10n-id="nyx-permissions-addons"/>
+      <description class="nyx-row-note" data-l10n-id="nyx-permissions-addons-note"/>
+    </vbox>
+    <checkbox class="nyx-switch nyx-switch-only" preference="xpinstall.whitelist.required" data-l10n-id="nyx-permissions-addons-switch"/>
+    <button class="nyx-perm-manage" data-permission="install" data-dialog="permission" data-l10n-id="nyx-permissions-exceptions"/>
+  </hbox>
 </groupbox>
 </html:template>
 
 <html:template id="template-paneNyxVpn">
-<hbox class="subcategory" hidden="true" data-category="paneNyxVpn">
-  <html:h1 data-l10n-id="pane-nyx-vpn-title"/>
+<hbox class="subcategory nyx-pane-head" hidden="true" data-category="paneNyxVpn">
+  <vbox>
+    <html:h1 data-l10n-id="pane-nyx-vpn-title"/>
+    <html:p class="nyx-pane-sub" data-l10n-id="pane-nyx-vpn-sub"/>
+  </vbox>
 </hbox>
 
 <groupbox id="nyxVpnConnections" class="nyx-card" data-category="paneNyxVpn" hidden="true">
@@ -689,5 +893,581 @@
     <html:div id="nyxVpnBypass" class="nyx-chips"/>
     <button id="nyxVpnBypassAdd" data-l10n-id="nyx-chip-add"/>
   </hbox>
+</groupbox>
+</html:template>
+
+<html:template id="template-paneNyxSelection">
+<hbox class="subcategory nyx-pane-head" hidden="true" data-category="paneNyxSelection">
+  <vbox>
+    <html:h1 data-l10n-id="pane-nyx-selection-title"/>
+    <html:p class="nyx-pane-sub" data-l10n-id="pane-nyx-selection-sub"/>
+  </vbox>
+</hbox>
+
+<groupbox id="nyxSelectionPopupGroup" class="nyx-card" data-category="paneNyxSelection" hidden="true">
+  <label class="nyx-card-title"><html:h2 data-l10n-id="nyx-selection-group-popup"/></label>
+  <hbox class="nyx-row" align="center">
+    <vbox class="nyx-row-text" flex="1">
+      <label data-l10n-id="nyx-selection-mode"/>
+      <description class="nyx-row-note" data-l10n-id="nyx-selection-mode-description"/>
+    </vbox>
+    <radiogroup id="nyxSelectionMode" class="nyx-seg" preference="nyx.selection.mode" orient="horizontal">
+      <radio value="selection" data-l10n-id="nyx-selection-mode-selection"/>
+      <radio value="alt" data-l10n-id="nyx-selection-mode-alt"/>
+      <radio value="middle" data-l10n-id="nyx-selection-mode-middle"/>
+      <radio value="off" data-l10n-id="nyx-selection-mode-off"/>
+    </radiogroup>
+  </hbox>
+  <vbox class="nyx-row">
+    <checkbox id="nyxSelectionTextbox" class="nyx-switch" preference="nyx.selection.textbox" data-l10n-id="nyx-selection-textbox"/>
+    <description class="nyx-row-note" data-l10n-id="nyx-selection-textbox-description"/>
+  </vbox>
+  <hbox class="nyx-row" align="center">
+    <label class="nyx-row-text" flex="1" data-l10n-id="nyx-selection-size"/>
+    <radiogroup id="nyxSelectionSize" class="nyx-seg" preference="nyx.selection.icon-size" orient="horizontal">
+      <radio value="small" data-l10n-id="nyx-selection-size-small"/>
+      <radio value="medium" data-l10n-id="nyx-selection-size-medium"/>
+      <radio value="large" data-l10n-id="nyx-selection-size-large"/>
+    </radiogroup>
+  </hbox>
+</groupbox>
+
+<groupbox id="nyxSelectionImportGroup" class="nyx-card" data-category="paneNyxSelection" hidden="true">
+  <hbox class="nyx-row" align="center">
+    <image class="nyx-tile" style="--nyx-tile-color: var(--nyx-sw-pink, #e06c9f)" src="chrome://browser/content/nyx/icons/select.svg"/>
+    <vbox class="nyx-row-text" flex="1">
+      <label data-l10n-id="nyx-selection-import"/>
+      <description class="nyx-row-note" data-l10n-id="nyx-selection-import-note"/>
+    </vbox>
+    <button id="nyxSelectionImport" data-l10n-id="nyx-selection-import-button"/>
+  </hbox>
+</groupbox>
+
+<groupbox id="nyxSelectionEnginesGroup" class="nyx-card" data-category="paneNyxSelection" hidden="true">
+  <label class="nyx-card-title"><html:h2 data-l10n-id="nyx-selection-group-engines"/></label>
+  <hbox id="nyxSelectionEnginesFoot" class="nyx-row" align="center">
+    <description class="nyx-row-note" flex="1" data-l10n-id="nyx-selection-engines-description"/>
+    <button id="nyxSelectionManage" data-l10n-id="nyx-selection-manage"/>
+  </hbox>
+</groupbox>
+
+<groupbox id="nyxSelectionResultsGroup" class="nyx-card" data-category="paneNyxSelection" hidden="true">
+  <label class="nyx-card-title"><html:h2 data-l10n-id="nyx-selection-group-results"/></label>
+  <hbox class="nyx-row" align="center">
+    <vbox class="nyx-row-text" flex="1">
+      <label data-l10n-id="nyx-selection-open"/>
+      <description class="nyx-row-note" data-l10n-id="nyx-selection-open-description"/>
+    </vbox>
+    <radiogroup id="nyxSelectionOpen" class="nyx-seg" preference="nyx.selection.open" orient="horizontal">
+      <radio value="tab" data-l10n-id="nyx-selection-open-tab"/>
+      <radio value="background" data-l10n-id="nyx-selection-open-background"/>
+      <radio value="current" data-l10n-id="nyx-selection-open-current"/>
+    </radiogroup>
+  </hbox>
+  <hbox class="nyx-row" align="center">
+    <vbox class="nyx-row-text" flex="1">
+      <label data-l10n-id="nyx-selection-off"/>
+      <description id="nyxSelectionOffNone" class="nyx-row-note" data-l10n-id="nyx-selection-off-none"/>
+    </vbox>
+    <html:div id="nyxSelectionOffSites" class="nyx-chips"/>
+    <button id="nyxSelectionOffAdd" data-l10n-id="nyx-chip-add"/>
+  </hbox>
+</groupbox>
+</html:template>
+
+<html:template id="template-paneNyxDownloads">
+<hbox class="subcategory nyx-pane-head" hidden="true" data-category="paneNyxDownloads">
+  <vbox>
+    <html:h1 data-l10n-id="pane-nyx-downloads-title"/>
+    <html:p class="nyx-pane-sub" data-l10n-id="pane-nyx-downloads-sub"/>
+  </vbox>
+</hbox>
+
+<groupbox id="nyxDownloadsPanelGroup" class="nyx-card" data-category="paneNyxDownloads" hidden="true">
+  <label class="nyx-card-title"><html:h2 data-l10n-id="nyx-downloads-group-panel"/></label>
+  <hbox class="nyx-row" align="center">
+    <checkbox class="nyx-switch" flex="1" preference="browser.download.alwaysOpenPanel" data-l10n-id="nyx-downloads-open-panel"/>
+  </hbox>
+  <hbox class="nyx-row" align="center">
+    <vbox class="nyx-row-text" flex="1">
+      <label data-l10n-id="nyx-downloads-files"/>
+      <description class="nyx-row-note" data-l10n-id="nyx-downloads-files-note"/>
+    </vbox>
+    <button id="nyxDownloadsFiles" data-l10n-id="nyx-downloads-files-button"/>
+  </hbox>
+</groupbox>
+
+<groupbox id="nyxDownloadsVideoGroup" class="nyx-card" data-category="paneNyxDownloads" hidden="true">
+  <label class="nyx-card-title"><html:h2 data-l10n-id="nyx-downloads-group-videos"/></label>
+  <vbox class="nyx-row">
+    <checkbox class="nyx-switch" preference="nyx.video.offer" data-l10n-id="nyx-video-offer"/>
+    <description class="nyx-row-note" data-l10n-id="nyx-video-offer-description"/>
+  </vbox>
+  <hbox class="nyx-row" align="center">
+    <label class="nyx-row-text" flex="1" data-l10n-id="nyx-video-quality"/>
+    <menulist preference="nyx.video.quality">
+      <menupopup>
+        <menuitem value="best" data-l10n-id="nyx-video-quality-best"/>
+        <menuitem value="2160p" label="2160p (4K)"/>
+        <menuitem value="1440p" label="1440p"/>
+        <menuitem value="1080p" label="1080p"/>
+        <menuitem value="720p" label="720p"/>
+        <menuitem value="480p" label="480p"/>
+        <menuitem value="audio" data-l10n-id="nyx-video-quality-audio"/>
+      </menupopup>
+    </menulist>
+  </hbox>
+  <hbox class="nyx-row" align="center">
+    <label class="nyx-row-text" flex="1" data-l10n-id="nyx-video-audio"/>
+    <radiogroup class="nyx-seg" preference="nyx.video.audio-format" orient="horizontal">
+      <radio value="opus" label="Opus"/>
+      <radio value="m4a" label="M4A"/>
+      <radio value="mp3" label="MP3"/>
+    </radiogroup>
+  </hbox>
+  <hbox class="nyx-row" align="center">
+    <vbox class="nyx-row-text" flex="1">
+      <label data-l10n-id="nyx-video-folder"/>
+      <description id="nyxVideoFolder" class="nyx-row-note"/>
+    </vbox>
+    <button id="nyxVideoFolderChange" data-l10n-id="nyx-downloads-change"/>
+  </hbox>
+  <hbox class="nyx-row" align="center">
+    <vbox class="nyx-row-text" flex="1">
+      <label data-l10n-id="nyx-video-names"/>
+      <description id="nyxVideoNamesExample" class="nyx-row-note"/>
+    </vbox>
+    <menulist id="nyxVideoNames" preference="nyx.video.names">
+      <menupopup>
+        <menuitem value="title-channel" data-l10n-id="nyx-video-names-title-channel"/>
+        <menuitem value="title" data-l10n-id="nyx-video-names-title"/>
+        <menuitem value="channel-title" data-l10n-id="nyx-video-names-channel-title"/>
+        <menuitem value="date-title" data-l10n-id="nyx-video-names-date-title"/>
+      </menupopup>
+    </menulist>
+  </hbox>
+  <hbox class="nyx-row" align="center">
+    <checkbox class="nyx-switch" flex="1" preference="nyx.video.embed" data-l10n-id="nyx-video-embed"/>
+  </hbox>
+  <vbox class="nyx-row">
+    <checkbox class="nyx-switch" preference="nyx.video.cookies" data-l10n-id="nyx-video-cookies"/>
+    <description class="nyx-row-note" data-l10n-id="nyx-video-cookies-description"/>
+  </vbox>
+  <hbox class="nyx-row" align="center">
+    <vbox class="nyx-row-text" flex="1">
+      <label value="yt-dlp"/>
+      <description id="nyxVideoVersion" class="nyx-row-note"/>
+    </vbox>
+  </hbox>
+</groupbox>
+</html:template>
+
+<html:template id="template-paneNyxGestures">
+<hbox class="subcategory nyx-pane-head" hidden="true" data-category="paneNyxGestures">
+  <vbox>
+    <html:h1 data-l10n-id="pane-nyx-gestures-title"/>
+    <html:p class="nyx-pane-sub" data-l10n-id="pane-nyx-gestures-sub"/>
+  </vbox>
+</hbox>
+
+<groupbox id="nyxTouchpadGroup" class="nyx-card" data-category="paneNyxGestures" hidden="true">
+  <label class="nyx-card-title"><html:h2 data-l10n-id="nyx-gestures-group-touchpad"/></label>
+  <vbox class="nyx-row">
+    <checkbox id="nyxSwipe" class="nyx-switch" data-l10n-id="nyx-gestures-swipe"/>
+    <description class="nyx-row-note" data-l10n-id="nyx-gestures-swipe-note"/>
+  </vbox>
+  <hbox class="nyx-row" align="center">
+    <checkbox class="nyx-switch" flex="1" preference="apz.allow_zooming" data-l10n-id="nyx-gestures-pinch"/>
+  </hbox>
+</groupbox>
+
+<groupbox id="nyxMouseGroup" class="nyx-card" data-category="paneNyxGestures" hidden="true">
+  <label class="nyx-card-title"><html:h2 data-l10n-id="nyx-gestures-group-mouse"/></label>
+  <hbox class="nyx-row" align="center">
+    <checkbox class="nyx-switch" flex="1" preference="general.smoothScroll" data-l10n-id="nyx-gestures-smooth"/>
+  </hbox>
+  <vbox class="nyx-row">
+    <checkbox class="nyx-switch" preference="general.autoScroll" data-l10n-id="nyx-gestures-autoscroll"/>
+    <description class="nyx-row-note" data-l10n-id="nyx-gestures-autoscroll-note"/>
+  </vbox>
+  <hbox class="nyx-row" align="center">
+    <checkbox class="nyx-switch" flex="1" preference="middlemouse.paste" data-l10n-id="nyx-gestures-paste"/>
+  </hbox>
+  <hbox class="nyx-row" align="center">
+    <checkbox id="nyxMiddleClick" class="nyx-switch" flex="1" preference="nyx.tabs.middle-click-close" data-l10n-id="nyx-tabs-middle-click"/>
+  </hbox>
+  <hbox class="nyx-row" align="center">
+    <checkbox id="nyxWheelSwitch" class="nyx-switch" flex="1" preference="toolkit.tabbox.switchByScrolling" data-l10n-id="nyx-tabs-wheel"/>
+  </hbox>
+  <hbox class="nyx-row" align="center">
+    <checkbox id="nyxCtrlWheel" class="nyx-switch" flex="1" data-l10n-id="nyx-gestures-ctrl-wheel"/>
+  </hbox>
+</groupbox>
+
+<groupbox id="nyxKeysGroup" class="nyx-card" data-category="paneNyxGestures" hidden="true">
+  <label class="nyx-card-title"><html:h2 data-l10n-id="nyx-gestures-group-keys"/></label>
+  <hbox class="nyx-row" align="center">
+    <vbox class="nyx-row-text" flex="1">
+      <label data-l10n-id="nyx-gestures-shortcuts"/>
+      <description class="nyx-row-note" data-l10n-id="nyx-gestures-shortcuts-note"/>
+    </vbox>
+    <button id="nyxShortcuts" data-l10n-id="nyx-gestures-edit"/>
+  </hbox>
+</groupbox>
+
+<!-- Keyboard shortcuts, a view of Gestures (#nyxGestures-keys): every shortcut Browser has, by
+     group, each changed, cleared or reset here (gNyxGesturesPane.keys). -->
+<hbox class="subcategory nyx-pane-head nyx-keys-part" hidden="true" data-category="paneNyxGestures" align="end">
+  <vbox flex="1">
+    <button id="nyxKeysBack" class="nyx-crumb" data-l10n-id="nyx-keys-back"/>
+    <html:h1 data-l10n-id="pane-nyx-keys-title"/>
+    <html:p class="nyx-pane-sub" data-l10n-id="pane-nyx-keys-sub"/>
+  </vbox>
+  <button id="nyxKeysResetAll" data-l10n-id="nyx-keys-reset-all"/>
+</hbox>
+<vbox class="nyx-keys-part" hidden="true" data-category="paneNyxGestures">
+  <html:input id="nyxKeysFind" class="nyx-keys-find" type="search" data-l10n-id="nyx-keys-find"/>
+  <vbox id="nyxKeysGroups"/>
+</vbox>
+</html:template>
+
+<html:template id="template-paneNyxExtensions">
+<hbox class="subcategory nyx-pane-head" hidden="true" data-category="paneNyxExtensions">
+  <vbox>
+    <html:h1 data-l10n-id="pane-nyx-extensions-title"/>
+    <html:p class="nyx-pane-sub" data-l10n-id="pane-nyx-extensions-sub"/>
+  </vbox>
+</hbox>
+
+<groupbox id="nyxExtensionsGroup" class="nyx-card" data-category="paneNyxExtensions" hidden="true">
+  <label class="nyx-card-title"><html:h2 data-l10n-id="nyx-extensions-group-installed"/></label>
+  <hbox class="nyx-row" align="center">
+    <vbox class="nyx-row-text" flex="1">
+      <label data-l10n-id="nyx-extensions-yours"/>
+      <description id="nyxExtensionsCount" class="nyx-row-note"/>
+    </vbox>
+    <button id="nyxExtensionsManage" data-l10n-id="nyx-extensions-manage"/>
+  </hbox>
+  <hbox class="nyx-row" align="center">
+    <vbox class="nyx-row-text" flex="1">
+      <label data-l10n-id="nyx-extensions-shortcuts"/>
+      <description class="nyx-row-note" data-l10n-id="nyx-extensions-shortcuts-note"/>
+    </vbox>
+    <button id="nyxExtensionsShortcuts" data-l10n-id="nyx-gestures-edit"/>
+  </hbox>
+  <hbox class="nyx-row" align="center">
+    <description class="nyx-row-note" flex="1" data-l10n-id="nyx-extensions-get-note"/>
+    <button id="nyxExtensionsGet" data-l10n-id="nyx-extensions-get" class="nyx-primary"/>
+  </hbox>
+</groupbox>
+</html:template>
+
+<html:template id="template-paneNyxSync">
+<hbox class="subcategory nyx-pane-head" hidden="true" data-category="paneNyxSync">
+  <vbox>
+    <html:h1 data-l10n-id="pane-nyx-sync-title"/>
+    <html:p class="nyx-pane-sub" data-l10n-id="pane-nyx-sync-sub"/>
+  </vbox>
+</hbox>
+
+<groupbox id="nyxSyncAccountGroup" class="nyx-card" data-category="paneNyxSync" hidden="true">
+  <label class="nyx-card-title"><html:h2 data-l10n-id="nyx-sync-group-account"/></label>
+  <hbox class="nyx-row" align="center">
+    <vbox class="nyx-row-text" flex="1">
+      <label data-l10n-id="nyx-sync-account"/>
+      <description id="nyxSyncStatus" class="nyx-row-note"/>
+    </vbox>
+    <button id="nyxSyncSignIn" data-l10n-id="nyx-sync-sign-in" class="nyx-primary"/>
+    <button id="nyxSyncNow" data-l10n-id="nyx-sync-now" hidden="true"/>
+    <button id="nyxSyncSignOut" data-l10n-id="nyx-sync-sign-out" hidden="true"/>
+  </hbox>
+</groupbox>
+
+<groupbox id="nyxSyncEnginesGroup" class="nyx-card" data-category="paneNyxSync" hidden="true">
+  <label class="nyx-card-title"><html:h2 data-l10n-id="nyx-sync-group-engines"/></label>
+  <hbox class="nyx-row" align="center">
+    <checkbox class="nyx-switch" flex="1" preference="services.sync.engine.bookmarks" data-l10n-id="nyx-sync-bookmarks"/>
+  </hbox>
+  <hbox class="nyx-row" align="center">
+    <checkbox class="nyx-switch" flex="1" preference="services.sync.engine.history" data-l10n-id="nyx-sync-history"/>
+  </hbox>
+  <hbox class="nyx-row" align="center">
+    <checkbox class="nyx-switch" flex="1" preference="services.sync.engine.tabs" data-l10n-id="nyx-sync-tabs"/>
+  </hbox>
+  <hbox class="nyx-row" align="center">
+    <checkbox class="nyx-switch" flex="1" preference="services.sync.engine.addons" data-l10n-id="nyx-sync-addons"/>
+  </hbox>
+  <vbox class="nyx-row">
+    <checkbox class="nyx-switch" preference="services.sync.engine.prefs" data-l10n-id="nyx-sync-prefs"/>
+    <description class="nyx-row-note" data-l10n-id="nyx-sync-prefs-note"/>
+  </vbox>
+</groupbox>
+</html:template>
+
+<html:template id="template-paneNyxAbout">
+<hbox class="subcategory nyx-pane-head" hidden="true" data-category="paneNyxAbout">
+  <vbox>
+    <html:h1 data-l10n-id="pane-nyx-about-title"/>
+    <html:p class="nyx-pane-sub" data-l10n-id="pane-nyx-about-sub"/>
+  </vbox>
+</hbox>
+
+<!-- Browser's version and updates (AppUpdater, as Zen's About dialog had them), what's new,
+     version info to copy, credits, licences and where to report a problem (gNyxAboutPane). -->
+<groupbox id="nyxAboutGroup" class="nyx-card" data-category="paneNyxAbout" hidden="true">
+  <hbox class="nyx-row nyx-about-hero" align="center">
+    <html:img class="nyx-about-logo" src="chrome://branding/content/about-logo.svg" alt=""/>
+    <vbox class="nyx-row-text" flex="1">
+      <html:h2 class="nyx-about-name" data-l10n-id="zen-about-app-name"/>
+      <description id="nyxAboutVersion" class="nyx-row-note"/>
+      <description id="nyxAboutUpdateText" class="nyx-about-update"/>
+    </vbox>
+    <button id="nyxAboutUpdate" hidden="true"/>
+  </hbox>
+</groupbox>
+
+<groupbox id="nyxAboutMoreGroup" class="nyx-card" data-category="paneNyxAbout" hidden="true">
+  <hbox id="nyxAboutNewsRow" class="nyx-row" align="center">
+    <label class="nyx-row-text" flex="1" data-l10n-id="nyx-about-news"/>
+    <button id="nyxAboutNews" data-l10n-id="nyx-about-open"/>
+  </hbox>
+  <hbox class="nyx-row" align="center">
+    <vbox class="nyx-row-text" flex="1">
+      <label data-l10n-id="nyx-about-copy"/>
+      <description id="nyxAboutBuild" class="nyx-row-note"/>
+    </vbox>
+    <button id="nyxAboutCopy" data-l10n-id="nyx-about-copy-button"/>
+  </hbox>
+  <hbox class="nyx-row" align="center">
+    <vbox class="nyx-row-text" flex="1">
+      <label data-l10n-id="nyx-about-credits"/>
+      <description class="nyx-row-note" data-l10n-id="nyx-about-credits-note"/>
+    </vbox>
+    <button id="nyxAboutCredits" data-l10n-id="nyx-about-open"/>
+  </hbox>
+  <hbox class="nyx-row" align="center">
+    <vbox class="nyx-row-text" flex="1">
+      <label data-l10n-id="nyx-about-licences"/>
+      <description class="nyx-row-note" data-l10n-id="nyx-about-licences-note"/>
+    </vbox>
+    <button id="nyxAboutLicences" data-l10n-id="nyx-about-open"/>
+  </hbox>
+  <hbox class="nyx-row" align="center">
+    <vbox class="nyx-row-text" flex="1">
+      <label data-l10n-id="nyx-about-report"/>
+      <description class="nyx-row-note" data-l10n-id="nyx-about-report-note"/>
+    </vbox>
+    <button id="nyxAboutReport" data-l10n-id="nyx-about-open"/>
+  </hbox>
+</groupbox>
+</html:template>
+
+<html:template id="template-paneNyxStyles">
+<hbox class="subcategory nyx-pane-head" hidden="true" data-category="paneNyxStyles">
+  <vbox flex="1">
+    <html:h1 data-l10n-id="pane-nyx-styles-title"/>
+    <html:p class="nyx-pane-sub" data-l10n-id="pane-nyx-styles-sub"/>
+  </vbox>
+  <hbox class="nyx-pane-actions" align="center">
+    <button id="nyxStylesImport" data-l10n-id="nyx-styles-import"/>
+    <button id="nyxStylesNew" class="nyx-primary" data-l10n-id="nyx-styles-new"/>
+  </hbox>
+</hbox>
+
+<hbox id="nyxStylesList" class="nyx-styles-list" data-category="paneNyxStyles" hidden="true" orient="vertical" flex="1">
+  <label class="nyx-group-label" data-l10n-id="nyx-styles-group-builtin"/>
+  <groupbox id="nyxStylesBuiltin" class="nyx-card nyx-styles-grid"/>
+  <label class="nyx-group-label" data-l10n-id="nyx-styles-group-mine"/>
+  <groupbox id="nyxStylesMine" class="nyx-card"/>
+</hbox>
+
+<vbox id="nyxStylesEditor" class="nyx-styles-editor nyx-keys-part" hidden="true" data-category="paneNyxStyles" data-subcategory="edit">
+  <hbox class="nyx-pane-head" align="center">
+    <button id="nyxStylesBack" class="nyx-back" data-l10n-id="nyx-styles-back"/>
+  </hbox>
+  <hbox class="nyx-editor-head" align="center">
+    <html:span id="nyxStylesEditorIcon" class="nyx-style-ico"/>
+    <vbox flex="1">
+      <html:input id="nyxStylesEditorName" class="nyx-editor-name" data-l10n-id="nyx-styles-name"/>
+      <description id="nyxStylesEditorMeta" class="nyx-row-note"/>
+    </vbox>
+    <checkbox id="nyxStylesEditorEnabled" class="nyx-switch" data-l10n-id="nyx-styles-enabled"/>
+  </hbox>
+  <hbox flex="1" class="nyx-editor-cols">
+    <vbox flex="1" class="nyx-editor-code">
+      <html:div id="nyxStylesCode" class="nyx-cm"/>
+      <hbox class="nyx-editor-bar" align="center">
+        <description id="nyxStylesSaved" class="nyx-row-note" data-l10n-id="nyx-styles-saved"/>
+        <spacer flex="1"/>
+        <button id="nyxStylesUndo" data-l10n-id="nyx-styles-undo"/>
+        <button id="nyxStylesSave" class="nyx-primary" data-l10n-id="nyx-styles-save"/>
+      </hbox>
+    </vbox>
+    <vbox class="nyx-editor-side">
+      <label class="nyx-group-label" data-l10n-id="nyx-styles-applies"/>
+      <groupbox id="nyxStylesApplies" class="nyx-card"/>
+      <label class="nyx-group-label" data-l10n-id="nyx-styles-options"/>
+      <groupbox id="nyxStylesOptions" class="nyx-card"/>
+    </vbox>
+  </hbox>
+</vbox>
+</html:template>
+
+<html:template id="template-paneNyxScripts">
+<hbox class="subcategory nyx-pane-head" hidden="true" data-category="paneNyxScripts">
+  <vbox flex="1">
+    <html:h1 data-l10n-id="pane-nyx-scripts-title"/>
+    <html:p class="nyx-pane-sub" data-l10n-id="pane-nyx-scripts-sub"/>
+  </vbox>
+  <hbox class="nyx-pane-actions" align="center">
+    <button id="nyxScriptsImport" data-l10n-id="nyx-scripts-import"/>
+    <button id="nyxScriptsNew" class="nyx-primary" data-l10n-id="nyx-scripts-new"/>
+  </hbox>
+</hbox>
+
+<vbox id="nyxScriptsList" data-category="paneNyxScripts" hidden="true">
+  <hbox class="nyx-row" align="center">
+    <html:input id="nyxScriptsFind" type="search" class="nyx-find-field" data-l10n-id="nyx-scripts-find" data-l10n-attrs="placeholder"/>
+    <button id="nyxScriptsCheck" data-l10n-id="nyx-scripts-check"/>
+  </hbox>
+  <groupbox id="nyxScriptsRows" class="nyx-card"/>
+  <description class="nyx-row-note" data-l10n-id="nyx-scripts-foot"/>
+</vbox>
+
+<vbox id="nyxScriptsEditor" class="nyx-scripts-editor nyx-keys-part" hidden="true" data-category="paneNyxScripts" data-subcategory="edit">
+  <hbox class="nyx-pane-head" align="center">
+    <button id="nyxScriptsBack" class="nyx-back" data-l10n-id="nyx-scripts-back"/>
+  </hbox>
+  <hbox class="nyx-editor-head" align="center">
+    <html:span id="nyxScriptsEditorIcon" class="nyx-style-ico"/>
+    <vbox flex="1">
+      <label id="nyxScriptsEditorName" class="nyx-editor-title"/>
+      <description id="nyxScriptsEditorMeta" class="nyx-row-note"/>
+    </vbox>
+    <checkbox id="nyxScriptsEditorEnabled" class="nyx-switch" data-l10n-id="nyx-scripts-enabled"/>
+  </hbox>
+  <hbox id="nyxScriptsTabs" class="nyx-tabs">
+    <button id="nyxScriptsTabCode" class="nyx-tab" data-l10n-id="nyx-scripts-tab-code"/>
+    <button id="nyxScriptsTabValues" class="nyx-tab" data-l10n-id="nyx-scripts-tab-values"/>
+  </hbox>
+  <hbox id="nyxScriptsCodeView" flex="1" class="nyx-editor-cols">
+    <vbox flex="1" class="nyx-editor-code">
+      <html:div id="nyxScriptsCode" class="nyx-cm"/>
+      <hbox class="nyx-editor-bar" align="center">
+        <description class="nyx-row-note" data-l10n-id="nyx-scripts-saved"/>
+        <spacer flex="1"/>
+        <button id="nyxScriptsUndo" data-l10n-id="nyx-scripts-undo"/>
+        <button id="nyxScriptsSave" class="nyx-primary" data-l10n-id="nyx-scripts-save"/>
+      </hbox>
+    </vbox>
+    <vbox class="nyx-editor-side">
+      <label class="nyx-group-label" data-l10n-id="nyx-scripts-grants"/>
+      <groupbox id="nyxScriptsGrants" class="nyx-card"/>
+    </vbox>
+  </hbox>
+  <vbox id="nyxScriptsValuesView" hidden="true">
+    <groupbox id="nyxScriptsValues" class="nyx-card"/>
+    <hbox class="nyx-row">
+      <button id="nyxScriptsValueAdd" data-l10n-id="nyx-scripts-value-add"/>
+      <button id="nyxScriptsValueClear" data-l10n-id="nyx-scripts-value-clear"/>
+    </hbox>
+    <description class="nyx-row-note" data-l10n-id="nyx-scripts-values-note"/>
+  </vbox>
+</vbox>
+</html:template>
+
+<html:template id="template-paneNyxYouTube">
+<hbox class="subcategory nyx-pane-head" hidden="true" data-category="paneNyxYouTube">
+  <vbox>
+    <html:h1 data-l10n-id="pane-nyx-youtube-title"/>
+    <html:p class="nyx-pane-sub" data-l10n-id="pane-nyx-youtube-sub"/>
+  </vbox>
+</hbox>
+
+<groupbox class="nyx-card" data-category="paneNyxYouTube" hidden="true">
+  <label class="nyx-card-title"><html:h2 data-l10n-id="nyx-youtube-group-player"/></label>
+  <vbox class="nyx-row">
+    <checkbox class="nyx-switch" preference="nyx.youtube.theater" data-l10n-id="nyx-youtube-theater"/>
+    <description class="nyx-row-note" data-l10n-id="nyx-youtube-theater-note"/>
+  </vbox>
+  <vbox class="nyx-row">
+    <checkbox class="nyx-switch" preference="nyx.youtube.no-miniplayer" data-l10n-id="nyx-youtube-miniplayer"/>
+    <description class="nyx-row-note" data-l10n-id="nyx-youtube-miniplayer-note"/>
+  </vbox>
+</groupbox>
+
+<groupbox class="nyx-card" data-category="paneNyxYouTube" hidden="true">
+  <label class="nyx-card-title"><html:h2 data-l10n-id="nyx-youtube-group-playback"/></label>
+  <hbox class="nyx-row" align="center">
+    <vbox class="nyx-row-text" flex="1">
+      <label data-l10n-id="nyx-youtube-quality"/>
+      <description class="nyx-row-note" data-l10n-id="nyx-youtube-quality-note"/>
+    </vbox>
+    <menulist preference="nyx.youtube.quality">
+      <menupopup>
+        <menuitem value="" data-l10n-id="nyx-youtube-quality-auto"/>
+        <menuitem value="highres" label="4K"/>
+        <menuitem value="hd1440" label="1440p"/>
+        <menuitem value="hd1080" label="1080p"/>
+        <menuitem value="hd720" label="720p"/>
+        <menuitem value="large" label="480p"/>
+        <menuitem value="medium" label="360p"/>
+      </menupopup>
+    </menulist>
+  </hbox>
+  <hbox class="nyx-row" align="center">
+    <label class="nyx-row-text" flex="1" data-l10n-id="nyx-youtube-speed"/>
+    <menulist preference="nyx.youtube.speed">
+      <menupopup>
+        <menuitem value="" data-l10n-id="nyx-youtube-speed-auto"/>
+        <menuitem value="0.5" label="0.5×"/>
+        <menuitem value="0.75" label="0.75×"/>
+        <menuitem value="1" label="1×"/>
+        <menuitem value="1.25" label="1.25×"/>
+        <menuitem value="1.5" label="1.5×"/>
+        <menuitem value="1.75" label="1.75×"/>
+        <menuitem value="2" label="2×"/>
+      </menupopup>
+    </menulist>
+  </hbox>
+  <hbox class="nyx-row" align="center">
+    <vbox class="nyx-row-text" flex="1">
+      <label data-l10n-id="nyx-youtube-volume"/>
+      <description class="nyx-row-note" data-l10n-id="nyx-youtube-volume-note"/>
+    </vbox>
+    <menulist id="nyxYouTubeVolume">
+      <menupopup>
+        <menuitem value="-1" data-l10n-id="nyx-youtube-volume-auto"/>
+        <menuitem value="100" label="100%"/>
+        <menuitem value="75" label="75%"/>
+        <menuitem value="50" label="50%"/>
+        <menuitem value="25" label="25%"/>
+        <menuitem value="0" label="0%"/>
+      </menupopup>
+    </menulist>
+  </hbox>
+  <vbox class="nyx-row">
+    <checkbox class="nyx-switch" preference="nyx.youtube.wheel" data-l10n-id="nyx-youtube-wheel"/>
+    <description class="nyx-row-note" data-l10n-id="nyx-youtube-wheel-note"/>
+  </vbox>
+  <vbox class="nyx-row">
+    <checkbox class="nyx-switch" preference="nyx.youtube.pause-others" data-l10n-id="nyx-youtube-pause-others"/>
+    <description class="nyx-row-note" data-l10n-id="nyx-youtube-pause-others-note"/>
+  </vbox>
+  <vbox class="nyx-row">
+    <checkbox class="nyx-switch" preference="nyx.youtube.no-autoplay-next" data-l10n-id="nyx-youtube-autoplay-next"/>
+  </vbox>
+</groupbox>
+
+<groupbox class="nyx-card" data-category="paneNyxYouTube" hidden="true">
+  <label class="nyx-card-title"><html:h2 data-l10n-id="nyx-youtube-group-page"/></label>
+  <vbox class="nyx-row">
+    <checkbox class="nyx-switch" preference="nyx.youtube.hide-cards" data-l10n-id="nyx-youtube-hide-cards"/>
+    <description class="nyx-row-note" data-l10n-id="nyx-youtube-hide-cards-note"/>
+  </vbox>
+  <vbox class="nyx-row">
+    <checkbox class="nyx-switch" preference="nyx.youtube.shorts-player" data-l10n-id="nyx-youtube-shorts"/>
+    <description class="nyx-row-note" data-l10n-id="nyx-youtube-shorts-note"/>
+  </vbox>
 </groupbox>
 </html:template>

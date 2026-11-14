@@ -1,0 +1,28 @@
+diff --git a/browser/locales/en-US/browser/unifiedExtensions.ftl b/browser/locales/en-US/browser/unifiedExtensions.ftl
+index 0ee9dd4..da1a574 100644
+--- a/browser/locales/en-US/browser/unifiedExtensions.ftl
++++ b/browser/locales/en-US/browser/unifiedExtensions.ftl
+@@ -62,7 +62,7 @@ unified-extensions-notice-safe-mode =
+ # .heading is processed by moz-message-bar to be used as a heading attribute
+ unified-extensions-mb-quarantined-domain-message-3 =
+     .heading = Some extensions are not allowed
+-    .message = To protect your data, some extensions can’t read or change data on this site. Use the extension’s settings to allow on sites restricted by { -vendor-short-name }.
++    .message = To protect your data, some extensions can’t read or change data on this site. Use the extension’s settings to allow it on restricted sites.
+ 
+ unified-extensions-mb-quarantined-domain-learn-more = Learn more
+     .aria-label = Learn more: Some extensions are not allowed
+@@ -82,7 +82,7 @@ unified-extensions-mb-blocklist-warning-single2 =
+ unified-extensions-mb-blocklist-error-single =
+     .heading = { $extensionName } disabled
+     .message =
+-        This extension violates Mozilla’s policies and has been disabled.
++        This extension violates add-on policies and has been disabled.
+ 
+ # Variables:
+ #   $extensionsCount (Number) - Number of extensions disabled through both soft and hard-blocks (always going to be greater than 1)
+@@ -103,4 +103,4 @@ unified-extensions-mb-blocklist-error-multiple =
+             *[other] { $extensionsCount } extensions disabled
+         }
+     .message =
+-        Some of your extensions have been disabled for violating Mozilla’s policies.
++        Some of your extensions have been disabled for violating add-on policies.

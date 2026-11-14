@@ -30,10 +30,8 @@ let JSWINDOWACTORS = {
       },
     },
     safeForUntrustedWebProcess: true,
-    matches: [
-      ...Services.prefs.getStringPref("zen.injections.match-urls").split(","),
-      "about:preferences",
-    ],
+    // Nyx: not on Zen's mods store (zen.injections.match-urls); Browser has no mods.
+    matches: ["about:preferences"],
   },
   ZenGlance: {
     parent: {

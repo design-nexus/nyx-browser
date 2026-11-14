@@ -49,7 +49,7 @@
   const MAX_CITIES = 40;
   const sameAs = (a, b) => !!a && !!b && a.kind === b.kind && a.id === b.id;
 
-  function locations(view, body, state, chosen) {
+  function locations(view, body, state, chosen, connect) {
     const isFavorite = place => state.favorites.some(f => sameAs(f, place));
     // Where the connection is: the place it was moved to, or for one from before places were
     // kept, the city (or else the country) its server is in.
@@ -63,11 +63,12 @@
       return place.kind === "city" ? chosen.location?.city === place.name : !chosen.location?.city;
     };
 
-    /** Connects there; a place with no proxy now says so in its own row. */
+    /** Connects there, turning the VPN on if it's off; a place with no proxy now says so in its own row. */
     const move = async (place, row) => {
       body.setAttribute("nyx-busy", "true");
       try {
         await NyxVpn.moveTo(chosen.id, place);
+        await connect();
       } catch (error) {
         body.removeAttribute("nyx-busy");
         row.querySelector(".nyx-vpn-note")?.remove();
@@ -289,7 +290,18 @@
 
     if (chosen.provider === "nordvpn") {
       body.append(l10n(html("div", "nyx-vpn-label"), "nyx-vpn-location"));
-      locations(view, body, state, chosen);
+      // Picking a place turns it on as the switch would: for this workspace if it's set to No VPN.
+      const connect = async () => {
+        if (current) {
+          return;
+        }
+        if (mine === "none") {
+          await NyxVpn.setWorkspace(workspace, chosen.id);
+        } else {
+          await NyxVpn.setActive(chosen.id);
+        }
+      };
+      locations(view, body, state, chosen, connect);
     }
 
     // Every workspace, or only this one.

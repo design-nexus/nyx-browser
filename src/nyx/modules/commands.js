@@ -47,23 +47,26 @@
     ["nyx-qc-downloads", "download", () => DownloadsPanel.showDownloadsHistory()],
     ["nyx-qc-bookmarks", "bookmark", () => PlacesCommandHook.showPlacesOrganizer("AllBookmarks"), "Ctrl+Shift+O"],
     ["nyx-qc-history", "history", () => PlacesCommandHook.showPlacesOrganizer("History"), "Ctrl+Shift+H"],
-    ["nyx-qc-settings", "settings", () => openPreferences(), "Ctrl+,"],
+    ["nyx-qc-settings", "settings", () => openPreferences()],
   ];
   /** Settings' panes, by their Fluent title. */
   const PANES = [
-    ["pane-nyx-appearance-title", "paneNyxAppearance"],
-    ["pane-nyx-tabs-title", "paneNyxTabs"],
-    ["pane-nyx-toolbar-title", "paneNyxToolbar"],
-    ["pane-nyx-selection-title", "paneNyxSelection"],
-    ["pane-nyx-downloads-title", "paneNyxDownloads"],
-    ["pane-nyx-integrations-title", "paneNyxIntegrations"],
-    ["pane-nyx-passwords-title", "paneNyxPasswords"],
-    ["pane-nyx-blocking-title", "paneNyxBlocking"],
-    ["pane-nyx-vpn-title", "paneNyxVpn"],
-    ["pane-search-title", "paneSearch"],
-    ["pane-privacy-title", "panePrivacy"],
-  ];
-  const strings = new Localization(["browser/nyx-browser.ftl", "browser/preferences/nyx-preferences.ftl", "browser/preferences/preferences.ftl"]);
+    "General",
+    "Appearance",
+    "Tabs",
+    "Start",
+    "Search",
+    "Blocking",
+    "Passwords",
+    "Permissions",
+    "Vpn",
+    "Selection",
+    "Downloads",
+    "Gestures",
+    "Extensions",
+    "Sync",
+  ].map(name => [`pane-nyx-${name.toLowerCase()}-title`, `paneNyx${name}`]);
+  const strings = new Localization(["browser/nyx-browser.ftl", "browser/preferences/nyx-preferences.ftl"]);
   let labels = null;
   async function readLabels() {
     labels ??= Promise.all([

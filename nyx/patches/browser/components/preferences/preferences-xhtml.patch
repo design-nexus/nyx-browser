@@ -1,5 +1,5 @@
 diff --git a/browser/components/preferences/preferences.xhtml b/browser/components/preferences/preferences.xhtml
-index f19d2ad..8cba8c4 100644
+index f19d2ad..858b912 100644
 --- a/browser/components/preferences/preferences.xhtml
 +++ b/browser/components/preferences/preferences.xhtml
 @@ -37,6 +37,7 @@
@@ -18,63 +18,112 @@ index f19d2ad..8cba8c4 100644
    <link rel="localization" href="toolkit/branding/brandings.ftl"/>
    <link rel="localization" href="toolkit/firefoxlabs/features.ftl"/>
    <link rel="localization" href="toolkit/global/mozPageHeader.ftl"/>
-@@ -125,6 +127,55 @@
+@@ -125,6 +127,104 @@
          iconsrc="chrome://browser/skin/preferences/category-general.svg"
          data-l10n-id="pane-general-title">
        </html:moz-page-nav-button>
-+      <!-- Nyx: Browser's own panes first, then Firefox's and Zen's. -->
++      <!-- Nyx: Settings is Browser's own panes (nyx/preferences): Find, then its sections in three
++           groups. Firefox's and Zen's buttons stay below, hidden, as their code looks them up. -->
++      <html:div slot="subheading" class="nyx-find">
++        <html:input id="nyxFind" type="search" data-l10n-id="nyx-find" data-l10n-attrs="placeholder,aria-label"/>
++      </html:div>
 +      <html:div class="nyx-nav-heading" data-l10n-id="nyx-pane-group-browser"></html:div>
++      <html:moz-page-nav-button id="category-nyx-general"
++        view="paneNyxGeneral"
++        iconsrc="chrome://browser/content/nyx/icons/settings.svg"
++        data-l10n-id="pane-nyx-general-title">
++      </html:moz-page-nav-button>
 +      <html:moz-page-nav-button id="category-nyx-appearance"
 +        view="paneNyxAppearance"
-+        iconsrc="chrome://browser/content/nyx/icons/settings.svg"
++        iconsrc="chrome://browser/content/nyx/icons/palette.svg"
 +        data-l10n-id="pane-nyx-appearance-title">
 +      </html:moz-page-nav-button>
 +      <html:moz-page-nav-button id="category-nyx-tabs"
 +        view="paneNyxTabs"
-+        iconsrc="chrome://browser/content/nyx/icons/sidebar.svg"
++        iconsrc="chrome://browser/content/nyx/icons/layout.svg"
 +        data-l10n-id="pane-nyx-tabs-title">
 +      </html:moz-page-nav-button>
-+      <html:moz-page-nav-button id="category-nyx-toolbar"
-+        view="paneNyxToolbar"
-+        iconsrc="chrome://browser/content/nyx/icons/menu.svg"
-+        data-l10n-id="pane-nyx-toolbar-title">
++      <html:moz-page-nav-button id="category-nyx-start"
++        view="paneNyxStart"
++        iconsrc="chrome://browser/content/nyx/icons/home.svg"
++        data-l10n-id="pane-nyx-start-title">
 +      </html:moz-page-nav-button>
-+      <html:moz-page-nav-button id="category-nyx-selection"
-+        view="paneNyxSelection"
-+        iconsrc="chrome://browser/content/nyx/icons/select.svg"
-+        data-l10n-id="pane-nyx-selection-title">
-+      </html:moz-page-nav-button>
-+      <html:moz-page-nav-button id="category-nyx-downloads"
-+        view="paneNyxDownloads"
-+        iconsrc="chrome://browser/content/nyx/icons/download.svg"
-+        data-l10n-id="pane-nyx-downloads-title">
-+      </html:moz-page-nav-button>
-+      <html:moz-page-nav-button id="category-nyx-integrations"
-+        view="paneNyxIntegrations"
-+        iconsrc="chrome://browser/content/nyx/icons/assistant.svg"
-+        data-l10n-id="pane-nyx-integrations-title">
++      <html:moz-page-nav-button id="category-nyx-search"
++        view="paneNyxSearch"
++        iconsrc="chrome://browser/content/nyx/icons/search.svg"
++        data-l10n-id="pane-nyx-search-title">
 +      </html:moz-page-nav-button>
 +      <html:div class="nyx-nav-heading" data-l10n-id="nyx-pane-group-privacy"></html:div>
++      <html:moz-page-nav-button id="category-nyx-blocking"
++        view="paneNyxBlocking"
++        iconsrc="chrome://browser/content/nyx/icons/shield.svg"
++        data-l10n-id="pane-nyx-blocking-title">
++      </html:moz-page-nav-button>
 +      <html:moz-page-nav-button id="category-nyx-passwords"
 +        view="paneNyxPasswords"
 +        iconsrc="chrome://browser/content/nyx/icons/key.svg"
 +        data-l10n-id="pane-nyx-passwords-title">
 +      </html:moz-page-nav-button>
-+      <html:moz-page-nav-button id="category-nyx-blocking"
-+        view="paneNyxBlocking"
-+        iconsrc="chrome://browser/content/nyx/icons/shield.svg"
-+        data-l10n-id="pane-nyx-blocking-title">
++      <html:moz-page-nav-button id="category-nyx-permissions"
++        view="paneNyxPermissions"
++        iconsrc="chrome://browser/content/nyx/icons/location.svg"
++        data-l10n-id="pane-nyx-permissions-title">
 +      </html:moz-page-nav-button>
 +      <html:moz-page-nav-button id="category-nyx-vpn"
 +        view="paneNyxVpn"
 +        iconsrc="chrome://browser/content/nyx/icons/globe.svg"
 +        data-l10n-id="pane-nyx-vpn-title">
 +      </html:moz-page-nav-button>
-+      <html:div class="nyx-nav-heading" data-l10n-id="nyx-pane-group-firefox"></html:div>
++      <html:div class="nyx-nav-heading" data-l10n-id="nyx-pane-group-tools"></html:div>
++      <html:moz-page-nav-button id="category-nyx-selection"
++        view="paneNyxSelection"
++        iconsrc="chrome://browser/content/nyx/icons/select.svg"
++        data-l10n-id="pane-nyx-selection-title">
++      </html:moz-page-nav-button>
++      <html:moz-page-nav-button id="category-nyx-styles"
++        view="paneNyxStyles"
++        iconsrc="chrome://browser/content/nyx/icons/palette.svg"
++        data-l10n-id="pane-nyx-styles-title">
++      </html:moz-page-nav-button>
++      <html:moz-page-nav-button id="category-nyx-scripts"
++        view="paneNyxScripts"
++        iconsrc="chrome://browser/content/nyx/icons/code.svg"
++        data-l10n-id="pane-nyx-scripts-title">
++      </html:moz-page-nav-button>
++      <html:moz-page-nav-button id="category-nyx-youtube"
++        view="paneNyxYouTube"
++        iconsrc="chrome://browser/content/nyx/icons/video.svg"
++        data-l10n-id="pane-nyx-youtube-title">
++      </html:moz-page-nav-button>
++      <html:moz-page-nav-button id="category-nyx-downloads"
++        view="paneNyxDownloads"
++        iconsrc="chrome://browser/content/nyx/icons/download.svg"
++        data-l10n-id="pane-nyx-downloads-title">
++      </html:moz-page-nav-button>
++      <html:moz-page-nav-button id="category-nyx-gestures"
++        view="paneNyxGestures"
++        iconsrc="chrome://browser/content/nyx/icons/grip.svg"
++        data-l10n-id="pane-nyx-gestures-title">
++      </html:moz-page-nav-button>
++      <html:moz-page-nav-button id="category-nyx-extensions"
++        view="paneNyxExtensions"
++        iconsrc="chrome://browser/content/nyx/icons/puzzle.svg"
++        data-l10n-id="pane-nyx-extensions-title">
++      </html:moz-page-nav-button>
++      <html:moz-page-nav-button id="category-nyx-sync"
++        view="paneNyxSync"
++        iconsrc="chrome://browser/content/nyx/icons/sync.svg"
++        data-l10n-id="pane-nyx-sync-title">
++      </html:moz-page-nav-button>
++      <html:moz-page-nav-button id="category-nyx-about"
++        view="paneNyxAbout"
++        iconsrc="chrome://browser/content/nyx/icons/browser.svg"
++        data-l10n-id="pane-nyx-about-title">
++      </html:moz-page-nav-button>
        <html:moz-page-nav-button id="category-zen-looks"
          view="paneZenLooks"
          iconsrc="chrome://browser/skin/customize.svg"
-@@ -284,6 +335,7 @@
+@@ -284,6 +384,7 @@
  #include zenLooksAndFeel.inc.xhtml
  #include zenTabsManagement.inc.xhtml
  #include zenMarketplace.inc.xhtml

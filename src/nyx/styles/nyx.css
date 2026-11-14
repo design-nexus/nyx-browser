@@ -123,10 +123,10 @@
 }
 
 /* Nyx Passwords' pages, in their frames (passwords.js): they draw their own card. */
-/* Passwords' popup is its page's size (passwords.js: 760 wide), wider than Firefox's menus, which
+/* Passwords' popup is its page's size (passwords.js: 640 wide), wider than Firefox's menus, which
  * only an extension's view may be; the view's scrolling body doesn't grow to its frame. */
 #PanelUI-nyx-passwords {
-  width: 760px !important;
+  width: 640px !important;
   max-width: none !important;
 
   & .panel-subview-body {
@@ -186,52 +186,99 @@
   }
 }
 
-/* The page, with Copy link. */
+/* The page: a picture of it, its title and address, Copy link and Clean link. */
 .nyx-share-page {
   display: flex;
-  align-items: center;
-  gap: 11px;
-  padding: 8px 6px 8px 10px;
-  border-radius: 11px;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 14px;
   background: var(--nyx-tile);
 
-  & .nyx-share-favicon {
-    display: grid;
-    place-items: center;
-    flex: none;
-    width: 36px;
-    height: 36px;
-    border-radius: 9px;
-    background: var(--nyx-card);
-    box-shadow: inset 0 0 0 1px var(--nyx-line);
-
-    & img {
-      width: 20px;
-      height: 20px;
-    }
-  }
-
-  & .nyx-share-page-text {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    min-width: 0;
-
-    & b {
-      overflow: hidden;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-      font-weight: 600;
-    }
-
-    & small {
-      color: var(--nyx-tertiary);
-      font-size: 12px;
-    }
+  &[nyx-off] .nyx-share-copy {
+    opacity: 0.45;
   }
 }
 
-:is(.nyx-share-copy, .nyx-share-back) {
+.nyx-share-thumb {
+  display: grid;
+  place-items: center;
+  height: 110px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--nyx-text) 6%, transparent);
+
+  & canvas {
+    width: 100%;
+    height: 100%;
+  }
+
+  & .nyx-share-favicon {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+.nyx-share-page-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  padding: 10px 12px 12px;
+
+  & b {
+    overflow: hidden;
+    font-size: 13.5px;
+    font-weight: 600;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  & small {
+    overflow: hidden;
+    color: var(--nyx-dim);
+    font-size: 11.5px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+}
+
+.nyx-share-page-buttons {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.nyx-share-copy {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  height: 30px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--nyx-text) 8%, transparent) !important;
+  font-weight: 500 !important;
+  font-size: 12.5px !important;
+
+  &:not(:disabled):hover {
+    background: color-mix(in srgb, var(--nyx-text) 12%, transparent) !important;
+  }
+
+  & img {
+    width: 15px;
+    height: 15px;
+  }
+}
+
+.nyx-share-primary {
+  background: var(--nyx-accent) !important;
+  color: var(--nyx-on-accent) !important;
+
+  &:not(:disabled):hover {
+    background: color-mix(in srgb, var(--nyx-accent) 88%, #fff) !important;
+  }
+}
+
+.nyx-share-back {
   display: grid;
   place-items: center;
   flex: none;
@@ -241,7 +288,7 @@
   color: var(--nyx-dim);
 
   &:hover {
-    background: color-mix(in srgb, var(--nyx-accent) 8%, var(--nyx-tile));
+    background: var(--nyx-tile);
     color: var(--nyx-text);
   }
 
@@ -251,11 +298,11 @@
   }
 }
 
-/* Apps, as round tiles in their colours. */
+/* Apps and the QR code, as square tiles in their colours. */
 .nyx-share-tiles {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px 4px;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
 }
 
 .nyx-share-tile {
@@ -264,41 +311,55 @@
   align-items: center;
   gap: 6px;
   min-width: 0;
-  padding: 6px 2px !important;
-  border-radius: 10px;
-  color: var(--nyx-dim) !important;
+  padding: 10px 2px 9px !important;
+  border-radius: 12px;
+  background: var(--nyx-tile) !important;
   font-size: 11.5px !important;
+  font-weight: 500 !important;
 
   &:not(:disabled):hover {
-    background: var(--nyx-tile) !important;
-    color: var(--nyx-text) !important;
+    background: color-mix(in srgb, var(--nyx-text) 10%, transparent) !important;
   }
 
   &:disabled {
-    opacity: 0.45;
+    & .nyx-share-disc {
+      filter: grayscale(1);
+      opacity: 0.45;
+    }
+
+    & .nyx-share-label {
+      opacity: 0.55;
+    }
   }
 
   & .nyx-share-disc {
     display: grid;
     place-items: center;
-    width: 46px;
-    height: 46px;
-    border-radius: 50%;
-    background: linear-gradient(160deg, color-mix(in srgb, var(--nyx-share-tint) 78%, #fff), color-mix(in srgb, var(--nyx-share-tint) 88%, #000));
-    box-shadow: 0 4px 12px color-mix(in srgb, var(--nyx-share-tint) 30%, transparent);
-    color: var(--nyx-on-accent);
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--nyx-share-tint) 18%, transparent);
+    color: var(--nyx-share-tint);
 
     & img {
-      width: 20px;
-      height: 20px;
+      width: 17px;
+      height: 17px;
     }
   }
 
-  & .nyx-share-label {
+  & .nyx-share-label,
+  & .nyx-share-why {
     max-width: 100%;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
+  }
+
+  & .nyx-share-why {
+    margin-top: -4px;
+    color: var(--nyx-warning, #e0a43b);
+    font-size: 10px;
+    font-style: normal;
   }
 }
 
@@ -307,72 +368,75 @@
   padding: 0 !important;
 }
 
-/* Devices nearby, each with a dot for whether Share can reach it now. */
+/* Devices nearby as chips, each with a dot for whether Share can reach it now. */
 .nyx-share-devices {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  display: flex;
+  flex-wrap: wrap;
   gap: 6px;
 }
 
 .nyx-share-device {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 2px;
+  gap: 8px;
   min-width: 0;
-  padding: 10px 4px 8px !important;
-  border-radius: 11px;
+  padding: 6px 12px 6px 6px !important;
+  border-radius: 12px;
   background: var(--nyx-tile) !important;
-  text-align: center;
+  text-align: start;
 
   &:not(:disabled):hover {
-    background: color-mix(in srgb, var(--nyx-accent) 8%, var(--nyx-tile)) !important;
+    background: color-mix(in srgb, var(--nyx-text) 10%, transparent) !important;
   }
 
-  &[nyx-off] {
+  &:disabled .nyx-share-device-text {
     opacity: 0.55;
   }
 
+  & .nyx-share-device-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
   & b {
-    max-width: 100%;
-    margin-top: 4px;
     overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
     font-size: 12px;
     font-weight: 500;
+    white-space: nowrap;
+    text-overflow: ellipsis;
   }
 
   & small {
-    max-width: 100%;
     overflow: hidden;
+    color: var(--nyx-dim);
+    font-size: 10.5px;
     white-space: nowrap;
     text-overflow: ellipsis;
-    color: var(--nyx-tertiary);
-    font-size: 11px;
   }
 
   & .nyx-share-avatar {
     position: relative;
     display: grid;
+    flex: none;
     place-items: center;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
     background: var(--nyx-card);
     box-shadow: inset 0 0 0 1px var(--nyx-line);
 
     & img {
-      width: 18px;
-      height: 18px;
+      width: 15px;
+      height: 15px;
     }
 
     & i {
       position: absolute;
-      right: 0;
-      bottom: 1px;
-      width: 10px;
-      height: 10px;
+      right: -2px;
+      bottom: -2px;
+      width: 9px;
+      height: 9px;
       border-radius: 50%;
       background: var(--nyx-success);
       box-shadow: 0 0 0 2px var(--nyx-tile);
@@ -418,16 +482,29 @@
   color: var(--nyx-dim);
 }
 
+.nyx-share-qr-address {
+  margin: -6px 0 0;
+  overflow: hidden;
+  color: var(--nyx-tertiary);
+  font-size: 11.5px;
+  text-align: center;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
 .nyx-share-action {
+  display: flex;
+  align-items: center;
   align-self: center;
+  gap: 7px;
   height: 30px;
   padding: 0 14px !important;
   border-radius: 8px;
-  background: var(--nyx-tile) !important;
-  box-shadow: inset 0 0 0 1px var(--nyx-line);
+  font-weight: 500 !important;
 
-  &:not(:disabled):hover {
-    background: color-mix(in srgb, var(--nyx-accent) 8%, var(--nyx-tile)) !important;
+  & img {
+    width: 15px;
+    height: 15px;
   }
 }
 
@@ -661,6 +738,35 @@
     gap: 7px;
   }
 
+  /* The theme: its name, and the Themes page for the rest. */
+  & .nyx-theme-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    height: 32px;
+    padding: 0 10px !important;
+    border-radius: 8px;
+    background: var(--nyx-tile) !important;
+    text-align: start;
+
+    & span:first-child {
+      flex: 1;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    &:hover {
+      background: color-mix(in srgb, var(--nyx-text) 10%, transparent) !important;
+    }
+  }
+
+  & .nyx-theme-more {
+    color: var(--nyx-accent);
+    font-size: 12px;
+  }
+
   & .nyx-swatch {
     width: 22px;
     height: 22px;
@@ -742,8 +848,9 @@
   }
 }
 
-/* Frosted menus are an option; solid is the default. Only a hint shows through: compositors that
- * don't blur popups (Hyprland's default) would leave a menu over a busy page hard to read. */
+/* Frosted menus, the default since the layouts' mockups, can be turned off. Only a hint shows
+ * through: compositors that don't blur popups (Hyprland's default) would leave a menu over a busy
+ * page hard to read. */
 @media -moz-pref("nyx.effects.frosted") {
   :root {
     --arrowpanel-background: color-mix(in srgb, var(--nyx-popover) 92%, transparent) !important;
@@ -1870,4 +1977,2695 @@
 /* Unloaded tabs look asleep, so it's plain which will load again when chosen. */
 .tabbrowser-tab[pending]:not([selected]) :is(.tab-icon-image, .tab-label-container) {
   opacity: 0.55;
+}
+
+/* ---------- Layouts (layout.js) ---------- */
+
+/* Buttons a layout moves out of its toolbar keep their toolbar look. */
+.nyx-moved {
+  display: flex;
+  flex: none;
+  gap: 2px;
+}
+
+/* Studio: the address over the middle of the page (layout.js), up to 560 wide. It keeps
+ * Firefox's least width, so buttons without room still go into More tools. */
+:root[nyx-layout="studio"] #urlbar-container {
+  flex: 1 0 auto !important;
+  max-width: 560px;
+  margin-inline-end: auto !important;
+}
+
+/* Studio and Workbench: the Site pill, one piece: the padlock, the site's permissions and the
+ * shield (shield.js), a line before the shield. Focus: the shield is its own pill at the end. */
+:root:not([nyx-layout="focus"]) #urlbar:not([breakout-extend]) #identity-box:has(> #nyx-shield-button:not([hidden])) {
+  align-self: center;
+  height: 24px;
+  margin-inline-end: 8px !important;
+  padding: 0;
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--nyx-text) 8%, transparent);
+  overflow: hidden;
+
+  & > :is(#identity-icon-box, #identity-permission-box, #nyx-shield-button) {
+    height: 24px;
+    min-width: 0;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    background: none !important;
+
+    &:hover {
+      background: color-mix(in srgb, var(--nyx-text) 8%, transparent) !important;
+    }
+  }
+
+  & > #identity-icon-box {
+    padding-inline: 7px 5px !important;
+  }
+
+  & > #identity-permission-box {
+    padding-inline: 3px !important;
+  }
+
+  &.notSecureText > #identity-icon-box {
+    color: var(--nyx-warning);
+    fill: var(--nyx-warning);
+  }
+
+  & > #nyx-shield-button {
+    position: relative;
+    padding-inline: 7px 8px !important;
+    fill: var(--nyx-dim);
+    color: var(--nyx-text);
+
+    &::before {
+      content: "";
+      position: absolute;
+      inset-inline-start: 0;
+      top: 6px;
+      bottom: 6px;
+      width: 1px;
+      background: var(--nyx-line);
+    }
+
+    &[nyx-off] {
+      fill: var(--nyx-tertiary);
+      color: var(--nyx-tertiary);
+    }
+  }
+}
+
+/* Focus: the padlock before the site's name and the shield's count at the end, shown always
+ * (Zen shows them only while you point at the sidebar). */
+:root[nyx-layout="focus"] #urlbar:not([breakout-extend]) {
+  & #identity-box {
+    /* Zen puts it last in its single toolbar. */
+    order: -1 !important;
+    margin-inline: 0 2px !important;
+  }
+
+  & :is(#identity-icon-box, #nyx-shield-button):not([hidden]) {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  & #identity-icon-box {
+    padding: 4px !important;
+    background: none !important;
+  }
+
+  & #identity-icon-label {
+    display: none;
+  }
+}
+
+:root[nyx-layout="focus"] #urlbar:not([breakout-extend]) #nyx-shield-button {
+  align-self: center;
+  height: 20px;
+  margin-inline: 4px !important;
+  padding-inline: 6px 7px !important;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--nyx-text) 8%, transparent);
+  fill: var(--nyx-dim);
+  color: var(--nyx-dim);
+}
+
+#urlbar[breakout-extend] #nyx-shield-button {
+  display: none;
+}
+
+/* Studio and Focus: the tab you're on, in the sidebar, without the accent bar: raised in Studio,
+ * a tint in Focus. */
+#navigator-toolbox #tabbrowser-tabs .tabbrowser-tab:not([zen-essential])[visuallyselected] > .tab-stack > .tab-background {
+  &::before {
+    display: none;
+  }
+
+  :root[nyx-layout="studio"] & {
+    background: var(--nyx-raised) !important;
+    box-shadow: 0 0 0 1px var(--nyx-line), 0 1px 3px color-mix(in srgb, var(--nyx-shadow) 45%, transparent) !important;
+  }
+
+  :root[nyx-layout="focus"] & {
+    background: color-mix(in srgb, var(--nyx-text) 9%, transparent) !important;
+    box-shadow: none !important;
+  }
+}
+
+/* Focus: Downloads, Extensions and the menu at the sidebar's foot, after the workspaces. */
+:root[nyx-layout="focus"] #nyx-foot-moved {
+  margin-inline-start: auto;
+}
+
+/* Focus: the bookmarks bar is a shelf of icons in the sidebar, under a heading that folds it. */
+#nyx-shelf-head {
+  flex: none;
+  height: 24px;
+  margin: 6px 4px 0;
+  padding: 0 4px;
+  gap: 7px;
+  border-radius: 6px;
+  color: var(--nyx-tertiary);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  -moz-window-dragging: no-drag;
+
+  &:hover {
+    color: var(--nyx-dim);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--nyx-accent);
+  }
+
+  & .nyx-shelf-icon,
+  & .nyx-shelf-chevron {
+    width: 13px;
+    height: 13px;
+    -moz-context-properties: fill, fill-opacity;
+    fill: currentColor;
+  }
+
+  & .nyx-shelf-icon {
+    list-style-image: url("chrome://browser/content/nyx/icons/bookmark.svg");
+  }
+
+  & .nyx-shelf-title {
+    flex: 1;
+    margin: 0;
+  }
+
+  & .nyx-shelf-chevron {
+    list-style-image: url("chrome://browser/content/nyx/icons/chevron.svg");
+    transition: transform 0.15s;
+
+    :root[nyx-shelf-folded] & {
+      transform: rotate(-90deg);
+    }
+  }
+}
+
+:root[nyx-layout="focus"] #navigator-toolbox #PersonalToolbar {
+  flex: none;
+  height: auto !important;
+  max-height: none !important;
+  margin: 4px 4px 8px;
+  padding: 0 !important;
+  background: none !important;
+
+  :root[nyx-shelf-folded] & {
+    display: none;
+  }
+
+  & #PlacesToolbar,
+  & #PlacesToolbarDropRoot,
+  & #PlacesToolbarItems {
+    height: auto !important;
+    min-width: 0;
+  }
+
+  /* Two rows; more bookmarks scroll within them. */
+  & #PlacesToolbarItems {
+    display: grid !important;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-auto-rows: 30px;
+    gap: 4px;
+    max-height: 64px;
+    overflow: hidden auto !important;
+    scrollbar-width: thin;
+    scrollbar-color: var(--nyx-line) transparent;
+  }
+
+  & #PlacesToolbarItems > .bookmark-item:not(toolbarseparator) {
+    justify-content: center;
+    width: auto;
+    height: 30px;
+    min-width: 0;
+    margin: 0 !important;
+    padding: 0 !important;
+    border-radius: 8px !important;
+    background: var(--nyx-tile);
+
+    &:hover,
+    &[open] {
+      background: var(--nyx-hover-bg) !important;
+    }
+
+    & > .toolbarbutton-icon {
+      width: 15px;
+      height: 15px;
+      margin: 0 !important;
+    }
+
+    /* Firefox forces bookmarks' names to show (toolbarbuttons.css), with !important. */
+    & > .toolbarbutton-text {
+      display: none !important;
+    }
+  }
+
+  & #PlacesToolbarItems > toolbarseparator,
+  & #PlacesChevron,
+  & #personal-toolbar-empty {
+    display: none !important;
+  }
+}
+
+/* An empty shelf goes, heading and all, once Firefox has filled it (it only does while it's shown). */
+:root[nyx-layout="focus"]:has(#navigator-toolbox #PersonalToolbar[initialized] > #personal-toolbar-empty:not([hidden])) :is(#nyx-shelf-head, #navigator-toolbox #PersonalToolbar) {
+  display: none !important;
+}
+
+/* Focus: Settings is in the menu and Ctrl+,; the sidebar's address takes its room. */
+:root[nyx-layout="focus"][zen-single-toolbar] :is(#nyx-settings-separator, #nyx-settings-button) {
+  display: none;
+}
+
+/* Workbench: the rail of workspaces and Library beside the page. */
+#nyx-rail {
+  flex: none;
+  width: 44px;
+  margin-inline-end: 0;
+  padding: 6px 0 8px;
+  gap: 4px;
+
+  &[hidden] {
+    display: none;
+  }
+
+  /* Tiled beside another window, the page gets the room (the 800 px mockup). */
+  @media (max-width: 899px) {
+    display: none;
+  }
+
+  & > toolbarbutton {
+    appearance: none;
+    width: 34px;
+    height: 34px;
+    margin: 0;
+    padding: 0;
+    justify-content: center;
+    border-radius: var(--nyx-radius-small);
+    -moz-context-properties: fill, fill-opacity;
+    fill: currentColor;
+    color: var(--nyx-dim);
+
+    &:hover,
+    &[open],
+    &[checked] {
+      background: var(--nyx-hover-bg);
+      color: var(--nyx-text);
+    }
+
+    & > .toolbarbutton-icon {
+      width: 16px;
+      height: 16px;
+    }
+
+    & > .toolbarbutton-text {
+      display: none;
+    }
+  }
+
+  & > #nyx-rail-switcher {
+    height: 20px;
+
+    & > .toolbarbutton-icon {
+      width: 13px;
+      height: 13px;
+    }
+  }
+
+  & toolbarseparator {
+    width: 22px;
+    margin: 4px 0;
+    border: 0;
+    border-top: 1px solid var(--nyx-line);
+  }
+}
+
+#nyx-rail-spaces {
+  gap: 6px;
+}
+
+.nyx-rail-space {
+  appearance: none;
+  width: 28px;
+  height: 28px;
+  margin: 0;
+  padding: 0 !important;
+  color: var(--nyx-dim);
+  border-radius: 8px;
+  justify-content: center;
+  background: var(--nyx-tile);
+  font-weight: 600;
+  font-size: 11.5px;
+
+  &[selected] {
+    background: var(--nyx-accent);
+    color: var(--nyx-on-accent, #fff) !important;
+    box-shadow: 0 0 0 2px var(--nyx-bg, transparent), 0 0 0 3.5px var(--nyx-accent);
+  }
+
+  & .toolbarbutton-icon {
+    display: none;
+  }
+
+  & .toolbarbutton-text {
+    display: flex;
+    flex: 1;
+    justify-content: center;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+  }
+}
+
+#nyx-rail-switcher {
+  list-style-image: url("chrome://browser/content/nyx/icons/chevron.svg");
+}
+
+#nyx-rail-bookmarks {
+  list-style-image: url("chrome://browser/content/nyx/icons/bookmark.svg");
+}
+
+#nyx-rail-history {
+  list-style-image: url("chrome://browser/content/nyx/icons/history.svg");
+}
+
+#nyx-rail-reading {
+  list-style-image: url("chrome://browser/content/nyx/icons/reader.svg");
+}
+
+#nyx-rail-downloads {
+  list-style-image: url("chrome://browser/skin/zen-icons/downloads.svg");
+}
+
+#nyx-rail-settings {
+  list-style-image: url("chrome://browser/content/nyx/icons/settings.svg");
+}
+
+/* With the rail there, its workspaces stand in for the row's chip. */
+@media (min-width: 900px) {
+  :root[nyx-layout="workbench"]:has(#nyx-rail:not([hidden])) #nyx-workspace-chip {
+    display: none !important;
+  }
+}
+
+/* ---------- Browser's own tab list (tablist.js), as the layouts' mockups draw it ---------- */
+
+/* Zen's strip stays under it, laid out, so folders, compact mode and swipes keep working. Its
+ * folders show themselves (visibility), so it's see-through instead. */
+:root[nyx-own-tabs] #tabbrowser-tabs {
+  opacity: 0;
+  pointer-events: none;
+}
+
+#TabsToolbar > .toolbar-items {
+  position: relative;
+}
+
+.nyx-tablist {
+  display: none;
+  position: absolute;
+  inset-inline: 0;
+  z-index: 2;
+  flex-direction: column;
+  min-height: 0;
+  font: 13px var(--nyx-font);
+  color: var(--nyx-dim);
+
+  :root[nyx-own-tabs] & {
+    display: flex;
+  }
+
+  & img.nyx-tl-icon {
+    width: 16px;
+    height: 16px;
+    flex: none;
+    -moz-context-properties: fill, fill-opacity;
+    fill: currentColor;
+  }
+
+  & button {
+    appearance: none;
+    border: 0;
+    margin: 0;
+    padding: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+  }
+}
+
+.nyx-tl-scroll {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 2px 3px 8px;
+  overflow: hidden auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--nyx-line) transparent;
+}
+
+.nyx-tl-grow {
+  flex: 1;
+}
+
+/* The workspace: its tile, name and menu, and tab search. */
+.nyx-tl-space {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+  height: 34px;
+  margin-bottom: 6px;
+  padding-inline: 4px 0;
+  border-radius: 8px;
+  color: var(--nyx-text);
+
+  &:hover {
+    background: var(--nyx-tile);
+  }
+
+  & .nyx-tl-tile {
+    display: grid;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    flex: none;
+    border-radius: 6px;
+    background: var(--nyx-accent);
+    color: var(--nyx-on-accent);
+    font-size: 10.5px;
+    font-weight: 700;
+  }
+
+  & .nyx-tl-space-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 13.5px;
+    font-weight: 600;
+  }
+
+  & .nyx-tl-chevron {
+    width: 14px;
+    height: 14px;
+    color: var(--nyx-tertiary);
+  }
+}
+
+.nyx-tl-btn {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  flex: none;
+  border-radius: 7px;
+  color: var(--nyx-dim) !important;
+
+  &:hover {
+    background: var(--nyx-hover-bg) !important;
+    color: var(--nyx-text) !important;
+  }
+}
+
+/* Essentials: tiles, four to a row. */
+.nyx-tl-essentials {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  flex: none;
+  margin-bottom: 8px;
+}
+
+.nyx-tl-ess {
+  display: grid;
+  place-items: center;
+  height: 42px;
+  border-radius: 10px;
+  background: var(--nyx-tile);
+
+  &:hover {
+    background: var(--nyx-hover-bg);
+  }
+
+  &[selected] {
+    background: var(--nyx-raised);
+    box-shadow: 0 0 0 1px var(--nyx-line), 0 1px 3px color-mix(in srgb, var(--nyx-shadow) 45%, transparent);
+  }
+
+  &[asleep] .nyx-tl-fav {
+    opacity: 0.55;
+  }
+
+  & .nyx-tl-fav {
+    width: 20px;
+    height: 20px;
+    border-radius: 5px;
+  }
+}
+
+/* A row: a tab, a folder, a split view, New tab. */
+.nyx-tl-row {
+  --depth: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: none;
+  height: 34px;
+  padding-inline: calc(10px + var(--depth) * 20px) 8px;
+  border-radius: 8px;
+  white-space: nowrap;
+
+  &:hover {
+    background: var(--nyx-tile);
+    color: var(--nyx-text);
+  }
+
+  & .nyx-tl-title {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  & .nyx-tl-fav {
+    width: 16px;
+    height: 16px;
+    flex: none;
+    border-radius: 4px;
+    /* Browser's own pages have line icons, drawn in the row's colour. */
+    -moz-context-properties: fill, fill-opacity, stroke;
+    fill: currentColor;
+  }
+}
+
+.nyx-tl-tab {
+  &[selected] {
+    background: var(--nyx-raised);
+    color: var(--nyx-text);
+    font-weight: 500;
+    box-shadow: 0 0 0 1px var(--nyx-line), 0 1px 3px color-mix(in srgb, var(--nyx-shadow) 45%, transparent);
+
+    /* Focus: the tab you're on is a tint, not raised. */
+    :root[nyx-layout="focus"] & {
+      background: color-mix(in srgb, var(--nyx-text) 9%, transparent);
+      box-shadow: none;
+    }
+  }
+
+  &[multiselected]:not([selected]) {
+    background: color-mix(in srgb, var(--nyx-accent) 14%, transparent);
+  }
+
+  &[asleep] {
+    opacity: 0.55;
+  }
+
+  & .nyx-tl-asleep,
+  & .nyx-tl-close,
+  & .nyx-tl-sound {
+    width: 14px;
+    height: 14px;
+    color: var(--nyx-tertiary);
+  }
+
+  & .nyx-tl-asleep {
+    flex: none;
+    opacity: 0.9;
+  }
+
+  & .nyx-tl-sound {
+    color: var(--nyx-accent);
+  }
+
+  & .nyx-tl-close {
+    display: none;
+    border-radius: 4px;
+
+    &:hover {
+      color: var(--nyx-text);
+      background: var(--nyx-hover-bg);
+    }
+  }
+
+  &:is(:hover, [selected]) .nyx-tl-close {
+    display: block;
+  }
+}
+
+:root[nyx-tab-close="always"] .nyx-tl-tab .nyx-tl-close {
+  display: block;
+}
+
+:root[nyx-tab-close="active"] .nyx-tl-tab:not([selected]) .nyx-tl-close {
+  display: none;
+}
+
+.nyx-tl-folder {
+  & .nyx-tl-folder-icon {
+    color: var(--nyx-warning);
+  }
+
+  & .nyx-tl-count {
+    font-size: 11.5px;
+    color: var(--nyx-tertiary);
+  }
+}
+
+.nyx-tl-split {
+  gap: 7px;
+  box-shadow: inset 0 0 0 1px var(--nyx-line);
+
+  &[selected] {
+    background: var(--nyx-raised);
+    color: var(--nyx-text);
+  }
+
+  & .nyx-tl-half {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  & .nyx-tl-bar {
+    width: 1px;
+    height: 14px;
+    flex: none;
+    background: color-mix(in srgb, var(--nyx-text) 16%, transparent);
+  }
+}
+
+/* Today, with Clear while you're over it. */
+.nyx-tl-label {
+  display: flex;
+  align-items: center;
+  flex: none;
+  padding: 12px 10px 5px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--nyx-tertiary);
+
+  & span {
+    flex: 1;
+  }
+
+  & .nyx-tl-clear {
+    visibility: hidden;
+    font-size: 11px;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--nyx-dim) !important;
+
+    &:hover {
+      color: var(--nyx-text) !important;
+    }
+  }
+
+  &:hover .nyx-tl-clear {
+    visibility: visible;
+  }
+}
+
+.nyx-tl-new {
+  color: var(--nyx-tertiary);
+
+  & .nyx-tl-kbd {
+    display: flex;
+    gap: 2px;
+    opacity: 0.8;
+  }
+
+  & kbd {
+    padding: 1px 5px;
+    border-radius: 4px;
+    background: var(--nyx-tile);
+    box-shadow: inset 0 0 0 1px var(--nyx-line);
+    font: 10.5px var(--nyx-font);
+    color: var(--nyx-tertiary);
+  }
+}
+
+/* Where a dragged tab goes. */
+.nyx-tl-row[nyx-drop="before"] {
+  box-shadow: inset 0 2px 0 var(--nyx-accent);
+}
+
+.nyx-tl-row[nyx-drop="after"] {
+  box-shadow: inset 0 -2px 0 var(--nyx-accent);
+}
+
+.nyx-tl-row[nyx-drop="into"] {
+  box-shadow: inset 0 0 0 1.5px var(--nyx-accent);
+}
+
+/* The compact sidebar: icons only. */
+:root:not([zen-sidebar-expanded]) .nyx-tablist {
+  & .nyx-tl-space {
+    justify-content: center;
+    padding: 0;
+
+    & > :not(.nyx-tl-tile) {
+      display: none;
+    }
+  }
+
+  & .nyx-tl-essentials {
+    grid-template-columns: 1fr;
+  }
+
+  & .nyx-tl-row {
+    justify-content: center;
+    padding: 0;
+
+    & > :not(.nyx-tl-fav, .nyx-tl-folder-icon, img.nyx-tl-icon:first-child),
+    & .nyx-tl-close {
+      display: none !important;
+    }
+  }
+
+  & .nyx-tl-split .nyx-tl-half .nyx-tl-title,
+  & .nyx-tl-split .nyx-tl-bar,
+  & .nyx-tl-label {
+    display: none;
+  }
+}
+
+/* ---------- Focus, as its mockup has it ---------- */
+
+/* The sidebar's address: the site's name while you're not typing (layout.js). */
+#nyx-host {
+  display: none;
+  position: absolute;
+  inset-inline-start: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+  color: var(--nyx-text);
+  pointer-events: none;
+}
+
+:root[nyx-layout="focus"] #urlbar:not([focused]) .urlbar-input-box:has(#nyx-host:not(:empty)) {
+  position: relative;
+
+  & #nyx-host {
+    display: block;
+  }
+
+  & #urlbar-input {
+    opacity: 0;
+  }
+}
+
+/* Navigation on the right of the sidebar's top row, its button on the left. */
+:root[nyx-layout="focus"] #zen-sidebar-top-buttons-customization-target > #back-button {
+  margin-inline-start: auto;
+}
+
+/* The workspace's row: smaller, no hover. */
+:root[nyx-layout="focus"] .nyx-tl-space {
+  height: 30px;
+  margin-bottom: 2px;
+  color: var(--nyx-tertiary);
+
+  &:hover {
+    background: none;
+  }
+
+  & .nyx-tl-space-name {
+    font-size: 13px;
+    color: var(--nyx-text);
+  }
+
+  & .nyx-tl-chevron {
+    display: none;
+  }
+}
+
+:root[nyx-layout="focus"] .nyx-tl-essentials {
+  margin-bottom: 10px;
+
+  & .nyx-tl-ess {
+    height: 46px;
+    border-radius: 12px;
+  }
+}
+
+:root[nyx-layout="focus"] .nyx-tl-folder .nyx-tl-folder-icon {
+  color: var(--nyx-tertiary);
+}
+
+/* Today: a divider with Clear at its end. */
+.nyx-tl-line {
+  display: none;
+}
+
+:root[nyx-layout="focus"] .nyx-tl-label {
+  gap: 8px;
+  height: 28px;
+  margin-top: 4px;
+  padding: 0 4px;
+  letter-spacing: 0;
+  text-transform: none;
+  font-weight: 400;
+
+  & span {
+    flex: none;
+  }
+
+  & .nyx-tl-line {
+    display: block;
+    flex: 0 0 6px;
+    height: 1px;
+    background: color-mix(in srgb, var(--nyx-text) 9%, transparent);
+
+    &.nyx-tl-grow {
+      flex: 1;
+    }
+  }
+
+  & .nyx-tl-clear {
+    visibility: visible;
+  }
+}
+
+:root[nyx-layout="focus"] .nyx-tl-new .nyx-tl-kbd {
+  display: none;
+}
+
+/* The shelf in the tab list, under Essentials. */
+.nyx-tl-shelf:empty {
+  display: none;
+}
+
+.nyx-tl-shelf #nyx-shelf-head {
+  margin: 0 0 0;
+}
+
+/* The foot: the workspaces as dots, then Downloads, Extensions and the menu. */
+:root[nyx-layout="focus"] #zen-workspaces-button {
+  gap: 8px;
+  padding-inline-start: 6px;
+
+  & toolbarbutton {
+    width: 14px !important;
+    min-width: 14px !important;
+    height: 22px !important;
+    background: none !important;
+
+    & .zen-workspace-icon {
+      display: none;
+    }
+
+    &::after {
+      content: "";
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: color-mix(in srgb, var(--nyx-tertiary) 55%, transparent);
+    }
+
+    &[active="true"]::after {
+      background: var(--nyx-accent);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--nyx-accent) 25%, transparent);
+    }
+  }
+}
+
+/* ---------- Right-click menus (menus.js), as the layouts' mockups draw them ---------- */
+
+/* The row of buttons on top: the link's, image's, text's or tab's own, or the page's (Firefox's). */
+:is(.nyx-menu-strip, #context-navigation) {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 4px;
+  margin: 0 0 4px !important;
+  padding: 0 !important;
+
+  &[hidden] {
+    display: none !important;
+  }
+
+  & > menuitem {
+    justify-content: center;
+    height: 34px;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border-radius: 9px !important;
+    background: var(--nyx-tile) !important;
+    color: var(--nyx-text);
+    -moz-context-properties: fill, fill-opacity;
+    fill: currentColor;
+
+    &:is(:hover, [_moz-menuactive]):not([disabled]) {
+      background: var(--nyx-hover-bg) !important;
+    }
+
+    &[disabled] {
+      opacity: 0.4;
+    }
+
+    & .menu-icon,
+    & .menu-iconic-icon {
+      width: 17px;
+      height: 17px;
+      margin: 0 !important;
+    }
+
+    & :is(.menu-text, .menu-iconic-text, .menu-accel-container, .menu-iconic-left + label) {
+      display: none !important;
+    }
+  }
+}
+
+#context-navigation > menuitem:not([id="context-stop"])[hidden] {
+  display: none !important;
+}
+
+/* Each item with its icon. */
+:is(#contentAreaContextMenu, #tabContextMenu) > menuitem.menuitem-iconic {
+  -moz-context-properties: fill, fill-opacity;
+  fill: var(--nyx-dim);
+
+  & .menu-icon,
+  & .menu-iconic-icon {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+/* ---------- The workspace switcher (ZenSpaceManager.openWorkspacesMenu), as the mockups have it ---------- */
+
+#nyx-workspaces-menu {
+  --panel-padding: 8px;
+  min-width: 300px;
+}
+
+.nyx-workspaces-menu-space {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 6px;
+  padding: 10px;
+  border-radius: 12px;
+  background: var(--nyx-tile);
+  color: var(--nyx-text);
+  font: 13px var(--nyx-font);
+
+  &:hover {
+    background: var(--nyx-hover-bg);
+  }
+
+  &[current] {
+    box-shadow: inset 0 0 0 1.5px var(--nyx-accent);
+  }
+
+  & .nyx-wsm-tile {
+    display: grid;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    flex: none;
+    border-radius: 6px;
+    background: color-mix(in srgb, var(--nyx-text) 12%, transparent);
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  &[current] .nyx-wsm-tile {
+    background: var(--nyx-accent);
+    color: var(--nyx-on-accent);
+  }
+
+  & .nyx-wsm-text {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+
+    & b {
+      font-weight: 600;
+    }
+
+    & span {
+      font-size: 12px;
+      color: var(--nyx-dim);
+    }
+  }
+
+  & .nyx-wsm-icons {
+    display: flex;
+    gap: 3px;
+
+    & img {
+      width: 14px;
+      height: 14px;
+      border-radius: 3px;
+    }
+  }
+}
+
+/* ---------- The Site card (site.js), as the layouts' mockups have it ---------- */
+
+#nyx-site-card {
+  --panel-padding: 0;
+  --panel-border-radius: 18px;
+}
+
+.nyx-sc {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  width: 344px;
+  padding: 14px;
+  font: 13px var(--nyx-font);
+  color: var(--nyx-text);
+
+  & button {
+    appearance: none;
+    border: 0;
+    margin: 0;
+    padding: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: start;
+
+    &:disabled {
+      opacity: 0.45;
+    }
+  }
+
+  & img.nyx-sc-icon {
+    width: 16px;
+    height: 16px;
+    flex: none;
+    -moz-context-properties: fill, fill-opacity;
+    fill: currentColor;
+  }
+}
+
+.nyx-sc-site {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 2px 2px 12px;
+
+  & .nyx-sc-fav {
+    width: 40px;
+    height: 40px;
+    padding: 10px;
+    border-radius: 12px;
+    background: var(--nyx-tile);
+  }
+
+  & .nyx-sc-site-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+
+    & b {
+      font-size: 14px;
+      font-weight: 600;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    & span {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+
+      & img.nyx-sc-icon {
+        width: 12px;
+        height: 12px;
+      }
+
+      &.ok {
+        color: var(--nyx-success);
+      }
+
+      &.warn {
+        color: var(--nyx-warning);
+      }
+    }
+  }
+}
+
+.nyx-sc-tiles {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 8px;
+}
+
+.nyx-sc-tile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  overflow: hidden;
+  padding: 11px 12px !important;
+  border-radius: 13px;
+  background: var(--nyx-tile) !important;
+
+  &:hover:not(:disabled) {
+    background: var(--nyx-hover-bg) !important;
+  }
+
+  & .nyx-sc-disc {
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    flex: none;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--nyx-text) 10%, transparent);
+    color: var(--nyx-dim);
+  }
+
+  &[on] .nyx-sc-disc {
+    background: var(--nyx-accent);
+    color: var(--nyx-on-accent);
+  }
+
+  & .nyx-sc-tile-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+
+    & b {
+      font-size: 12.5px;
+      font-weight: 500;
+    }
+
+    & :is(b, span) {
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    & span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 11.5px;
+      color: var(--nyx-dim);
+    }
+  }
+}
+
+.nyx-sc-acts {
+  display: flex;
+  justify-content: space-between;
+  margin: 12px 0 4px;
+  padding: 0 4px;
+}
+
+.nyx-sc-act {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  width: 56px;
+  font-size: 11px !important;
+  color: var(--nyx-dim) !important;
+  text-align: center !important;
+
+  & .nyx-sc-disc {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--nyx-text) 7%, transparent);
+    color: var(--nyx-text);
+  }
+
+  &:hover:not(:disabled) .nyx-sc-disc {
+    background: var(--nyx-hover-bg);
+  }
+}
+
+.nyx-sc-perms {
+  display: flex;
+  flex-direction: column;
+  margin-top: 8px;
+  padding: 2px 0 4px;
+  border-radius: 13px;
+  background: color-mix(in srgb, var(--nyx-text) 4%, transparent);
+
+  & .nyx-sc-head {
+    padding: 9px 12px 2px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--nyx-tertiary);
+  }
+}
+
+.nyx-sc-perm {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 34px;
+  padding: 0 12px !important;
+  border-radius: 8px;
+
+  &:hover {
+    background: var(--nyx-tile) !important;
+  }
+
+  & img.nyx-sc-icon {
+    color: var(--nyx-dim);
+  }
+
+  & span {
+    flex: 1;
+  }
+
+  & em {
+    font-style: normal;
+    font-size: 12px;
+    color: var(--nyx-dim);
+
+    &.no {
+      color: var(--nyx-danger);
+    }
+
+    &.yes {
+      color: var(--nyx-success);
+    }
+  }
+}
+
+
+.nyx-sc-onsite {
+  display: flex;
+  flex-direction: column;
+  margin-top: 4px;
+  padding: 2px 0 4px;
+  border-radius: 13px;
+  background: color-mix(in srgb, var(--nyx-text) 4%, transparent);
+}
+
+.nyx-sc-onsite .nyx-sc-head {
+  padding: 9px 12px 2px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--nyx-tertiary);
+}
+
+.nyx-sc-style {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 6px 12px;
+  border-radius: 8px;
+}
+
+.nyx-sc-style:hover {
+  background: var(--nyx-tile);
+}
+
+.nyx-sc-style-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.nyx-sc-style-text b {
+  font-weight: 500;
+}
+
+.nyx-sc-style-text span {
+  font-size: 12px;
+  color: var(--nyx-dim);
+}
+
+.nyx-sc-menu {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 24px;
+  padding: 0 9px;
+  border: 0;
+  border-radius: 7px;
+  background: var(--nyx-tile);
+  color: var(--nyx-dim);
+  font: inherit;
+  font-size: 12px;
+}
+
+/* Segment switch in chrome panels (Site card, install card) */
+#nyx-site-card checkbox.nyx-switch,
+#nyx-install-card checkbox.nyx-switch {
+  flex-direction: row-reverse;
+  justify-content: space-between;
+  margin: 0;
+}
+
+#nyx-site-card checkbox.nyx-switch .checkbox-label-box,
+#nyx-install-card checkbox.nyx-switch .checkbox-label-box {
+  margin: 0;
+}
+
+#nyx-site-card checkbox.nyx-switch .checkbox-check,
+#nyx-install-card checkbox.nyx-switch .checkbox-check {
+  appearance: none;
+  width: 38px;
+  height: 22px;
+  margin: 0;
+  border: 0;
+  border-radius: 7px;
+  list-style-image: none;
+  -moz-context-properties: fill;
+  fill: color-mix(in srgb, var(--nyx-text) 26%, var(--nyx-bg));
+  background-color: var(--nyx-muted);
+  background-image: url("chrome://browser/content/nyx/icons/switch-knob.svg");
+  background-size: 16px 16px;
+  background-position: 3px 3px;
+  background-repeat: no-repeat;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--nyx-text) 6%, transparent);
+}
+
+#nyx-site-card checkbox.nyx-switch[checked] .checkbox-check,
+#nyx-install-card checkbox.nyx-switch[checked] .checkbox-check {
+  fill: var(--nyx-accent);
+  background-color: color-mix(in srgb, var(--nyx-accent) 22%, var(--nyx-muted));
+  background-position: 19px 3px;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--nyx-accent) 45%, transparent);
+}
+
+/* Install card */
+#nyx-install-card {
+  --panel-padding: 0;
+  --panel-border-radius: 16px;
+  width: 470px;
+}
+
+.nyx-ic {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  color: var(--nyx-text);
+}
+
+.nyx-ic-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.nyx-ic-tile {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 11px;
+  background: color-mix(in srgb, var(--nyx-accent) 22%, var(--nyx-tile));
+  flex: none;
+}
+
+.nyx-ic-tile img {
+  width: 20px;
+  height: 20px;
+  -moz-context-properties: fill;
+  fill: var(--nyx-accent);
+}
+
+.nyx-ic-titles {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.nyx-ic-titles b {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.nyx-ic-titles span {
+  font-size: 12px;
+  color: var(--nyx-dim);
+}
+
+.nyx-ic-list {
+  display: flex;
+  flex-direction: column;
+  padding: 4px 0;
+  border-radius: 13px;
+  background: color-mix(in srgb, var(--nyx-text) 4%, transparent);
+}
+
+.nyx-ic-row {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 7px 14px;
+}
+
+.nyx-ic-glyph {
+  width: 18px;
+  height: 18px;
+  -moz-context-properties: fill;
+  fill: var(--nyx-dim);
+  flex: none;
+}
+
+.nyx-ic-row-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.nyx-ic-row-text b {
+  font-weight: 500;
+  font-size: 12.5px;
+}
+
+.nyx-ic-row-text span {
+  font-size: 11.5px;
+  color: var(--nyx-dim);
+}
+
+.nyx-ic-foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 4px;
+}
+
+.nyx-ic-btn {
+  appearance: none;
+  height: 30px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 7px;
+  background: var(--nyx-tile);
+  color: var(--nyx-text);
+  font: inherit;
+  font-weight: 500;
+  font-size: 12.5px;
+}
+
+.nyx-ic-btn.primary {
+  background: var(--nyx-accent);
+  color: var(--nyx-on-accent, #fff);
+}
+
+.nyx-sc-foot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 4px 0;
+  font-size: 12px;
+
+  & .nyx-sc-grow {
+    flex: 1;
+  }
+
+  & .nyx-sc-link {
+    color: var(--nyx-accent) !important;
+    font-weight: 500 !important;
+    white-space: nowrap;
+  }
+}
+
+/* More tools: a tool's pin, which adds it to the top bar (menus.js). Nowhere else. */
+:not(#widget-overflow-fixed-list) > toolbarbutton > .nyx-pin-to-bar {
+  display: none;
+}
+
+.nyx-pin-to-bar {
+  width: 22px;
+  height: 22px;
+  margin-inline-start: auto;
+  padding: 4px;
+  border-radius: 6px;
+  list-style-image: url("chrome://browser/content/nyx/icons/pin.svg");
+  -moz-context-properties: fill, fill-opacity;
+  fill: var(--nyx-tertiary);
+  opacity: 0;
+
+  toolbarbutton:is(:hover, :focus-visible) > & {
+    opacity: 1;
+  }
+
+  &:hover {
+    background: var(--nyx-hover-bg);
+    fill: var(--nyx-text);
+  }
+}
+
+/* ---------- Panels in the layouts' card style (Passwords' and VPN's stay as they are) ---------- */
+
+:is(#downloadsPanel, #unified-extensions-panel, #widget-overflow, #appMenu-popup, #nyx-video-panel, .customizationui-widget-panel:has(#PanelUI-nyx-share)) {
+  --arrowpanel-border-radius: 18px !important;
+  --panel-border-radius: 18px;
+}
+
+/* Downloads: a group of rows, each a card's row. */
+#downloadsListBox:not(:empty) {
+  margin: 4px 6px !important;
+  padding: 2px 0 !important;
+  border-radius: 13px;
+  background: color-mix(in srgb, var(--nyx-text) 5%, transparent) !important;
+
+  & > richlistitem {
+    min-height: 52px;
+    margin: 0 2px !important;
+    border-radius: 10px;
+
+    &:hover {
+      background: var(--nyx-hover-bg) !important;
+    }
+  }
+}
+
+/* Extensions: the list as one group. */
+#unified-extensions-area:not(:empty),
+#overflowed-extensions-list:not(:empty) {
+  margin: 4px 6px;
+  padding: 2px 0;
+  border-radius: 13px;
+  background: color-mix(in srgb, var(--nyx-text) 5%, transparent);
+}
+
+/* The menu's tiles (menus.js). */
+#nyx-appmenu-tiles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  margin: 4px 6px 6px;
+}
+
+.nyx-appmenu-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 12px 0 10px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--nyx-tile);
+  color: var(--nyx-text);
+  font: 12px var(--nyx-font);
+
+  &:hover {
+    background: var(--nyx-hover-bg);
+  }
+
+  & img {
+    width: 18px;
+    height: 18px;
+    -moz-context-properties: fill, fill-opacity;
+    fill: var(--nyx-accent);
+  }
+}
+
+/* The menu's items that aren't in the mockups' list (menus.js). */
+[nyx-appmenu-hidden] {
+  display: none !important;
+}
+
+/* A menu item's count (Add to Essentials' 4 / 12) keeps the item to the menus' 30 px rows. */
+menuitem[badge]::after {
+  margin-block: -2px;
+  padding-block: 0 !important;
+  font-size: 11px;
+  line-height: 16px;
+}
+
+/* ---------- The address field's dropdown (address.js), every layout ---------- */
+
+/* While it's open the field is a search: a glass, what you type, the engine's chip. */
+#urlbar[breakout-extend] {
+  & #identity-box,
+  & #page-action-buttons,
+  & #urlbar-searchmode-switcher,
+  & #remote-control-box,
+  & #tracking-protection-icon-container {
+    display: none !important;
+  }
+
+  & .urlbar-input-container::before {
+    content: "";
+    flex: none;
+    width: 16px;
+    height: 16px;
+    margin: auto 2px auto 6px;
+    background: url("chrome://browser/skin/zen-icons/search-glass.svg") center / contain no-repeat;
+    -moz-context-properties: fill;
+    fill: var(--nyx-accent);
+  }
+
+  &[searchmode] .urlbar-input-container::before {
+    display: none;
+  }
+}
+
+#urlbar[nyx-engine-mode] #urlbar-search-mode-indicator {
+  display: none !important;
+}
+
+#nyx-engine-chip {
+  display: none;
+  appearance: none;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  height: 22px;
+  margin: auto 4px auto 6px;
+  padding: 0 8px 0 4px;
+  border: 0;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--nyx-text) 8%, transparent);
+  color: var(--nyx-dim);
+  font: 500 12px var(--nyx-font);
+  cursor: default;
+
+  #urlbar[breakout-extend] &:not([hidden]) {
+    display: inline-flex;
+  }
+
+  &:hover {
+    background: color-mix(in srgb, var(--nyx-text) 13%, transparent);
+  }
+
+  & img {
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+  }
+}
+
+#urlbar .urlbarView {
+  margin-inline: 0 !important;
+  width: 100% !important;
+  border-top: 1px solid var(--nyx-line);
+  font-family: var(--nyx-font);
+
+  & .urlbarView-body-inner {
+    border: 0 !important;
+  }
+
+  & .search-one-offs {
+    display: none !important;
+  }
+}
+
+#urlbar #urlbar-results {
+  width: auto !important;
+  box-sizing: border-box;
+  margin: 0 !important;
+  padding: 4px 6px 4px !important;
+}
+
+#urlbar .urlbarView-row {
+  --urlbarview-row-padding-inline: 10px;
+  --urlbarview-row-padding-block: 0px;
+  min-height: 32px;
+  margin: 0;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 7px !important;
+  background: none !important;
+  color: var(--nyx-text) !important;
+
+  &:hover {
+    background: color-mix(in srgb, var(--nyx-text) 5%, transparent) !important;
+  }
+
+  &[selected] {
+    background: color-mix(in srgb, var(--nyx-accent) 24%, transparent) !important;
+
+    & *,
+    & .urlbarView-title-separator::before {
+      color: inherit !important;
+    }
+
+    & .urlbarView-favicon {
+      background-color: transparent !important;
+    }
+  }
+
+  /* A group's name (UrlbarView's #rowLabel, Browser's patch) over its first row. */
+  &[label] {
+    margin-block-start: 26px;
+
+    &::before {
+      top: -19px;
+      margin-inline-start: 10px;
+      font: 600 10.5px/1 var(--nyx-font);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--nyx-tertiary);
+    }
+  }
+}
+
+#urlbar .urlbarView-row-inner {
+  min-height: 32px;
+  padding-block: 0 !important;
+  padding-inline: 10px !important;
+  align-items: center;
+  flex-wrap: nowrap !important;
+}
+
+#urlbar .urlbarView-no-wrap {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
+}
+
+#urlbar .urlbarView-favicon {
+  flex: none;
+  width: 18px !important;
+  height: 18px !important;
+  margin: 0 10px 0 0 !important;
+  padding: 0 !important;
+  border-radius: 5px !important;
+  background: none !important;
+}
+
+#urlbar .urlbarView-row:is([type="search"], [type="rich-search"], [type="dynamic"], [type="tabtosearch"]) .urlbarView-favicon {
+  padding: 3px !important;
+  background: color-mix(in srgb, var(--nyx-text) 9%, transparent) !important;
+  -moz-context-properties: fill;
+  fill: var(--nyx-dim) !important;
+}
+
+#urlbar .urlbarView-title {
+  font: 400 13px var(--nyx-font) !important;
+  color: var(--nyx-text) !important;
+
+  & strong {
+    font-weight: 650;
+  }
+}
+
+#urlbar .urlbarView-row[type="dynamic"] .urlbarView-title strong {
+  font-weight: 400;
+}
+
+#urlbar .urlbarView-title-separator,
+#urlbar .urlbarView-row:not([type="tabtosearch"]) .urlbarView-action,
+#urlbar .urlbarView-prettyName:not([hidden]) ~ .urlbarView-shortcutContent:empty {
+  display: none !important;
+}
+
+#urlbar .urlbarView-url,
+#urlbar .urlbarView-explanation {
+  flex: 0 1 auto;
+  min-width: 0;
+  margin-inline-start: 8px !important;
+  overflow: hidden;
+  font: 400 12px var(--nyx-font) !important;
+  color: var(--nyx-tertiary) !important;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+#urlbar .urlbarView-row:is([type="switchtab"], [type="remotetab"]) .urlbarView-url {
+  display: block !important;
+}
+
+#urlbar .urlbarView-shortcutContent {
+  margin-inline: auto 0 !important;
+  padding: 2px 5px !important;
+  box-shadow: none !important;
+  border: 1px solid var(--nyx-line);
+  border-radius: 4px !important;
+  background: color-mix(in srgb, var(--nyx-text) 5%, transparent) !important;
+  color: var(--nyx-dim) !important;
+  font: 500 10.5px var(--nyx-font) !important;
+  text-transform: none;
+}
+
+/* What a result is, on its right; the one you're on also shows Enter. */
+.nyx-kind {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  margin-inline-start: auto;
+  padding-inline-start: 12px;
+  color: var(--nyx-tertiary);
+  font: 400 11.5px var(--nyx-font);
+  white-space: nowrap;
+
+  & .nyx-key {
+    display: none;
+  }
+
+  .urlbarView-row[selected] & {
+    color: var(--nyx-dim);
+
+    & .nyx-key {
+      display: inline-flex;
+    }
+  }
+
+  .urlbarView-row[nyx-bookmark] & .nyx-kind-text::before {
+    content: "";
+    display: inline-block;
+    width: 11px;
+    height: 11px;
+    margin-inline-end: 4px;
+    vertical-align: -1px;
+    background: url("chrome://browser/skin/zen-icons/bookmark.svg") center / contain no-repeat;
+    -moz-context-properties: fill;
+    fill: var(--nyx-warning);
+  }
+}
+
+.nyx-key {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  box-sizing: border-box;
+  border: 1px solid var(--nyx-line);
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--nyx-text) 5%, transparent);
+  color: var(--nyx-dim);
+  font: 500 10px var(--nyx-font);
+}
+
+/* The foot: the keys, then the other engines. */
+#nyx-urlbar-foot {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 30px;
+  padding: 0 14px;
+  border-top: 1px solid var(--nyx-line);
+  color: var(--nyx-tertiary);
+  font: 400 11px var(--nyx-font);
+
+  #urlbar[noresults] & {
+    display: none;
+  }
+}
+
+.nyx-urlbar-hints {
+  display: flex;
+  gap: 14px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.nyx-urlbar-hint {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+
+  & > span {
+    margin-inline-start: 2px;
+  }
+}
+
+.nyx-urlbar-engines {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-inline-start: auto;
+  white-space: nowrap;
+
+  & > span {
+    margin-inline-end: 4px;
+  }
+}
+
+.nyx-urlbar-engine {
+  appearance: none;
+  display: flex;
+  padding: 2px;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+
+  &:hover {
+    background: color-mix(in srgb, var(--nyx-text) 10%, transparent);
+  }
+
+  & img {
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+  }
+}
+
+/* The open field: solid, so it reads over any page (the window itself may be see-through). */
+#urlbar[breakout-extend] .urlbar-background {
+  border-radius: 12px !important;
+  background-color: var(--nyx-raised) !important;
+  outline: 1px solid var(--nyx-line) !important;
+  outline-offset: 0 !important;
+  box-shadow: 0 18px 48px color-mix(in srgb, var(--nyx-shadow) 55%, transparent) !important;
+  backdrop-filter: none !important;
+}
+
+/* Focus: over the page, near its top, the page dimmed and blurred behind. */
+#urlbar[open][zen-floating-urlbar="true"] {
+  :root[nyx-layout="focus"] & {
+    top: 11vh !important;
+    width: min(680px, 72vw) !important;
+    min-width: 0 !important;
+  }
+
+  &::backdrop {
+    background: color-mix(in srgb, var(--nyx-shadow) 35%, transparent);
+    backdrop-filter: blur(6px);
+  }
+}
+
+/* Zen's Share uploads tabs to Zen's server; it's off (zen.share.enabled), and so are its items. */
+@media not -moz-pref("zen.share.enabled") {
+  #context_zenShareWorkspace,
+  #context_zenShareFolder {
+    display: none !important;
+  }
+}
+
+/* Browser's colours are the Nyx theme's (Themes, Settings › Appearance): Zen's gradient picker for
+ * a space or the toolbar would only be overwritten. Zen's space routing lives in Zen's Library,
+ * which Browser doesn't have. */
+#context_zenChangeWorkspaceTheme,
+#zenToolbarThemePicker,
+.zen-workspace-creation-edit-theme-button,
+#context_zenSpaceRoutingSettings,
+#zenWorkspaceMoreActions > menuseparator:has(+ #context_zenSpaceRoutingSettings) {
+  display: none !important;
+}
+
+/* Firefox's help site, feedback, referral and device-switching items, its broken-site and
+ * deceptive-site reports, and its troubleshooting (Troubleshoot Mode, about:support): Help is
+ * Browser's shortcuts and About. */
+#helpSafeMode,
+#appMenu_helpSafeMode,
+#troubleShooting,
+#appMenu_troubleShooting,
+#menu_HelpPopup_reportPhishingtoolmenu,
+#appMenu_menu_HelpPopup_reportPhishingtoolmenu,
+#menu_HelpPopup_reportPhishingErrortoolmenu,
+#appMenu_menu_HelpPopup_reportPhishingErrortoolmenu,
+#menu_openHelp,
+#appMenu_menu_openHelp,
+#feedbackPage,
+#appMenu_feedbackPage,
+#helpSwitchDevice,
+#appMenu_helpSwitchDevice,
+#menu_referralsPage,
+#appMenu_menu_referralsPage,
+#appMenu-referrals-button,
+#help_reportBrokenSite,
+#appMenu_help_reportBrokenSite {
+  display: none !important;
+}
+
+/* Focus's top row is the sidebar's toggle and the page's back, forward and reload, as its mockup
+ * has it; Share is in the Site card and the menus. */
+:root[nyx-layout="focus"]:not([customizing]) #nyx-share-button:not(#widget-overflow-list *, #widget-overflow-fixed-list *) {
+  display: none;
+}
+
+/* ---------- The downloads panel (dlpanel.js) ---------- */
+
+#downloadsPanel-mainView:has(> #nyx-dl) > :not(#nyx-dl) {
+  display: none !important;
+}
+
+.nyx-dl {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-sizing: border-box;
+  width: var(--menu-panel-width-wide, 30em);
+  max-width: 100%;
+  padding: 12px;
+  color: var(--nyx-text);
+  font: 13px var(--nyx-font);
+
+  & button {
+    appearance: none;
+    margin: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+  }
+
+  & img {
+    -moz-context-properties: fill, fill-opacity;
+    fill: currentColor;
+  }
+
+  & .lnk {
+    color: var(--nyx-accent);
+    font-weight: 500;
+  }
+}
+
+.nyx-dl-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 2px 2px 4px;
+}
+
+.nyx-dl-tile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--nyx-accent) 18%, transparent);
+
+  & img {
+    width: 16px;
+    height: 16px;
+    fill: var(--nyx-accent);
+  }
+}
+
+.nyx-dl-titles {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+
+  & b {
+    font-weight: 600;
+  }
+
+  & .nyx-dl-sub {
+    color: var(--nyx-tertiary);
+    font-size: 12px;
+  }
+}
+
+.nyx-dl-card {
+  padding: 4px 0;
+  border-radius: 11px;
+  background: color-mix(in srgb, var(--nyx-text) 5%, transparent);
+}
+
+.nyx-dl-label {
+  padding: 6px 12px 2px;
+  color: var(--nyx-tertiary);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.nyx-dl-empty {
+  padding: 24px 0;
+  color: var(--nyx-tertiary);
+  text-align: center;
+}
+
+.nyx-dl .row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px;
+  border-radius: 8px;
+
+  &:hover {
+    background: color-mix(in srgb, var(--nyx-text) 5%, transparent);
+  }
+
+  & .rt {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+
+    & b {
+      overflow: hidden;
+      font-weight: 500;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    & .status {
+      overflow: hidden;
+      color: var(--nyx-tertiary);
+      font-size: 11.5px;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+  }
+
+  &[failed] .status {
+    color: var(--nyx-danger);
+  }
+
+  & .bar {
+    height: 4px;
+    border-radius: 2px;
+    background: color-mix(in srgb, var(--nyx-text) 10%, transparent);
+
+    & i {
+      display: block;
+      height: 100%;
+      border-radius: 2px;
+      background: var(--nyx-accent);
+    }
+  }
+
+  & .tile {
+    display: flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 7px;
+    background: color-mix(in srgb, var(--c) 18%, transparent);
+
+    & img {
+      width: 14px;
+      height: 14px;
+      fill: var(--c);
+    }
+
+    &.blue { --c: var(--nyx-swatch-blue, #3d8ae8); }
+    &.amber { --c: var(--nyx-swatch-amber, #e0a21b); }
+    &.red { --c: var(--nyx-danger, #e5484d); }
+  }
+
+  & .end {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  & .ibtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 7px;
+
+    & img {
+      width: 14px;
+      height: 14px;
+      fill: var(--nyx-dim);
+    }
+
+    &:hover {
+      background: color-mix(in srgb, var(--nyx-text) 8%, transparent);
+    }
+  }
+}
+
+.nyx-dl-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2px 4px 0;
+  color: var(--nyx-tertiary);
+  font-size: 12px;
+}
+
+.nyx-dl-folder {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--nyx-tertiary) !important;
+
+  & img {
+    width: 14px;
+    height: 14px;
+  }
+
+  &:hover {
+    color: var(--nyx-text) !important;
+  }
+}
+
+/* ---------- The Extensions panel (extpanel.js) ---------- */
+
+:is(#original-unified-extensions-view, #unified-extensions-view):has(> #nyx-ext) > :not(#nyx-ext) {
+  display: none !important;
+}
+
+.nyx-ext {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-sizing: border-box;
+  width: var(--menu-panel-width-wide, 30em);
+  max-width: 100%;
+  padding: 12px;
+  color: var(--nyx-text);
+  font: 13px var(--nyx-font);
+
+  & button {
+    appearance: none;
+    margin: 0;
+    border: 0;
+    color: inherit;
+    font: inherit;
+  }
+
+  & .lnk {
+    background: none;
+    color: var(--nyx-accent);
+    font-size: 12px;
+    font-weight: 500;
+  }
+}
+
+/* The site's card head: its icon, name, and Manage. */
+.nyx-ext-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 2px 2px 4px;
+}
+
+.nyx-ext-site {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--nyx-text) 8%, transparent);
+
+  & img {
+    width: 22px;
+    height: 22px;
+  }
+
+  &.nyx-ext-glyph::before {
+    content: "";
+    width: 20px;
+    height: 20px;
+    background: var(--src) center / contain no-repeat;
+    -moz-context-properties: fill;
+    fill: var(--nyx-dim);
+  }
+}
+
+.nyx-ext-head-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+
+  & b {
+    overflow: hidden;
+    font-size: 14px;
+    font-weight: 600;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  & span {
+    color: var(--nyx-dim);
+    font-size: 12px;
+  }
+}
+
+.nyx-ext-notices:empty {
+  display: none;
+}
+
+.nyx-ext-label {
+  padding: 8px 12px 2px;
+  color: var(--nyx-tertiary);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* What each extension may do here: a row each in one group. */
+.nyx-ext-group {
+  display: flex;
+  flex-direction: column;
+  padding: 2px 4px 4px;
+  border-radius: 13px;
+  background: color-mix(in srgb, var(--nyx-text) 5%, transparent);
+}
+
+.nyx-ext-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 6px 6px 6px 8px;
+  border-radius: 10px;
+
+  &:hover {
+    background: var(--nyx-hover-bg);
+  }
+
+  &[nyx-off] {
+    & .nyx-ext-face {
+      filter: grayscale(1);
+      opacity: 0.45;
+    }
+
+    & b {
+      opacity: 0.6;
+    }
+  }
+}
+
+.nyx-ext-row-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+
+  & b {
+    overflow: hidden;
+    font-weight: 500;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  & span {
+    overflow: hidden;
+    color: var(--nyx-dim);
+    font-size: 11.5px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+
+    &[nyx-warn] {
+      color: var(--nyx-warning, #e0a43b);
+    }
+  }
+}
+
+.nyx-ext-row .nyx-ext-face {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+
+  & img {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.nyx-ext-seg {
+  display: inline-flex;
+  flex: none;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 8px;
+  background: var(--nyx-field, color-mix(in srgb, var(--nyx-text) 7%, transparent));
+
+  & button {
+    padding: 4px 8px;
+    border-radius: 6px;
+    background: none;
+    color: var(--nyx-dim);
+    font-size: 11.5px;
+
+    &[nyx-on] {
+      background: var(--nyx-raised);
+      color: var(--nyx-text);
+      box-shadow: 0 1px 2px color-mix(in srgb, var(--nyx-shadow, #000) 40%, transparent);
+    }
+  }
+}
+
+.nyx-ext-allow {
+  flex: none;
+  height: 28px;
+  padding: 0 12px !important;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--nyx-accent) 20%, transparent) !important;
+  color: var(--nyx-accent) !important;
+  font-weight: 500 !important;
+}
+
+.nyx-ext-chip {
+  flex: none;
+  padding: 4px 9px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--nyx-text) 7%, transparent);
+  color: var(--nyx-dim);
+  font-size: 11.5px;
+}
+
+.nyx-ext-more {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: url("chrome://browser/content/nyx/icons/more.svg") center / 15px no-repeat !important;
+  -moz-context-properties: fill;
+  fill: var(--nyx-tertiary);
+
+  &:hover,
+  &[open] {
+    background-color: var(--nyx-hover-bg) !important;
+    fill: var(--nyx-text);
+  }
+}
+
+/* Icon faces: an extension's own image, or Browser's glyph on a colour. */
+.nyx-ext-face {
+  position: relative;
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--nyx-text) 8%, transparent);
+
+  & img {
+    width: 20px;
+    height: 20px;
+    -moz-context-properties: fill, fill-opacity;
+    fill: var(--nyx-dim);
+  }
+
+  &.nyx-ext-colour {
+    background: var(--c);
+
+    & img {
+      width: 18px;
+      height: 18px;
+      fill: #fff;
+    }
+  }
+}
+
+.nyx-ext-badge {
+  position: absolute;
+  right: -5px;
+  bottom: -4px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  box-sizing: border-box;
+  border-radius: 8px;
+  background: var(--nyx-danger, #e5484d);
+  box-shadow: 0 0 0 2px var(--nyx-popover);
+  color: #fff;
+  font: 700 9.5px/16px var(--nyx-font);
+  font-style: normal;
+  text-align: center;
+}
+
+.nyx-ext-dot {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--nyx-warning, #e0a43b);
+  box-shadow: 0 0 0 2px var(--nyx-popover);
+}
+
+/* Extensions that are off, and Get more. */
+.nyx-ext-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.nyx-ext-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  padding: 10px 4px 8px;
+  border-radius: 11px;
+  background: color-mix(in srgb, var(--nyx-text) 5%, transparent);
+
+  &:hover {
+    background: color-mix(in srgb, var(--nyx-text) 10%, transparent);
+  }
+
+  &[nyx-off] .nyx-ext-face {
+    filter: grayscale(1);
+    opacity: 0.45;
+  }
+
+  & b {
+    max-width: 100%;
+    overflow: hidden;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  & > span:not(.nyx-ext-face) {
+    max-width: 100%;
+    overflow: hidden;
+    color: var(--nyx-tertiary);
+    font-size: 11px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+}
+
+/* No extensions yet. */
+.nyx-ext-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 18px 16px 16px;
+  text-align: center;
+
+  & b {
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  & > span:not(.nyx-ext-empty-icon) {
+    max-width: 280px;
+    color: var(--nyx-dim);
+    font-size: 12.5px;
+  }
+}
+
+.nyx-ext-empty-icon {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 4px;
+  border-radius: 14px;
+  background: url("chrome://browser/content/nyx/icons/puzzle.svg") center / 22px no-repeat, color-mix(in srgb, var(--nyx-swatch-violet, #8b5cf6) 16%, transparent);
+  -moz-context-properties: fill;
+  fill: var(--nyx-swatch-violet, #8b5cf6);
+}
+
+.nyx-ext-primary {
+  height: 30px;
+  margin-top: 8px !important;
+  padding: 0 14px !important;
+  border-radius: 8px;
+  background: var(--nyx-accent) !important;
+  color: var(--nyx-on-accent) !important;
+  font-weight: 600 !important;
+}
+
+/* Browser's own: Blocking, Passwords, VPN. */
+.nyx-ext-built {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.nyx-ext-builtin {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  min-width: 0;
+  padding: 9px 10px !important;
+  border-radius: 11px;
+  background: color-mix(in srgb, var(--nyx-text) 5%, transparent) !important;
+  text-align: start;
+
+  &:hover {
+    background: color-mix(in srgb, var(--nyx-text) 10%, transparent) !important;
+  }
+
+  & img {
+    width: 15px;
+    height: 15px;
+    margin-bottom: 4px;
+    -moz-context-properties: fill;
+    fill: var(--nyx-tertiary);
+  }
+
+  &[nyx-on] img {
+    fill: var(--c);
+  }
+
+  & b {
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  & span {
+    color: var(--nyx-tertiary);
+    font-size: 11px;
+  }
+}
+
+/* The menu's Zoom row is one of its 32 px rows. */
+#appMenu-zoom-controls {
+  min-height: 32px;
+  max-height: 32px;
+  padding-block: 0 !important;
+
+  & toolbarbutton {
+    min-height: 24px;
+    padding-block: 0 !important;
+  }
 }

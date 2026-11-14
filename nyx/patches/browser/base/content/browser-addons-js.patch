@@ -1,5 +1,5 @@
 diff --git a/browser/base/content/browser-addons.js b/browser/base/content/browser-addons.js
-index e512a1f..2c06ce2 100644
+index e512a1f..b336999 100644
 --- a/browser/base/content/browser-addons.js
 +++ b/browser/base/content/browser-addons.js
 @@ -2247,7 +2247,9 @@ var gUnifiedExtensions = {
@@ -38,20 +38,30 @@ index e512a1f..2c06ce2 100644
      if (!CustomizationHandler.isCustomizing()) {
        if (aEvent) {
          if (
-@@ -2764,10 +2773,10 @@ var gUnifiedExtensions = {
-         // The button should directly open `about:addons` when the user does not
-         // have any active extensions listed in the unified extensions panel,
-         // and no alternative content is available for display in the panel.
-+        // Nyx: with no extensions too, and for Firefox's panel; Zen's site data panel has more.
-         const policies = this.getActivePolicies();
-         if (
+@@ -2761,34 +2770,19 @@ var gUnifiedExtensions = {
+           return;
+         }
+ 
+-        // The button should directly open `about:addons` when the user does not
+-        // have any active extensions listed in the unified extensions panel,
+-        // and no alternative content is available for display in the panel.
+-        const policies = this.getActivePolicies();
+-        if (
 -          false &&
 -          policies.length &&
-+          panel === this._panel &&
-           !this.hasExtensionsInPanel(policies) &&
-           !this.isPrivateWindowMissingExtensionsWithoutPBMAccess() &&
-           !(await this.getDisabledExtensionsInfo()).isAnyDisabled
-@@ -2782,13 +2791,12 @@ var gUnifiedExtensions = {
+-          !this.hasExtensionsInPanel(policies) &&
+-          !this.isPrivateWindowMissingExtensionsWithoutPBMAccess() &&
+-          !(await this.getDisabledExtensionsInfo()).isAnyDisabled
+-        ) {
+-          // This may happen if the user has pinned all of their extensions.
+-          // In that case, the extensions panel is empty.
+-          await BrowserAddonUI.openAddonsMgr("addons://list/extension");
+-          return;
+-        }
++        // Nyx: the panel always opens; it holds Browser's own Blocking, Passwords and VPN, and
++        // every extension, pinned or not (extpanel.js).
+       }
+ 
        this.blocklistAttentionInfo =
          await AddonManager.getBlocklistAttentionInfo();
  
@@ -71,7 +81,7 @@ index e512a1f..2c06ce2 100644
        }
  
        if (button.open) {
-@@ -2804,8 +2812,12 @@ var gUnifiedExtensions = {
+@@ -2804,8 +2798,12 @@ var gUnifiedExtensions = {
          panel.hidden = false;
          this.recordButtonTelemetry(reason || "extensions_panel_showing");
          this.ensureButtonShownBeforeAttachingPanel(panel);

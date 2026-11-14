@@ -36,6 +36,8 @@ const DUPLICATES = [
   "downie@charliemonroe.net",
 ];
 const DUPLICATES_PREF = "nyx.addons.duplicates-disabled";
+const DEFAULT_THEME = "default-theme@mozilla.org";
+const THEME_PREF = "nyx.addons.theme-reset";
 
 /** Points resource://nyx-passwords/ at the extension at `path`. */
 function alias(path) {
@@ -153,6 +155,15 @@ export const NyxAddons = {
         if (addon?.isActive) {
           await addon.disable().catch(console.error);
         }
+      }
+    }
+    // Browser's colours are the Nyx theme's (Themes): an add-on theme chosen before is put away
+    // once, for Firefox's default one, which Browser's stylesheets build on.
+    if (!Services.prefs.getBoolPref(THEME_PREF, false)) {
+      Services.prefs.setBoolPref(THEME_PREF, true);
+      const active = (await AddonManager.getAddonsByTypes(["theme"])).find(theme => theme.isActive);
+      if (active && active.id !== DEFAULT_THEME) {
+        await (await AddonManager.getAddonByID(DEFAULT_THEME))?.enable().catch(console.error);
       }
     }
   },

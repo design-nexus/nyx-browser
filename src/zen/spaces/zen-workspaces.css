@@ -23,7 +23,7 @@
   background: transparent;
   appearance: unset !important;
   height: fit-content;
-  gap: 2px;
+  gap: 6px;
   width: auto;
   justify-content: flex-start;
 
@@ -75,11 +75,12 @@
       }
     }
 
-    /* Nyx: the foot's spaces are small letter tiles; the current one is selected. */
-    width: 26px;
-    min-width: 26px;
-    height: 26px;
-    border-radius: var(--nyx-radius-small);
+    /* Nyx: the foot's spaces are small letter tiles; the current one is filled. */
+    width: 24px;
+    min-width: 24px;
+    height: 24px;
+    border-radius: 7px;
+    background-color: var(--nyx-tile);
     color: var(--nyx-dim);
     transition:
       filter 0.2s,
@@ -88,11 +89,11 @@
       transform 0.2s;
 
     &[active='true'] {
-      background-color: var(--nyx-sel-bg);
-      color: var(--nyx-text);
+      background-color: var(--nyx-accent);
+      color: var(--nyx-on-accent);
 
       & .zen-workspace-icon {
-        fill: var(--nyx-accent);
+        fill: var(--nyx-on-accent);
         fill-opacity: 1;
       }
     }
@@ -241,13 +242,14 @@
     justify-content: center;
     align-items: center;
     border-radius: 6px;
-    background: color-mix(in srgb, var(--nyx-accent) 20%, transparent);
-    color: var(--nyx-accent);
+    /* Nyx: the space's tile is filled, as the layouts' mockups have it. */
+    background: var(--nyx-accent);
+    color: var(--nyx-on-accent);
     fill-opacity: 1;
     -moz-context-properties: fill-opacity, fill;
-    fill: var(--nyx-accent);
+    fill: var(--nyx-on-accent);
     font-size: 11px;
-    font-weight: 600;
+    font-weight: 700;
 
     & img {
       width: 14px;

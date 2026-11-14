@@ -2,10 +2,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-// The Share button's dropdown: the page with Copy link, the apps Nyx Share sends its address to
-// in one click as round tiles, nearby devices, and More in Share for the full Share window. The
-// list comes from `nyx-browser-bridge share-destinations` and is sent with `share-to`
-// (share_menu.rs in the bridge). The QR code is Browser's own, drawn in the dropdown.
+// The Share button's dropdown: a card for the page (a picture of it, its title and address, Copy
+// link and Clean link), the apps Nyx Share sends its address to in one click as square tiles,
+// nearby devices as chips, and More in Share for the full Share window. The list comes from
+// `nyx-browser-bridge share-destinations` and is sent with `share-to` (share_menu.rs in the
+// bridge). The QR code is Browser's own, drawn in the dropdown.
 
 import { NyxBridge } from "chrome://browser/content/nyx/NyxBridge.sys.mjs";
 
@@ -82,29 +83,81 @@ function tint(destination) {
     : "var(--nyx-swatch-graphite, var(--nyx-dim))";
 }
 
-/** The page: its icon, title and address, and Copy link. */
+const copyText = text => Cc["@mozilla.org/widget/clipboardhelper;1"].getService(Ci.nsIClipboardHelper).copyString(text);
+
+/** The address without the tracking parts sites add (utm_source and the like). */
+function cleanAddress(url) {
+  try {
+    const stripper = Cc["@mozilla.org/url-query-string-stripper;1"].getService(Ci.nsIURLQueryStringStripper);
+    return stripper.stripForCopyOrShare(Services.io.newURI(url))?.spec ?? url;
+  } catch {
+    return url;
+  }
+}
+
+/** A picture of the page in front, the width of the card, for its top. */
+async function drawPage(document, window, box) {
+  const browser = window.gBrowser.selectedBrowser;
+  const width = browser.clientWidth;
+  if (!width) {
+    return;
+  }
+  const scale = window.devicePixelRatio || 1;
+  const w = box.clientWidth || 346, h = box.clientHeight || 110;
+  const bitmap = await browser.drawSnapshot(0, 0, width, (width * h) / w, (w * scale) / width, "white");
+  const canvas = html(document, "canvas");
+  canvas.width = bitmap.width;
+  canvas.height = bitmap.height;
+  canvas.getContext("2d").drawImage(bitmap, 0, 0);
+  box.replaceChildren(canvas);
+}
+
+/** The page: a picture of it, its title and address, Copy link and Clean link. */
 function pageCard(document, window, url) {
   const tab = window.gBrowser.selectedTab;
+  const close = () => window.CustomizableUI.hidePanelForNode(card);
   const card = html(document, "div", "nyx-share-page");
-  const fav = html(document, "span", "nyx-share-favicon");
+  card.toggleAttribute("nyx-off", !url);
+  const thumb = html(document, "div", "nyx-share-thumb");
   if (tab.getAttribute("image")) {
-    fav.append(img(document, tab.getAttribute("image")));
+    thumb.append(img(document, tab.getAttribute("image"), "nyx-share-favicon"));
+  }
+  if (url) {
+    window.requestAnimationFrame(() => drawPage(document, window, thumb).catch(() => {}));
   }
   const text = html(document, "div", "nyx-share-page-text");
-  text.append(html(document, "b", null, tab.label), html(document, "small", null, url ? new URL(url).host : ""));
-  const copy = html(document, "button", "nyx-share-copy");
-  document.l10n.setAttributes(copy, "nyx-share-copy-link");
-  copy.append(img(document, icon("copy")));
+  const where = html(document, "small", null, url ? url.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "") : "");
+  if (!url) {
+    document.l10n.setAttributes(where, "nyx-share-no-address");
+  }
+  text.append(html(document, "b", null, tab.label), where);
+  const buttons = html(document, "div", "nyx-share-page-buttons");
+  const copy = html(document, "button", "nyx-share-copy nyx-share-primary");
+  copy.id = "nyx-share-copy-link";
+  copy.append(img(document, icon("link")), html(document, "span"));
+  document.l10n.setAttributes(copy.lastChild, "nyx-share-copy");
   copy.disabled = !url;
   copy.addEventListener("click", () => {
-    Cc["@mozilla.org/widget/clipboardhelper;1"].getService(Ci.nsIClipboardHelper).copyString(url);
-    window.CustomizableUI.hidePanelForNode(card);
+    copyText(url);
+    close();
   });
-  card.append(fav, text, copy);
+  const clean = html(document, "button", "nyx-share-copy");
+  clean.id = "nyx-share-copy-clean";
+  clean.append(img(document, icon("zap")), html(document, "span"));
+  document.l10n.setAttributes(clean, "nyx-share-clean");
+  document.l10n.setAttributes(clean.lastChild, "nyx-share-clean-label");
+  clean.disabled = !url;
+  clean.addEventListener("click", () => {
+    copyText(cleanAddress(url));
+    close();
+  });
+  buttons.append(copy, clean);
+  text.append(buttons);
+  card.append(thumb, text);
   return card;
 }
 
-/** An app as a round tile in its colour. */
+/** An app as a square tile in its colour, with Share's word for why it can't now. */
 function tile(document, { name, l10nId, iconName, color, disabled, status, onPick }) {
   const button = html(document, "button", "nyx-share-tile");
   button.style.setProperty("--nyx-share-tint", color);
@@ -115,22 +168,27 @@ function tile(document, { name, l10nId, iconName, color, disabled, status, onPic
     document.l10n.setAttributes(label, l10nId);
   }
   button.append(disc, label);
+  if (disabled && status) {
+    button.append(html(document, "em", "nyx-share-why", status));
+  }
   button.disabled = !!disabled;
-  if (disabled) {
-    button.title = `${name} — ${status || "unavailable"}`;
+  if (disabled && name) {
+    button.title = status ? `${name}: ${status}` : name;
   }
   button.addEventListener("click", () => onPick(button));
   return button;
 }
 
-/** A device as a card with its state: a dot, and what Share says of it. */
+/** A device as a chip with its state: a dot, and what Share says of it. */
 function device(document, destination, onPick) {
   const button = html(document, "button", "nyx-share-device");
   button.dataset.destination = destination.id;
   button.toggleAttribute("nyx-off", !destination.available);
   const avatar = html(document, "span", "nyx-share-avatar");
   avatar.append(img(document, icon(destination.icon)), html(document, "i"));
-  button.append(avatar, html(document, "b", null, destination.name), html(document, "small", null, destination.status || ""));
+  const text = html(document, "span", "nyx-share-device-text");
+  text.append(html(document, "b", null, destination.name), html(document, "small", null, destination.status || ""));
+  button.append(avatar, text);
   button.disabled = !destination.available;
   button.addEventListener("click", () => onPick(destination, button));
   return button;
@@ -202,10 +260,12 @@ export const NyxShareMenu = {
       const box = html(document, "div", "nyx-share-qr");
       const caption = html(document, "p", "nyx-share-qr-caption");
       document.l10n.setAttributes(caption, "nyx-share-qr-caption");
-      const save = html(document, "button", "nyx-share-action");
-      document.l10n.setAttributes(save, "nyx-share-qr-save");
+      const where = html(document, "p", "nyx-share-qr-address", url.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, ""));
+      const save = html(document, "button", "nyx-share-action nyx-share-primary");
+      save.append(img(document, icon("download")), html(document, "span"));
+      document.l10n.setAttributes(save.lastChild, "nyx-share-qr-save");
       save.disabled = true;
-      body.append(head, pageCard(document, window, url), box, caption, save);
+      body.append(head, box, caption, where, save);
       try {
         const data = await lazy.QRCodeGenerator.generateQRCode(url);
         box.append(img(document, data));
@@ -225,17 +285,14 @@ export const NyxShareMenu = {
 
     const fill = (list, error) => {
       body.replaceChildren(pageCard(document, window, url));
-      if (error) {
-        body.append(note(document, null, error));
-        return;
-      }
       const tiles = html(document, "div", "nyx-share-tiles");
-      tiles.append(
-        tile(document, { l10nId: "nyx-share-qr-tile", iconName: "qr", color: "var(--nyx-swatch-violet, var(--nyx-accent))", disabled: !url, onPick: showQR })
-      );
+      const qr = tile(document, { l10nId: "nyx-share-qr-tile", iconName: "qr", color: "var(--nyx-swatch-violet, var(--nyx-accent))", disabled: !url, onPick: showQR });
+      qr.id = "nyx-share-qr-tile";
       body.append(tiles);
-      if (!list) {
-        body.append(note(document, "nyx-share-looking"));
+      // Without Share, or until it answers, the QR code is all there is.
+      if (error || !list) {
+        tiles.append(qr);
+        body.append(error ? note(document, null, error) : note(document, "nyx-share-looking"));
         return;
       }
       const apps = list.filter(d => d.section === "apps" && d.icon !== SHARE_QR);
@@ -247,17 +304,22 @@ export const NyxShareMenu = {
             iconName: d.icon,
             color: tint(d),
             disabled: !d.available || !url,
-            status: d.status,
+            status: d.available ? "" : d.status,
             onPick: button => pick(d, button),
           })
         );
       }
+      tiles.append(qr);
       if (devices.length) {
         const header = document.createXULElement("label");
         header.className = "subview-subheader nyx-share-subheader";
         document.l10n.setAttributes(header, "nyx-share-devices");
         const row = html(document, "div", "nyx-share-devices");
-        row.append(...devices.map(d => device(document, d, pick)));
+        for (const d of devices) {
+          const chip = device(document, d, pick);
+          chip.disabled ||= !url;
+          row.append(chip);
+        }
         body.append(header, row);
       }
       if (!apps.length && !devices.length) {

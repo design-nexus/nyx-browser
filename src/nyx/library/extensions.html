@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<!-- This Source Code Form is subject to the terms of the Mozilla Public
+   - License, v. 2.0. If a copy of the MPL was not distributed with this
+   - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
+<!-- about:extensions (NyxAbout.sys.mjs): Browser's Extensions page, a page like the Library, with
+     what's built into Browser, your extensions, themes, plugins and their site access. -->
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src chrome: resource:; img-src chrome: resource: moz-extension: page-icon: data: jar: file:; style-src chrome: resource: 'unsafe-inline'; object-src 'none'"
+    />
+    <title data-l10n-id="nyx-ext-page-title"></title>
+    <link rel="icon" href="chrome://browser/content/nyx/icons/puzzle.svg" />
+    <link rel="localization" href="browser/nyx-library.ftl" />
+    <link rel="localization" href="browser/nyx-browser.ftl" />
+    <link rel="stylesheet" href="chrome://browser/content/nyx/library/page.css" />
+    <script type="module" src="chrome://browser/content/nyx/library/extensions.js"></script>
+  </head>
+  <body>
+    <nav class="nav">
+      <div class="nav-title">
+        <img src="chrome://browser/content/nyx/icons/puzzle.svg" alt="" />
+        <b data-l10n-id="nyx-ext-page-title"></b>
+      </div>
+      <button class="nav-item" data-section="extensions">
+        <img src="chrome://browser/content/nyx/icons/puzzle.svg" alt="" /><span data-l10n-id="nyx-ext-page-extensions"></span><span class="count"></span>
+      </button>
+      <button class="nav-item" data-section="themes">
+        <img src="chrome://browser/content/nyx/icons/palette.svg" alt="" /><span data-l10n-id="nyx-ext-page-themes"></span><span class="count"></span>
+      </button>
+      <button class="nav-item" data-section="plugins">
+        <img src="chrome://browser/content/nyx/icons/play.svg" alt="" /><span data-l10n-id="nyx-ext-page-plugins"></span><span class="count"></span>
+      </button>
+      <button class="nav-item" data-section="access">
+        <img src="chrome://browser/content/nyx/icons/globe.svg" alt="" /><span data-l10n-id="nyx-ext-page-access"></span><span class="count"></span>
+      </button>
+      <button class="nav-item" data-section="shortcuts">
+        <img src="chrome://browser/content/nyx/icons/command.svg" alt="" /><span data-l10n-id="nyx-ext-page-shortcuts"></span><span class="count"></span>
+      </button>
+    </nav>
+    <main>
+      <div class="top">
+        <label class="find">
+          <img src="chrome://browser/content/nyx/icons/search.svg" alt="" />
+          <input id="find" type="search" data-l10n-id="nyx-ext-page-find" />
+        </label>
+        <div id="actions" class="actions"></div>
+      </div>
+      <div id="content"></div>
+    </main>
+  </body>
+</html>

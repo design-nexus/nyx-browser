@@ -25,6 +25,9 @@ const open = name => gBrowser.addTab(url(name), { triggeringPrincipal: P, skipAn
 const box = e => { const b = e.getBoundingClientRect(); return { x: b.x, y: b.y, w: b.width, h: b.height }; };
 const normal = () => gBrowser.visibleTabs.filter(t => !t.pinned && !t.hasAttribute("zen-empty-tab") && !t.group && t.label !== "Base");
 const names = list => list.map(t => t.label);
+/** What's shown for a tab: Browser's own row in its sidebar (tablist.js), else the tab itself. */
+const view = t => (document.documentElement.hasAttribute("nyx-own-tabs") && [...document.querySelectorAll(".nyx-tl-tab, .nyx-tl-ess")].find(r => r.tab === t)) || t;
+const strip = () => document.documentElement.hasAttribute("nyx-own-tabs") ? document.querySelector("#nyx-tablist .nyx-tl-scroll") : document.getElementById("tabbrowser-tabs");
 /** Waits for a scroll animation to end, then returns where the element came to rest. */
 const settled = async e => {
   let last = null;
@@ -57,6 +60,8 @@ function fire(type, target, x, y, dt) {
 /** Drags `from` across `to`, ending past its middle on the far side of the row or column. */
 async function drag(from, to, before) {
   const vertical = gBrowser.tabContainer.verticalMode;
+  from = view(from);
+  to = view(to);
   const dt = new DataTransfer();
   const a = box(from), b = box(to);
   const sx = a.x + a.w / 2, sy = a.y + a.h / 2;
@@ -133,7 +138,7 @@ def layout(b, horizontal):
         const list = normal();
         return { tabs: list.map(box), names: names(list), win: [innerWidth, innerHeight], orient: gBrowser.tabContainer.getAttribute("orient"),
                  page: box(document.getElementById("tabbrowser-tabbox")), strip: box(document.getElementById("tabbrowser-tabs")),
-                 bar: box(document.getElementById("nav-bar")) };
+                 bar: box(document.getElementById("nav-bar")), rail: document.getElementById("nyx-rail") && box(document.getElementById("nyx-rail")) };
         """,
     )
     check(d["orient"] == ("horizontal" if horizontal else "vertical"), "wrong orient", d["orient"])
@@ -145,7 +150,10 @@ def layout(b, horizontal):
     if horizontal:
         check(d["strip"]["y"] + d["strip"]["h"] <= d["bar"]["y"] + 1, "the tabs aren't above the address bar, as Firefox has them", d)
         check(d["bar"]["y"] + d["bar"]["h"] <= d["page"]["y"] + 1, "the top bar overlaps the page", d)
-        check(d["page"]["w"] > d["win"][0] - 40, "the page doesn't span the window", d["page"])
+        # Workbench's rail of workspaces and Library is beside the page, and only that.
+        rail = d["rail"]["w"] if d["rail"] else 0
+        check(d["page"]["w"] > d["win"][0] - 40 - rail, "the page doesn't span the window", d)
+        check(not rail or d["page"]["x"] >= d["rail"]["x"] + rail - 1, "the rail overlaps the page", d)
     else:
         check(d["page"]["x"] >= d["strip"]["x"] + d["strip"]["w"] - 1, "the sidebar overlaps the page", d)
 
@@ -354,10 +362,12 @@ def overflow(b, horizontal):
         const list = normal();
         const strip = box(document.getElementById("tabbrowser-tabs"));
         gBrowser.selectedTab = list[0];
-        const seenFirst = await settled(list[0]);
+        await sleep(300);
+        const seenFirst = await settled(view(list[0]));
         const target = list.at(-1);
         gBrowser.selectedTab = target;
-        const seen = await settled(target);
+        await sleep(300);
+        const seen = await settled(view(target));
         const boxes = list.slice(0, 5).map(box);
         const scroll = gZenWorkspaces.activeScrollbox.scrollbox;
         const wheel = async dy => {
@@ -620,7 +630,8 @@ def second_window(b, horizontal):
           attr: doc.documentElement.hasAttribute("nyx-tabs-horizontal"),
           orient: win.gBrowser.tabContainer.getAttribute("orient"),
           scroll: win.gZenWorkspaces.activeScrollbox?.getAttribute("orient"),
-          nyx: !!win.NyxSidebar && !!win.NyxAppearance,
+          nyx: !!win.NyxSidebar && !!win.NyxAppearance && !!win.NyxLayout,
+          rail: doc.getElementById("nyx-rail")?.getBoundingClientRect().width ?? 0,
           page: (() => { const b = doc.getElementById("tabbrowser-tabbox").getBoundingClientRect(); return { x: b.x, y: b.y, w: b.width, h: b.height }; })(),
           size: [win.innerWidth, win.innerHeight],
         };
@@ -634,7 +645,7 @@ def second_window(b, horizontal):
     check(d["attr"] == horizontal and d["orient"] == want and d["scroll"] == want, "a second window has the wrong orientation", d)
     check(d["nyx"], "a second window didn't load Browser's own chrome", d)
     if horizontal:
-        check(d["page"]["w"] > d["size"][0] - 40, "a second window's page doesn't span it", d)
+        check(d["page"]["w"] > d["size"][0] - 40 - d["rail"], "a second window's page doesn't span it", d)
 
 
 
@@ -711,15 +722,16 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--shots")
     ap.add_argument("--only")
-    ap.add_argument("--orientation", choices=["vertical", "horizontal"])
+    ap.add_argument("--orientation", choices=["vertical", "focus", "horizontal"])
     opts = ap.parse_args()
     results = []
 
-    runs = (("vertical", False, "expanded"), ("vertical rail", False, "compact"), ("horizontal", True, "auto"))
-    for name, horizontal, sidebar in runs:
+    # Studio with its sidebar expanded and compact, Focus, and Workbench (tabs in a row).
+    runs = (("vertical", False, "expanded", "studio"), ("vertical rail", False, "compact", "studio"), ("focus", False, "expanded", "focus"), ("horizontal", True, "auto", "workbench"))
+    for name, horizontal, sidebar, layout in runs:
         if opts.orientation and opts.orientation != name.split()[0]:
             continue
-        with Browser({"zen.tabs.vertical": not horizontal, "nyx.sidebar.mode": sidebar}) as b:
+        with Browser({"nyx.layout": layout, "nyx.sidebar.mode": sidebar}) as b:
             for test in TESTS:
                 if opts.only and opts.only != test.__name__:
                     continue

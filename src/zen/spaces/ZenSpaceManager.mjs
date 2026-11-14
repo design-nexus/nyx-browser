@@ -1048,17 +1048,29 @@ class nsZenWorkspaces {
     // Firefox then loads the homepage into it (only the first URL if there
     // are several, see loadOneOrMoreURIs). If that is a real page, treat the
     // tab like any other initial tab instead of removing it, or the first
-    // homepage would be lost.
+    // homepage would be lost — except when restoring last session, where an
+    // extra homepage tab would stack on top of the restored ones.
     const startupURI = await gBrowserInit.uriToLoadPromise;
+    const restoringSession =
+      Services.prefs.getIntPref("browser.startup.page", 1) === 3;
     if (
       this._tabToRemoveForEmpty &&
       !this._initialTab &&
       typeof startupURI === "string" &&
       !isInitialPage(startupURI.split("|")[0])
     ) {
-      delete this._tabToRemoveForEmpty._markedForReplacement;
-      this._initialTab = this._tabToRemoveForEmpty;
-      delete this._tabToRemoveForEmpty;
+      const hasRestoredTabs =
+        restoringSession &&
+        gBrowser.tabs.some(
+          tab =>
+            tab !== this._tabToRemoveForEmpty &&
+            !tab.hasAttribute("zen-empty-tab")
+        );
+      if (!hasRestoredTabs) {
+        delete this._tabToRemoveForEmpty._markedForReplacement;
+        this._initialTab = this._tabToRemoveForEmpty;
+        delete this._tabToRemoveForEmpty;
+      }
     }
 
     let removedEmptyTab = false;
@@ -1113,11 +1125,29 @@ class nsZenWorkspaces {
         cleanup();
       } else {
         if (gBrowser.selectedTab === this._tabToRemoveForEmpty) {
-          this.log(
-            "Selecting empty tab because startup page didnt select a valid tab"
-          );
-          this.selectEmptyTab();
-          initialTabWasEmpty = true;
+          // On "Open last session", prefer a restored tab over selectEmptyTab()
+          // (which opens the homepage when replace-newtab is off). On "Open the
+          // start page", always take the homepage path.
+          const restored =
+            restoringSession &&
+            tabs.find(
+              tab =>
+                tab !== this._tabToRemoveForEmpty &&
+                !tab.hasAttribute("zen-empty-tab")
+            );
+          if (restored) {
+            this.log(
+              "Selecting a restored tab instead of opening the homepage"
+            );
+            gBrowser.selectedTab =
+              gZenGlanceManager.getTabOrGlanceParent(restored);
+          } else {
+            this.log(
+              "Selecting empty tab because startup page didnt select a valid tab"
+            );
+            this.selectEmptyTab();
+            initialTabWasEmpty = true;
+          }
         }
         this.log("Removing empty tab added by startup page");
         this._removedByStartupPage = true;
@@ -1164,7 +1194,11 @@ class nsZenWorkspaces {
       once: true,
     });
 
+    // Only strip duplicate start-page tabs when we are NOT restoring the last
+    // session. With "Open last session", every restored tab stays — including
+    // homepage URLs the user already had open.
     if (
+      !restoringSession &&
       !gZenVerticalTabsManager._canReplaceNewTab &&
       !Services.prefs.getBoolPref("zen.workspaces.continue-where-left-off")
     ) {
@@ -2392,28 +2426,67 @@ class nsZenWorkspaces {
       item.remove();
     }
     const active = this.activeWorkspace;
+    const HTML = "http://www.w3.org/1999/xhtml";
+    const html = (tag, cls, text = "") => {
+      const node = document.createElementNS(HTML, tag);
+      node.className = cls;
+      node.textContent = text;
+      return node;
+    };
+    const tabsOf = uuid =>
+      this.allStoredTabs.filter(
+        tab =>
+          tab.getAttribute("zen-workspace-id") === uuid &&
+          !tab.hasAttribute("zen-empty-tab") &&
+          !tab.hasAttribute("zen-essential")
+      );
+    // Nyx: each space is a card, as the layouts' mockups have it: its tile, name, how many
+    // tabs it has, and some of their icons.
     this.getWorkspaces().forEach((workspace, index) => {
-      const item = document.createXULElement("menuitem");
-      item.className = "nyx-workspaces-menu-space";
-      item.setAttribute("type", "checkbox");
-      item.setAttribute("label", workspace.name);
-      if (workspace.uuid === active) {
-        item.setAttribute("checked", "true");
-      }
+      const tabs = tabsOf(workspace.uuid);
+      const card = html("div", "nyx-workspaces-menu-space");
+      card.setAttribute("role", "menuitemradio");
+      card.setAttribute("aria-checked", String(workspace.uuid === active));
+      card.toggleAttribute("current", workspace.uuid === active);
+      const icon = this.getWorkspaceIcon(workspace);
+      const tile = html("span", "nyx-wsm-tile", icon && !icon.endsWith(".svg") ? icon : this.workspaceInitial(workspace));
+      const text = html("span", "nyx-wsm-text");
       const shortcut =
         index < 10 &&
         lazy.ZenKeyboardShortcuts.getShortcutDisplayFromCommand(
           window,
           `cmd_zenWorkspaceSwitch${index + 1}`
         );
-      if (shortcut) {
-        item.setAttribute("acceltext", shortcut);
+      text.append(html("b", "", workspace.name), html("span", "", `${tabs.length} ${tabs.length === 1 ? "tab" : "tabs"}${shortcut ? ` · ${shortcut}` : ""}`));
+      const icons = html("span", "nyx-wsm-icons");
+      for (const tab of tabs.slice(0, 3)) {
+        const img = document.createElementNS(HTML, "img");
+        img.src = tab.getAttribute("image") || "chrome://global/skin/icons/defaultFavicon.svg";
+        img.alt = "";
+        icons.append(img);
       }
-      item.addEventListener("command", () =>
-        this.changeWorkspaceWithID(workspace.uuid)
-      );
-      separator.before(item);
+      card.append(tile, text, icons);
+      card.addEventListener("click", () => {
+        menu.hidePopup();
+        this.changeWorkspaceWithID(workspace.uuid);
+      });
+      separator.before(card);
     });
+    // Nyx: Move this tab to another space.
+    const move = document.getElementById("nyx-workspaces-menu-move-popup");
+    move?.replaceChildren(
+      ...this.getWorkspaces()
+        .filter(workspace => workspace.uuid !== active)
+        .map(workspace => {
+          const item = document.createXULElement("menuitem");
+          item.setAttribute("label", workspace.name);
+          item.addEventListener("command", () =>
+            this.moveTabsToWorkspace([gBrowser.selectedTab], workspace.uuid)
+          );
+          return item;
+        })
+    );
+    document.getElementById("nyx-workspaces-menu-move")?.toggleAttribute("disabled", !move?.childElementCount);
     document.l10n.setAttributes(
       document.getElementById("nyx-workspaces-menu-edit"),
       "nyx-workspace-menu-edit",
@@ -2422,10 +2495,20 @@ class nsZenWorkspaces {
     menu.openPopup(anchor, "after_start", 8, 0);
   }
 
-  /** Nyx: what the space's menus hang from: its chip with tabs in a row, else its row. */
+  /**
+   * Nyx: what the space's menus hang from: its chip with tabs in a row, or Workbench's rail
+   * where it stands in for the chip (src/nyx/modules/layout.js), else its row.
+   */
   get workspaceMenuAnchor() {
-    return Services.prefs.getBoolPref("zen.tabs.vertical", true)
-      ? this.activeWorkspaceIndicator
+    if (Services.prefs.getBoolPref("zen.tabs.vertical", true)) {
+      // Browser's own tab list has the space's header (src/nyx/modules/tablist.js).
+      return document.documentElement.hasAttribute("nyx-own-tabs")
+        ? document.getElementById("nyx-tl-space")
+        : this.activeWorkspaceIndicator;
+    }
+    const rail = document.getElementById("nyx-rail");
+    return rail?.getBoundingClientRect().width
+      ? document.getElementById("nyx-rail-switcher")
       : document.getElementById("nyx-workspace-chip");
   }
 

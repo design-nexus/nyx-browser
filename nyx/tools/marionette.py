@@ -6,7 +6,8 @@ the folder named by NYX_BROWSER_DIR (an installed copy, a release tarball).
 
 Its theme comes from a stand-in for `nyx-browser-bridge theme --watch` that serves whatever the
 test last wrote with write_tokens(), so tests can set any theme and change it live. The stand-in
-also answers the Share dropdown's `share-destinations`, from share-destinations.json in the home
+also answers the Share dropdown's `share-destinations` (and passes `themes` to the real bridge in
+nyx/target/debug), from share-destinations.json in the home
 folder (Share is unavailable without it), and logs each `share-to` to share-sent.log there. Open
 in's `browsers` come from browsers.json there (none without it), and each `open-in` goes to
 openin-sent.log.
@@ -63,6 +64,11 @@ if args[:1] == ["open-in"]:
         log.write(" ".join(args[1:]) + "\\n")
     print("{}")
     sys.exit(0)
+if args[:1] == ["themes"]:
+    # The Nyx themes as the real bridge lists them (nyx/target, built by cargo), reading this
+    # home's appearance.json; the stand-in theme above stays the test's.
+    real = os.path.join(REAL_BRIDGE_DIR, "nyx-browser-bridge")
+    os.execv(real, [real, "themes"])
 if args[:1] == ["video-version"]:
     print(json.dumps({"version": "2026.08.19", "path": "/usr/bin/yt-dlp"}))
     sys.exit(0)
@@ -173,7 +179,7 @@ class Browser:
                 xpi.symlink_to(self.passwords)
         bridge = self.home / "bin/nyx-browser-bridge"
         bridge.parent.mkdir(parents=True, exist_ok=True)
-        bridge.write_text(FAKE_BRIDGE.replace("sys.argv[1]", json.dumps(str(self.tokens_file))))
+        bridge.write_text(FAKE_BRIDGE.replace("sys.argv[1]", json.dumps(str(self.tokens_file))).replace("REAL_BRIDGE_DIR", json.dumps(str(ROOT / "nyx/target/debug"))))
         bridge.chmod(0o755)
         env = {
             **os.environ,
@@ -190,6 +196,8 @@ class Browser:
             "NYX_BROWSER_BRIDGE": str(bridge),
             **self.extra_env,
         }
+        # A variable given as None isn't set at all (MOZ_HEADLESS counts even when empty).
+        env = {key: value for key, value in env.items() if value is not None}
         self.proc = subprocess.Popen(
             [str(self.runtime / "nyx-browser"), "--marionette", "--no-remote", "--profile", str(self.profile)],
             env=env,

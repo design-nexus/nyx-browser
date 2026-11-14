@@ -9,7 +9,9 @@
  * Ctrl+B make a manual choice for every window, which holds until Automatic is chosen again,
  * and so do Zen's own compact-mode controls: turning compact mode on chooses hidden, and turning
  * it off goes back to the mode before. With horizontal tabs there's no tab sidebar; Firefox's
- * sidebar still holds its panels, and compact mode is Zen's own. */
+ * sidebar still holds its panels, and compact mode is Zen's own. Focus's sidebar holds the
+ * address (layout.js), so it's never compact: there Compact is Expanded, Automatic is Expanded or
+ * Hidden, and Hidden keeps the address in the sidebar that slides over the page. */
 {
   const PREF = "nyx.sidebar.mode";
   const VERTICAL = "zen.tabs.vertical";
@@ -25,10 +27,13 @@
   const vertical = () => Services.prefs.getBoolPref(VERTICAL, true);
   let shown = null;
 
+  const focus = () => window.NyxLayout?.current() === "focus";
+
   /** The mode this window shows now. */
   function effective() {
     const chosen = mode();
-    return chosen === "auto" ? automatic() : chosen;
+    const shows = chosen === "auto" ? automatic() : chosen;
+    return shows === "compact" && focus() ? "expanded" : shows;
   }
 
   /** Automatic's mode for this window's width. */
@@ -37,6 +42,9 @@
     const expandedFrom = Services.prefs.getIntPref(EXPANDED_FROM, 1400);
     const compactFrom = Services.prefs.getIntPref(COMPACT_FROM, 900);
     const slack = edge => (shown && shown !== "row" ? edge - HYSTERESIS : edge);
+    if (focus()) {
+      return width >= (shown === "hidden" ? compactFrom + HYSTERESIS : slack(compactFrom)) ? "expanded" : "hidden";
+    }
     if (width >= (shown === "expanded" ? slack(expandedFrom) : expandedFrom)) {
       return "expanded";
     }
@@ -89,8 +97,9 @@
       expected = hidden;
       gZenCompactModeManager.preference = hidden;
     }
-    if (!hidden) {
-      const expanded = want === "expanded";
+    // Focus's sidebar stays expanded when hidden, so it keeps the address as it slides in.
+    if (!hidden || focus()) {
+      const expanded = want === "expanded" || focus();
       if (gZenVerticalTabsManager.nyxSidebarExpanded !== expanded) {
         gZenVerticalTabsManager.nyxSidebarExpanded = expanded;
         gZenVerticalTabsManager._updateEvent();
@@ -104,6 +113,8 @@
     if (now === "hidden") {
       gNavToolbox.toggleAttribute("zen-user-show", !gNavToolbox.hasAttribute("zen-user-show"));
       reflectState("hidden");
+    } else if (focus()) {
+      Services.prefs.setStringPref(PREF, "hidden");
     } else {
       Services.prefs.setStringPref(PREF, now === "expanded" ? "compact" : "expanded");
     }
@@ -160,7 +171,7 @@
     }
   }
 
-  const prefs = [PREF, VERTICAL, EXPANDED_FROM, COMPACT_FROM];
+  const prefs = [PREF, VERTICAL, EXPANDED_FROM, COMPACT_FROM, "nyx.layout"];
   window.addEventListener("keydown", onKey, true);
   for (const pref of prefs) {
     Services.prefs.addObserver(pref, applySoon);

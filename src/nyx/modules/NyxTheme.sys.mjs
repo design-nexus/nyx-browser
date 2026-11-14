@@ -76,6 +76,34 @@ class Theme {
     this.#process?.stdin.write("\n").catch(() => {});
   }
 
+  /**
+   * The Nyx themes Browser can show, what following the system shows, Browser's own choices and
+   * the accent swatches (`nyx-browser-bridge themes`).
+   */
+  async themes() {
+    const { NyxBridge } = ChromeUtils.importESModule("chrome://browser/content/nyx/NyxBridge.sys.mjs");
+    return NyxBridge.run(["themes"], "Browser's theme bridge isn't installed.");
+  }
+
+  /** Browser's own theme, accent and density (appearance.json); `follow` and "" keep the system's. */
+  async choices() {
+    try {
+      return { theme: "follow", accent: "", density: "", ...(await IOUtils.readJSON(appearanceFile())) };
+    } catch {
+      return { theme: "follow", accent: "", density: "" };
+    }
+  }
+
+  /** Saves some of Browser's own choices and restyles every window and page with them. */
+  async choose(change) {
+    const saved = { ...(await this.choices()), ...change };
+    const file = appearanceFile();
+    await IOUtils.makeDirectory(PathUtils.parent(file), { ignoreExisting: true });
+    await IOUtils.writeJSON(file, saved, { tmpPath: `${file}.tmp` });
+    this.refresh();
+    return saved;
+  }
+
   #start() {
     if (this.#starting || this.#starts >= MAX_STARTS) {
       return;
@@ -155,6 +183,12 @@ function pageSheet(css) {
   }
 }
 `;
+}
+
+/** Where Browser keeps its own appearance choices; the bridge reads the same file. */
+export function appearanceFile() {
+  const config = Services.env.get("XDG_CONFIG_HOME") || PathUtils.join(Services.env.get("HOME"), ".config");
+  return PathUtils.join(config, "nyx-browser", "appearance.json");
 }
 
 /** Named by NYX_BROWSER_BRIDGE, else beside the browser as a package installs it, else on PATH. */

@@ -15,8 +15,8 @@ const lazy = {};
 
 const DYNAMIC_TYPE_NAME = "zen-actions";
 
-// The suggestion index of the actions row within the urlbar results.
-const MAX_RECENT_ACTIONS = 5;
+// Nyx: how many commands show among the other results; "/" shows them all.
+const MAX_UNPREFIXED_ACTIONS = 3;
 
 const MINIMUM_QUERY_SCORE = 92;
 const MINIMUM_PREFIXED_QUERY_SCORE = 30;
@@ -36,6 +36,8 @@ ChromeUtils.defineESModuleGetters(lazy, {
   ZenKeyboardShortcuts:
     "resource:///modules/zen/kbs/ZenKeyboardShortcuts.sys.mjs",
 });
+
+ChromeUtils.defineLazyGetter(lazy, "nyxL10n", () => new Localization(["browser/nyx-browser.ftl"], true));
 
 XPCOMUtils.defineLazyPreferenceGetter(
   lazy,
@@ -203,6 +205,59 @@ export class ZenUrlbarProviderGlobalActions extends UrlbarProvider {
     return actions;
   }
 
+  /**
+   * Nyx: commands about the page and tab in front: split it with another tab, move it to another
+   * workspace, clear the site's data.
+   *
+   * @param {Window} window The window to check available actions for.
+   * @returns {Array} Those that can be done now.
+   */
+  #getNyxActions(window) {
+    const tab = window.gBrowser.selectedTab;
+    if (tab.hasAttribute("zen-empty-tab")) {
+      return [];
+    }
+    const label = (id, args) => lazy.nyxL10n.formatValueSync(id, args);
+    const icons = "chrome://browser/skin/zen-icons";
+    let actions = [];
+    if (!tab.hasAttribute("zen-essential") && !tab.splitView) {
+      for (const other of window.gBrowser.visibleTabs) {
+        if (other === tab || other.hasAttribute("zen-empty-tab") || other.hasAttribute("zen-essential") || other.splitView) {
+          continue;
+        }
+        actions.push({
+          label: label("nyx-action-split-with", { title: other.label }),
+          commandId: `nyx:split-with`,
+          icon: `${icons}/split.svg`,
+          command: win => win.gZenViewSplitter.splitTabs([tab, other], "vsep", 0),
+        });
+      }
+    }
+    if (!window.gZenWorkspaces.privateWindowOrDisabled && !tab.hasAttribute("zen-essential")) {
+      const here = window.gZenWorkspaces.activeWorkspace;
+      for (const space of window.gZenWorkspaces.getWorkspaces() ?? []) {
+        if (space.uuid !== here) {
+          actions.push({
+            label: label("nyx-action-move-to-space", { name: space.name }),
+            commandId: `nyx:move-to-space`,
+            icon: `${icons}/selectable/grid-2x2.svg`,
+            command: win => win.gZenWorkspaces.moveTabToWorkspace(tab, space.uuid),
+          });
+        }
+      }
+    }
+    const uri = window.gBrowser.currentURI;
+    if (uri.schemeIs("http") || uri.schemeIs("https")) {
+      actions.push({
+        label: label("nyx-action-clear-site-data", { host: uri.displayHost.replace(/^www\./, "") }),
+        commandId: `nyx:clear-site-data`,
+        icon: `${icons}/trash.svg`,
+        command: win => win.gIdentityHandler.clearSiteData(new win.MouseEvent("click")),
+      });
+    }
+    return actions;
+  }
+
   async #getExtensionActions(window) {
     const addons = await lazy.AddonManager.getAddonsByTypes(["extension"]);
     if (window.gBrowser.selectedTab.hasAttribute("zen-empty-tab")) {
@@ -240,6 +295,7 @@ export class ZenUrlbarProviderGlobalActions extends UrlbarProvider {
     return globalActions
       .filter(a => a.isAvailable(window))
       .concat(this.#getWorkspaceActions(window))
+      .concat(this.#getNyxActions(window))
       .concat(await this.#getExtensionActions(window));
   }
 
@@ -278,7 +334,7 @@ export class ZenUrlbarProviderGlobalActions extends UrlbarProvider {
     if (isPrefixed) {
       return results.map(r => r.action);
     }
-    return results.slice(0, MAX_RECENT_ACTIONS).map(r => r.action);
+    return results.slice(0, MAX_UNPREFIXED_ACTIONS).map(r => r.action);
   }
 
   /**
@@ -406,9 +462,8 @@ export class ZenUrlbarProviderGlobalActions extends UrlbarProvider {
         payload,
         highlights: payloadHighlights,
         heuristic: shouldBePrioritized,
-        suggestedIndex: !shouldBePrioritized
-          ? zenUrlbarResultsLearner.getDeprioritizeIndex(action.commandId)
-          : undefined,
+        // Nyx: commands come after the pages, as their own group.
+        suggestedIndex: !shouldBePrioritized ? -1 : undefined,
       });
       result.commandId = action.commandId;
       if (!(isPrefixed && query.length < 2)) {
@@ -418,21 +473,20 @@ export class ZenUrlbarProviderGlobalActions extends UrlbarProvider {
       }
       finalResults.push(result);
     }
-    let i = 0;
-    let shown = 0;
-    zenUrlbarResultsLearner
-      .sortCommandsByPriority(finalResults)
-      .forEach(result => {
-        if (isPrefixed && !isWorkspaceSearch && i === 0 && query.length > 1) {
-          result.heuristic = true;
-          delete result.suggestedIndex;
-        } else if (typeof result.suggestedIndex === "number") {
-          result.suggestedIndex += shown;
-          shown++;
-        }
-        addCallback(this, result);
-        i++;
-      });
+    const sorted = zenUrlbarResultsLearner.sortCommandsByPriority(finalResults);
+    // Nyx: places counted from the end, the best command first among them (results that share a
+    // place from the end come out in reverse).
+    let fromEnd = sorted.filter(result => typeof result.suggestedIndex === "number").length;
+    sorted.forEach((result, i) => {
+      if (isPrefixed && !isWorkspaceSearch && i === 0 && query.length > 1) {
+        result.heuristic = true;
+        delete result.suggestedIndex;
+      }
+      if (typeof result.suggestedIndex === "number") {
+        result.suggestedIndex = -fromEnd--;
+      }
+      addCallback(this, result);
+    });
   }
 
   /**

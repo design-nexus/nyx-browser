@@ -1,0 +1,81 @@
+diff --git a/browser/components/urlbar/content/UrlbarView.mjs b/browser/components/urlbar/content/UrlbarView.mjs
+index eece106..ea46278 100644
+--- a/browser/components/urlbar/content/UrlbarView.mjs
++++ b/browser/components/urlbar/content/UrlbarView.mjs
+@@ -3259,68 +3259,24 @@ export class UrlbarView {
+    *   returns an l10n object for the label's l10n string: `{ id, args }`
+    */
+   #rowLabel(row) {
+-    if (!UrlbarPrefs.get("groupLabels.enabled")) {
+-      return null;
+-    }
+-
+-    if (row.result.rowLabel) {
+-      return row.result.rowLabel;
+-    }
+-
+-    let engineName =
+-      row.result.payload.engine || this.controller.engineStore.default?.name;
+-
+-    if (row.result.payload.trending) {
+-      return {
+-        id: "urlbar-group-trending",
+-        args: { engine: engineName },
+-      };
+-    }
+-
+-    if (row.result.providerName == "UrlbarProviderRecentSearches") {
+-      return { id: "urlbar-group-recent-searches" };
+-    }
+-
+-    if (row.result.providerName == "UrlbarProviderQuickSuggest") {
+-      return row.result.isBestMatch
+-        ? null
+-        : { id: "urlbar-group-firefox-suggest" };
+-    }
+-
+-    if (row.result.isBestMatch) {
+-      return { id: "urlbar-group-best-match" };
+-    }
+-
+-    // Show "Shortcuts" if there's another result before that group.
+-    if (
+-      row.result.providerName == "UrlbarProviderTopSites" &&
+-      this.#queryContext.results[0].providerName != "UrlbarProviderTopSites"
+-    ) {
+-      return { id: "urlbar-group-shortcuts" };
+-    }
+-
++    // Nyx: Browser's groups (open tabs, bookmarks and history, commands) in place of Firefox's.
++    // Search suggestions and the first row have none.
+     if (!this.#queryContext?.searchString || row.result.heuristic) {
+       return null;
+     }
+-
+     switch (row.result.type) {
+-      case UrlbarShared.RESULT_TYPE.KEYWORD:
+-      case UrlbarShared.RESULT_TYPE.REMOTE_TAB:
+       case UrlbarShared.RESULT_TYPE.TAB_SWITCH:
++      case UrlbarShared.RESULT_TYPE.REMOTE_TAB:
++        return { id: "nyx-urlbar-group-tabs" };
+       case UrlbarShared.RESULT_TYPE.URL:
+-        return { id: "urlbar-group-firefox-suggest" };
+-      case UrlbarShared.RESULT_TYPE.SEARCH:
+-        return {
+-          id: "urlbar-group-search-suggestions",
+-          args: { engine: engineName },
+-        };
++      case UrlbarShared.RESULT_TYPE.KEYWORD:
++        return { id: "nyx-urlbar-group-places" };
+       case UrlbarShared.RESULT_TYPE.DYNAMIC:
+-        if (row.result.providerName == "quickactions") {
+-          return { id: "urlbar-group-quickactions" };
++        if (row.result.providerName == "ZenUrlbarProviderGlobalActions") {
++          return { id: "nyx-urlbar-group-commands" };
+         }
+         break;
+     }
+-
+     return null;
+   }
+ 

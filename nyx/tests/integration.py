@@ -325,12 +325,13 @@ def test_toolbar_buttons(rig):
         return ["nyx-share-button", "nyx-capture-button", "nyx-assistant-button", "nyx-settings-button"].map(id => {
           const e = document.getElementById(id);
           const r = e?.getBoundingClientRect();
-          return { id, shown: !!e && r.width > 0, area: e?.closest("toolbar")?.id, tip: e?.getAttribute("tooltiptext") };
+          return { id, shown: !!e && r.width > 0, more: !!e?.closest("#widget-overflow-fixed-list"), tip: e?.getAttribute("tooltiptext") };
         });
         """
     )
+    # Capture and Assistant start in More tools; Share and Settings are in the top bar.
     for button in d:
-        check(button["shown"], "a toolbar button is missing", button)
+        check(button["more"] if button["id"] in ("nyx-capture-button", "nyx-assistant-button") else button["shown"], "a toolbar button is missing", button)
         check(button["tip"], "a toolbar button has no tooltip", button)
     keys = b.js(f"return [...document.getElementById('{KEYSET}').children].map(k => k.getAttribute('modifiers') + '+' + k.getAttribute('key'))")
     check(keys == ["alt,shift+S", "alt,shift+C", "alt,shift+A"], "the buttons' commands aren't registered in order", keys)

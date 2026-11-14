@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<!-- This Source Code Form is subject to the terms of the Mozilla Public
+   - License, v. 2.0. If a copy of the MPL was not distributed with this
+   - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
+<!-- about:library (NyxAbout.sys.mjs): Browser's Library, a page like Settings, with History,
+     Bookmarks, Downloads and the Reading list. -->
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src chrome: resource:; img-src chrome: resource: page-icon: moz-icon: data:; style-src chrome: resource: 'unsafe-inline'; object-src 'none'"
+    />
+    <title data-l10n-id="nyx-library-title"></title>
+    <link rel="icon" href="chrome://browser/content/nyx/icons/history.svg" />
+    <link rel="localization" href="browser/nyx-library.ftl" />
+    <link rel="stylesheet" href="chrome://browser/content/nyx/library/page.css" />
+    <script type="module" src="chrome://browser/content/nyx/library/page.js"></script>
+  </head>
+  <body>
+    <nav class="nav">
+      <div class="nav-title">
+        <img src="chrome://browser/content/nyx/icons/history.svg" alt="" />
+        <b data-l10n-id="nyx-library-title"></b>
+      </div>
+      <button class="nav-item" data-section="history">
+        <img src="chrome://browser/content/nyx/icons/history.svg" alt="" /><span data-l10n-id="nyx-library-history"></span><span class="count"></span>
+      </button>
+      <button class="nav-item" data-section="bookmarks">
+        <img src="chrome://browser/content/nyx/icons/bookmark.svg" alt="" /><span data-l10n-id="nyx-library-bookmarks"></span><span class="count"></span>
+      </button>
+      <button class="nav-item" data-section="downloads">
+        <img src="chrome://browser/content/nyx/icons/download.svg" alt="" /><span data-l10n-id="nyx-library-downloads"></span><span class="count"></span>
+      </button>
+      <button class="nav-item" data-section="reading">
+        <img src="chrome://browser/content/nyx/icons/reader.svg" alt="" /><span data-l10n-id="nyx-library-reading"></span><span class="count"></span>
+      </button>
+    </nav>
+    <main>
+      <div class="top">
+        <label class="find">
+          <img src="chrome://browser/content/nyx/icons/search.svg" alt="" />
+          <input id="find" type="search" />
+        </label>
+        <div id="actions" class="actions"></div>
+      </div>
+      <div id="content"></div>
+    </main>
+  </body>
+</html>

@@ -427,7 +427,7 @@ def upgrade():
     b = Browser({"xpinstall.signatures.required": False}, home=home)
     try:
         b.start()
-        b.js("for (const id of ['nyx-passwords-button', 'nyx-vpn-button', 'nyx-openin-button']) CustomizableUI.removeWidgetFromArea(id)")
+        b.js("for (const id of ['nyx-passwords-button', 'nyx-vpn-button', 'nyx-openin-button']) CustomizableUI.removeWidgetFromArea(id); for (const id of ['nyx-capture-button', 'nyx-assistant-button']) CustomizableUI.addWidgetToArea(id, CustomizableUI.AREA_NAVBAR, 4)")
         b.stop()
         stale = b.profile / "startupCache" / "nyx-stale"
         stale.parent.mkdir(exist_ok=True)
@@ -449,11 +449,13 @@ def upgrade():
         b.start()
         check(not stale.exists(), "a new install drops the profile's cached scripts")
         nav = b.js("return CustomizableUI.getWidgetIdsInArea('nav-bar')")
+        more = b.js("return CustomizableUI.getWidgetIdsInArea('widget-overflow-fixed-list')")
         check(
-            OLD_PASSWORDS not in nav and nav.index("nyx-passwords-button") == old_at and "nyx-vpn-button" in nav and "nyx-openin-button" in nav,
-            "an old top bar gets the built-in Passwords where the extension's was, and VPN and Open in",
-            nav,
+            OLD_PASSWORDS not in nav and all(id in more and id not in nav for id in ("nyx-passwords-button", "nyx-vpn-button", "nyx-openin-button", "nyx-capture-button", "nyx-assistant-button")),
+            "an old top bar loses the extension's Passwords, and Browser's other actions are in More tools",
+            [nav, more],
         )
+        check(nav.index("downloads-button") < nav.index("unified-extensions-button"), "Downloads comes before Extensions, as in the mockups", nav)
         check(b.js("return !!window.NyxPasswordsUI && !!document.getElementById('nyx-video-button')"), "the new features load in an old profile")
 
         fake_extension(home / "openwith.xpi", "openwith@darktrojan.net")
@@ -509,7 +511,7 @@ MENU_ITEM_HEIGHTS = """const done = arguments[arguments.length - 1];
 EDIT_SPACE = """const done = arguments[arguments.length - 1], anchor = arguments[0];
   const menu = document.getElementById('nyx-workspaces-menu');
   menu.addEventListener('popupshown', () => menu.activateItem(document.getElementById('nyx-workspaces-menu-edit')), { once: true });
-  gZenWorkspaces.openWorkspacesMenu(anchor === 'chip' ? document.getElementById('nyx-workspace-chip') : gZenWorkspaces.activeWorkspaceIndicator);
+  gZenWorkspaces.openWorkspacesMenu(anchor === 'chip' ? gZenWorkspaces.workspaceMenuAnchor : gZenWorkspaces.activeWorkspaceIndicator);
   setTimeout(() => { const p = document.getElementById('zenWorkspaceMoreActions'); const state = p.state; p.hidePopup(); done(state); }, 1500);"""
 
 
@@ -548,7 +550,7 @@ def bar():
         b.js("Services.prefs.clearUserPref('nyx.tabs.overflow')")
         disabled = b.js("return document.getElementById('cmd_zenCompactModeToggle').hasAttribute('disabled')")
         check(b.js_async(MENU_ITEM_HEIGHTS) == 0 and disabled, "compact mode isn't offered with tabs in a row", disabled)
-        check(b.js_async(EDIT_SPACE, "chip") == "open", "Edit space opens the space's menu (tabs in a row)")
+        check(b.js_async(EDIT_SPACE, "chip") == "open", "Edit space opens the space's menu (Workbench's rail)")
         state = b.js_async("""const done = arguments[arguments.length - 1];
           document.getElementById('cmd_zenChangeWorkspaceName').doCommand();
           setTimeout(() => { const p = document.getElementById('nyx-workspace-rename'); const s = p?.state; p?.hidePopup(); done(s); }, 1000);""")
@@ -564,6 +566,8 @@ def bar():
             done({ widths: [...new Set(items.map(i => Math.round(i.getBoundingClientRect().width)))], chevron: !chevron.collapsed && chevron.getBoundingClientRect().width > 0 });
           })().catch(e => done({ error: String(e) }));""", timeout=60)
         check(d.get("widths") == [28] and d.get("chevron"), "a full bookmarks bar keeps icons' size, the rest behind a chevron", d)
+        b.js("CustomizableUI.addWidgetToArea('nyx-vpn-button', CustomizableUI.AREA_NAVBAR)")
+        time.sleep(0.5)
         d = b.js(RECT + """const v = document.getElementById('nyx-vpn-button'); v.setAttribute('nyx-on', '');
           const glyph = r(v.querySelector('.toolbarbutton-icon')), s = getComputedStyle(v, '::after'), btn = r(v);
           const right = btn[0] + btn[2] - parseFloat(s.insetInlineEnd), bottom = btn[1] + btn[3] - parseFloat(s.bottom);
@@ -572,6 +576,23 @@ def bar():
         g, dot = d["glyph"], d["dot"]
         inner = (g[0] + 7, g[1] + 7, g[0] + g[2] - 7, g[1] + g[3] - 7)
         check(dot[0] < inner[2] < dot[2] and dot[1] < inner[3] < dot[3], "the VPN dot sits on the globe's corner, as in the mockup", d)
+
+        # Focus: the same bookmarks are a shelf of icons in the sidebar, six to a row, under a
+        # heading that folds it.
+        b.js("Services.prefs.setStringPref('nyx.layout', 'focus')")
+        time.sleep(1.5)
+        d = b.js(RECT + """const bar = document.getElementById('PersonalToolbar'), items = [...bar.querySelectorAll('#PlacesToolbarItems > .bookmark-item')];
+          const head = document.getElementById('nyx-shelf-head');
+          return { inSidebar: !!bar.closest('#navigator-toolbox'), head: head && r(head), rows: new Set(items.slice(0, 12).map(i => Math.round(i.getBoundingClientRect().y))).size,
+            perRow: items.filter(i => Math.round(i.getBoundingClientRect().y) === Math.round(items[0].getBoundingClientRect().y)).length,
+            names: items.filter(i => getComputedStyle(i.querySelector('.toolbarbutton-text')).display !== 'none').length };""")
+        check(d["inSidebar"] and d["head"] and d["head"][2] > 0, "Focus's bookmarks aren't a shelf in the sidebar", d)
+        check(d["perRow"] == 6 and d["rows"] == 2 and d["names"] == 0, "the shelf isn't rows of six icons", d)
+        b.js("document.getElementById('nyx-shelf-head').click()")
+        time.sleep(0.5)
+        folded = b.js("return document.getElementById('PersonalToolbar').getBoundingClientRect().height")
+        b.js("Services.prefs.clearUserPref('nyx.bookmarks.shelf-folded'); Services.prefs.setStringPref('nyx.layout', 'workbench')")
+        check(folded == 0, "the shelf's heading doesn't fold it", folded)
 
 
 def main():
@@ -585,6 +606,9 @@ def main():
     base = f"http://127.0.0.1:{port}"
     try:
         with Browser({"zen.tabs.vertical": True, "nyx.sidebar.mode": "expanded"}) as b:
+            # Open in and VPN start in More tools; their panels are tested from the top bar, where
+            # someone who uses them often puts them.
+            b.js("for (const id of ['nyx-openin-button', 'nyx-vpn-button']) CustomizableUI.addWidgetToArea(id, CustomizableUI.AREA_NAVBAR)")
             for test in (tabs, open_in, selection, video, shield, quick_commands, shortcuts):
                 try:
                     test(b, base)

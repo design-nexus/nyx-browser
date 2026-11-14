@@ -71,5 +71,35 @@ export const NyxActors = {
       allFrames: true,
       safeForUntrustedWebProcess: true,
     });
+    // Site styles and scripts (NyxSiteKit), in every frame of web pages, from the moment each
+    // document exists. The parent checks a script's every request against the script.
+    ChromeUtils.registerWindowActor("NyxSite", {
+      parent: { esModuleURI: `${base}/NyxSiteParent.sys.mjs` },
+      child: {
+        esModuleURI: `${base}/NyxSiteChild.sys.mjs`,
+        events: {
+          DOMWindowCreated: {},
+          DOMContentLoaded: {},
+          pageshow: {},
+          popstate: {},
+          hashchange: {},
+        },
+      },
+      matches: ["http://*/*", "https://*/*"],
+      messageManagerGroups: ["browsers"],
+      allFrames: true,
+      safeForUntrustedWebProcess: true,
+    });
+    // YouTube as Settings › YouTube asks, on its pages and in its embedded players.
+    ChromeUtils.registerWindowActor("NyxYouTube", {
+      parent: { esModuleURI: `${base}/NyxYouTubeParent.sys.mjs` },
+      child: { esModuleURI: `${base}/NyxYouTubeChild.sys.mjs`, events: { DOMWindowCreated: {} } },
+      matches: ["https://www.youtube.com/*", "https://youtube.com/*", "https://www.youtube-nocookie.com/*"],
+      messageManagerGroups: ["browsers"],
+      allFrames: true,
+      safeForUntrustedWebProcess: true,
+    });
+    ChromeUtils.importESModule("chrome://browser/content/nyx/NyxSiteKit.sys.mjs").NyxSiteKit.init();
+    ChromeUtils.importESModule("chrome://browser/content/nyx/NyxSiteStyles.sys.mjs").NyxSiteStyles.init();
   },
 };

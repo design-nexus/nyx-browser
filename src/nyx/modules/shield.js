@@ -43,7 +43,21 @@
   count.className = "nyx-shield-count";
   button.append(document.createXULElement("image"), count);
   button.firstChild.className = "urlbar-icon";
-  (document.getElementById("nyx-qr-button") ?? document.getElementById("star-button-box"))?.before(button);
+  // Studio and Workbench: one Site pill with the padlock and the site's permissions. Focus: its
+  // own pill at the address's end.
+  function place() {
+    const identity = document.getElementById("identity-box");
+    if (document.documentElement.getAttribute("nyx-layout") === "focus") {
+      const actions = document.getElementById("page-action-buttons");
+      if (button.nextElementSibling !== actions) {
+        actions.before(button);
+      }
+    } else if (button.parentNode !== identity) {
+      identity.append(button);
+    }
+  }
+  place();
+  new MutationObserver(place).observe(document.documentElement, { attributeFilter: ["nyx-layout"] });
 
   let shown = "";
   function update() {

@@ -539,7 +539,7 @@ dependencies = [
 [[package]]
 name = "nyx-core"
 version = "0.1.0"
-source = "git+https://github.com/design-nexus/nyx-core.git?rev=918729504918ec344b3a853a5ce0ea2c9dbb7b5f#918729504918ec344b3a853a5ce0ea2c9dbb7b5f"
+source = "git+https://github.com/design-nexus/nyx-core.git?rev=94e0c8aa133074c74adb31365e51f56168114f68#94e0c8aa133074c74adb31365e51f56168114f68"
 dependencies = [
  "anyhow",
  "serde",
@@ -581,7 +581,7 @@ dependencies = [
 [[package]]
 name = "nyx-theme-core"
 version = "0.2.0"
-source = "git+https://github.com/design-nexus/nyx-design.git?rev=4b89672c67dfd19e29b169221f0fffd86a6e740a#4b89672c67dfd19e29b169221f0fffd86a6e740a"
+source = "git+https://github.com/design-nexus/nyx-design.git?rev=ea8839d237a23ec83887429475f0780c06a36826#ea8839d237a23ec83887429475f0780c06a36826"
 dependencies = [
  "nyx-config",
  "nyx-core",

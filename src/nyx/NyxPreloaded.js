@@ -8,11 +8,17 @@
   const base = "chrome://browser/content/nyx";
   const modules = [
     "theme.js",
+    "layout.js",
     "sidebar.js",
     "appearance.js",
     "urlbar.js",
+    "address.js",
     "home.js",
     "tabs.js",
+    "tablist.js",
+    "menus.js",
+    "site.js",
+    "install.js",
     "openin.js",
     "selection.js",
     "passwords.js",
@@ -20,6 +26,9 @@
     "vpn.js",
     "shield.js",
     "commands.js",
+    "library.js",
+    "dlpanel.js",
+    "extpanel.js",
   ];
 
   const beforeShow = subject => {
@@ -27,6 +36,8 @@
       return;
     }
     Services.obs.removeObserver(beforeShow, "browser-window-before-show");
+    // Browser's about: pages, before any tab of a restored session opens one.
+    ChromeUtils.importESModule(`${base}/NyxAbout.sys.mjs`).NyxAbout.register();
     for (const module of modules) {
       try {
         Services.scriptloader.loadSubScript(`${base}/modules/${module}`, window);

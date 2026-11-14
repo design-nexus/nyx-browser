@@ -1,0 +1,28 @@
+diff --git a/browser/locales/en-US/browser/tabbrowser.ftl b/browser/locales/en-US/browser/tabbrowser.ftl
+index 772783c..09ebaa1 100644
+--- a/browser/locales/en-US/browser/tabbrowser.ftl
++++ b/browser/locales/en-US/browser/tabbrowser.ftl
+@@ -168,20 +168,20 @@ tabbrowser-customizemode-tab-title = Customize { -brand-short-name }
+ ## Context menu buttons, of which only one will be visible at a time
+ 
+ tabbrowser-context-mute-tab =
+-    .label = Mute Tab
++    .label = Mute tab
+     .accesskey = M
+ tabbrowser-context-mute-tab2 =
+     .label = Mute
+     .accesskey = M
+ tabbrowser-context-unmute-tab =
+-    .label = Unmute Tab
++    .label = Unmute tab
+     .accesskey = m
+ tabbrowser-context-unmute-tab2 =
+     .label = Unmute
+     .accesskey = m
+ # The accesskey should match the accesskey for tabbrowser-context-mute-tab
+ tabbrowser-context-mute-selected-tabs =
+-    .label = Mute Tabs
++    .label = Mute tabs
+     .accesskey = M
+ # The accesskey should match the accesskey for tabbrowser-context-unmute-tab
+ tabbrowser-context-unmute-selected-tabs =

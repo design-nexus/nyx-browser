@@ -2,7 +2,8 @@
 //! browser starts it and talks on stdin and stdout: a 32-bit native-endian length, then JSON.
 //! Only the fixed operations in `protocol` exist. There's no shell and no way to name a program.
 //!
-//! `nyx-browser-bridge theme [--watch]` is Browser's theme instead; see `theme`.
+//! `nyx-browser-bridge theme [--watch]` is Browser's theme instead; see `theme`. `themes` lists
+//! the Nyx themes for its Themes page; see `themes`.
 //! `nyx-browser-bridge actions` serves Browser's Nyx actions on D-Bus; see `actions`. And
 //! `share-destinations` and `share-to` are the Share button's dropdown; see `share_menu`.
 //! `browsers` and `open-in` are Open in, for other browsers; see `browsers`.
@@ -15,6 +16,7 @@ mod browsers;
 mod protocol;
 mod share_menu;
 mod theme;
+mod themes;
 mod tokens;
 mod video;
 
@@ -42,6 +44,7 @@ fn main() -> std::process::ExitCode {
     let args: Vec<String> = std::env::args().skip(1).collect();
     match args.first().map(String::as_str) {
         Some("theme") => return theme::run(&args[1..]),
+        Some("themes") => return themes::run(),
         Some("actions") => return actions::run(&args[1..]),
         Some("share-destinations") => return share_menu::run_destinations(),
         Some("share-to") => return share_menu::run_share_to(&args[1..]),

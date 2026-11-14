@@ -17,7 +17,7 @@ use crate::appearance::Choice;
 use crate::tokens;
 
 /// Browser's id in the suite's `[applications]`, where Settings keeps a theme chosen for it.
-const SLUG: &str = "nyx-browser";
+pub const SLUG: &str = "nyx-browser";
 /// Browser's key in the suite's `[app_accents]` and a theme's `[accents]`.
 const ACCENT_APP: &str = "browser";
 

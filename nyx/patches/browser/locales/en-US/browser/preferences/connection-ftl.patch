@@ -1,0 +1,13 @@
+diff --git a/browser/locales/en-US/browser/preferences/connection.ftl b/browser/locales/en-US/browser/preferences/connection.ftl
+index 8240f62..76637ee 100644
+--- a/browser/locales/en-US/browser/preferences/connection.ftl
++++ b/browser/locales/en-US/browser/preferences/connection.ftl
+@@ -61,7 +61,7 @@ connection-proxy-socks5 =
+ connection-proxy-noproxy = No proxy for
+     .accesskey = N
+ 
+-connection-proxy-noproxy-desc = Example: .mozilla.org, .net.nz, 192.168.1.0/24
++connection-proxy-noproxy-desc = Example: .example.org, .net.nz, 192.168.1.0/24
+ 
+ # Do not translate "localhost", "127.0.0.1/8" and "::1". (You can translate "and".)
+ connection-proxy-noproxy-localhost-desc-2 = Connections to localhost, 127.0.0.1/8, and ::1 are never proxied.

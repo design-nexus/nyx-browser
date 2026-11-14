@@ -156,6 +156,9 @@ def main():
             check(passkey == "Y3JlZGVudGlhbA", "with one passkey the card signs in by itself", passkey)
 
             b.call("Marionette:SetContext", {"value": "chrome"})
+            # The button starts in More tools, which opens on mouse down.
+            b.js("document.getElementById('nav-bar-overflow-button').dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, view: window, button: 0 }))")
+            time.sleep(1)
             b.js("document.getElementById('nyx-passwords-button').click()")
             time.sleep(3)
             popup = b.js("""const d = document.querySelector('#PanelUI-nyx-passwords browser')?.contentDocument;

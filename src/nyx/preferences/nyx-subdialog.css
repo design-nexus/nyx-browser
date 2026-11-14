@@ -1,0 +1,307 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+/* Settings subdialogs (Fonts, Certificates, …). Match Nyx Settings controls —
+ * not stock Firefox gray menulists. */
+
+:root {
+  color-scheme: dark;
+
+  --nyx-bg: #0d0e12;
+  --nyx-panel: #121318;
+  --nyx-card: #191a21;
+  --nyx-raised: #1f2028;
+  --nyx-popover: #1d1e26;
+  --nyx-surface: #1d1e26;
+  --nyx-text: #e7e8ee;
+  --nyx-dim: #a2a5ba;
+  --nyx-tertiary: #8a8ea8;
+  --nyx-border: #2b2d37;
+  --nyx-divider: #1d1e26;
+  --nyx-accent: #3d8ae8;
+  --nyx-on-accent: #0d0e12;
+  --nyx-danger: #f2655f;
+  --nyx-warning: #eeb43f;
+  --nyx-success: #59d45b;
+  --nyx-shadow: #060609;
+  --nyx-hover: 6%;
+  --nyx-selection: 16%;
+  --nyx-radius-small: 7px;
+  --nyx-radius-card: 11px;
+  --nyx-radius-dialog: 15px;
+  --nyx-font: "Inter", "Inter Variable", "Inter 18pt", sans-serif;
+  --nyx-tile: color-mix(in srgb, var(--nyx-text) 5%, var(--nyx-bg));
+  --nyx-hover-bg: color-mix(in srgb, var(--nyx-accent) var(--nyx-hover), var(--nyx-tile));
+  --nyx-sel-bg: color-mix(in srgb, var(--nyx-accent) calc(var(--nyx-selection) + 2%), var(--nyx-bg));
+  --nyx-line: color-mix(in srgb, var(--nyx-text) 9%, transparent);
+
+  --background-color-canvas: var(--nyx-surface);
+  --background-color-box: var(--nyx-card);
+  --background-color-box-info: var(--nyx-tile);
+  --background-color-list-item-hover: var(--nyx-hover-bg);
+  --text-color: var(--nyx-text);
+  --text-color-deemphasized: var(--nyx-dim);
+  --text-color-disabled: var(--nyx-tertiary);
+  --text-color-error: var(--nyx-danger);
+  --icon-color: var(--nyx-dim);
+  --border-color: var(--nyx-line);
+  --border-color-interactive: var(--nyx-border);
+  --border-color-selected: var(--nyx-accent);
+  --color-accent-primary: var(--nyx-accent);
+  --color-accent-primary-hover: color-mix(in srgb, var(--nyx-accent) 88%, var(--nyx-text));
+  --focus-outline-color: var(--nyx-accent);
+  --link-color: var(--nyx-accent);
+  --button-background-color: var(--nyx-tile);
+  --button-background-color-hover: var(--nyx-hover-bg);
+  --button-text-color: var(--nyx-text);
+  --button-background-color-primary: var(--nyx-accent);
+  --button-text-color-primary: var(--nyx-on-accent);
+  --input-background-color: var(--nyx-tile);
+  --input-border-color: var(--nyx-line);
+  --dialog-background-color: var(--nyx-popover);
+  --dialog-border-color: var(--nyx-line);
+  --dialog-border-radius: var(--nyx-radius-dialog);
+  --in-content-page-background: var(--nyx-surface);
+  --in-content-page-color: var(--nyx-text);
+  --in-content-box-background: var(--nyx-card);
+  --in-content-box-border-color: var(--nyx-line);
+  --in-content-button-background: var(--nyx-tile);
+  --in-content-button-background-hover: var(--nyx-hover-bg);
+  --in-content-primary-button-background: var(--nyx-accent);
+  --in-content-primary-button-text-color: var(--nyx-on-accent);
+  --in-content-focus-outline-color: var(--nyx-accent);
+
+  font-family: var(--nyx-font);
+}
+
+window,
+dialog,
+#FontsDialog {
+  background: var(--nyx-surface) !important;
+  color: var(--nyx-text) !important;
+  font-family: var(--nyx-font) !important;
+}
+
+#FontsDialog {
+  padding: 18px 20px 12px !important;
+}
+
+groupbox {
+  color: var(--nyx-text);
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+
+groupbox > label,
+groupbox > description {
+  margin-inline: 0 !important;
+}
+
+label,
+description,
+html|h2,
+.heading-medium {
+  color: var(--nyx-text) !important;
+  font-family: var(--nyx-font) !important;
+}
+
+html|h2.heading-medium {
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  margin: 0 0 8px !important;
+}
+
+/* Kill Firefox accesskey underlines in this dialog. */
+.accesskey {
+  text-decoration: none !important;
+  border: 0 !important;
+}
+
+separator,
+separator.thin,
+separator.groove {
+  border: 0 !important;
+  height: 12px !important;
+  background: transparent !important;
+  margin: 0 !important;
+}
+
+separator.groove {
+  height: 1px !important;
+  margin: 14px 0 !important;
+  background: var(--nyx-line) !important;
+}
+
+#font-chooser-group {
+  display: grid !important;
+  grid-template-columns: max-content 1fr max-content max-content !important;
+  gap: 8px 10px !important;
+  align-items: center !important;
+  margin-top: 4px !important;
+}
+
+#defaultFontType,
+#serif,
+#sans-serif,
+#monospace {
+  width: auto !important;
+  min-width: 28ch !important;
+}
+
+#sizeVar,
+#sizeMono,
+#minSize {
+  min-width: 7ch !important;
+}
+
+/* Menulists: same tile + inset line as Settings rows. */
+menulist {
+  appearance: none !important;
+  -moz-appearance: none !important;
+  box-sizing: border-box !important;
+  min-height: 32px !important;
+  height: 32px !important;
+  max-height: 32px !important;
+  margin: 0 !important;
+  padding: 0 28px 0 12px !important;
+  border: 0 !important;
+  border-radius: 8px !important;
+  background: var(--nyx-tile) !important;
+  color: var(--nyx-text) !important;
+  box-shadow: inset 0 0 0 1px var(--nyx-line) !important;
+  font: 500 12.5px var(--nyx-font) !important;
+}
+
+menulist:hover {
+  background: var(--nyx-hover-bg) !important;
+}
+
+menulist[open="true"],
+menulist[focused="true"] {
+  box-shadow: inset 0 0 0 1.5px var(--nyx-accent) !important;
+}
+
+menulist > .menulist-label-box,
+menulist > .menulist-label-box > .menulist-label {
+  margin: 0 !important;
+  padding: 0 !important;
+  color: var(--nyx-text) !important;
+  font: inherit !important;
+}
+
+menulist > .menulist-dropmarker,
+menulist::part(dropmarker),
+dropmarker {
+  appearance: none !important;
+  -moz-appearance: none !important;
+  width: 16px !important;
+  height: 16px !important;
+  margin-inline-end: 8px !important;
+  border: 0 !important;
+  background: transparent !important;
+  list-style-image: none !important;
+}
+
+/* Chevron via mask so dropmarkers aren't the old gray bevel. */
+menulist > .menulist-dropmarker::before,
+dropmarker::before {
+  content: "";
+  display: block;
+  width: 10px;
+  height: 6px;
+  margin: 5px auto 0;
+  background: var(--nyx-dim);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+}
+
+textbox,
+html|input,
+html|select {
+  appearance: none !important;
+  -moz-appearance: none !important;
+  min-height: 32px !important;
+  border: 0 !important;
+  border-radius: 8px !important;
+  background: var(--nyx-tile) !important;
+  color: var(--nyx-text) !important;
+  box-shadow: inset 0 0 0 1px var(--nyx-line) !important;
+  font: 500 12.5px var(--nyx-font) !important;
+}
+
+button {
+  appearance: none !important;
+  -moz-appearance: none !important;
+  min-height: 32px !important;
+  height: 32px !important;
+  margin: 0 4px !important;
+  padding: 0 14px !important;
+  border: 0 !important;
+  border-radius: 8px !important;
+  background: var(--nyx-tile) !important;
+  color: var(--nyx-text) !important;
+  box-shadow: inset 0 0 0 1px var(--nyx-line) !important;
+  font: 500 13px var(--nyx-font) !important;
+}
+
+button[dlgtype="accept"],
+button[default="true"],
+button.primary {
+  background: var(--nyx-accent) !important;
+  color: var(--nyx-on-accent) !important;
+  box-shadow: none !important;
+  font-weight: 600 !important;
+}
+
+checkbox {
+  color: var(--nyx-text) !important;
+  font: 400 12.5px var(--nyx-font) !important;
+}
+
+.checkbox-check {
+  appearance: none !important;
+  -moz-appearance: none !important;
+  width: 16px !important;
+  height: 16px !important;
+  border-radius: 4px !important;
+  border: 0 !important;
+  background: var(--nyx-tile) !important;
+  box-shadow: inset 0 0 0 1px var(--nyx-line) !important;
+}
+
+checkbox[checked="true"] > .checkbox-check,
+.checkbox-check[checked="true"] {
+  background: var(--nyx-accent) !important;
+  box-shadow: none !important;
+}
+
+menupopup {
+  appearance: none !important;
+  -moz-appearance: none !important;
+  padding: 4px !important;
+  border: 0 !important;
+  border-radius: 10px !important;
+  background: var(--nyx-popover) !important;
+  color: var(--nyx-text) !important;
+  box-shadow:
+    0 0 0 1px var(--nyx-line),
+    0 12px 28px color-mix(in srgb, var(--nyx-shadow) 55%, transparent) !important;
+}
+
+menuitem {
+  appearance: none !important;
+  -moz-appearance: none !important;
+  min-height: 28px !important;
+  margin: 1px 0 !important;
+  padding: 0 10px !important;
+  border-radius: 6px !important;
+  color: var(--nyx-text) !important;
+}
+
+menuitem:hover,
+menuitem[_moz-menuactive="true"] {
+  background: var(--nyx-hover-bg) !important;
+  color: var(--nyx-text) !important;
+}

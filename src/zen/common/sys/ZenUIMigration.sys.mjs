@@ -62,12 +62,14 @@ class nsZenUIMigration {
    * once. Extensions' buttons stay where they are. Profiles already arranged only gain buttons
    * that aren't anywhere yet (Passwords', from version 3; VPN's and Open in's, from version 5)
    * and lose the ones Browser no longer has (the shortcuts hint in the sidebar's foot, from
-   * version 4).
+   * version 4). From version 6, Capture, Assistant, Passwords, VPN and Open in are in More tools
+   * (the layouts' mockups), wherever they were in the top bar; from version 7 Downloads comes
+   * before Extensions.
    */
   #migrateNyxToolbars() {
     const pref = "nyx.ui.migration.toolbars";
     const version = Services.prefs.getIntPref(pref, 0);
-    if (version >= 5) {
+    if (version >= 7) {
       return;
     }
     const RETIRED = ["nyx-shortcuts-button"];
@@ -124,9 +126,24 @@ class nsZenUIMigration {
             CUI.addWidgetToArea(id, area, index);
           }
         });
+        if (area === CUI.AREA_NAVBAR) {
+          const nav = CUI.getWidgetIdsInArea(area);
+          const extensions = nav.indexOf("unified-extensions-button");
+          if (extensions >= 0 && nav.indexOf("downloads-button") > extensions) {
+            CUI.moveWidgetWithinArea("downloads-button", extensions);
+          }
+        }
+        if (area === CUI.AREA_NAVBAR && version < 6) {
+          for (const id of lazy.NyxWidgets.overflowPlacements) {
+            const placement = CUI.getPlacementOfWidget(id, false);
+            if (!placement || placement.area === area) {
+              CUI.addWidgetToArea(id, CUI.AREA_FIXED_OVERFLOW_PANEL);
+            }
+          }
+        }
         if (!areas.size) {
           CUI.removeListener(listener);
-          Services.prefs.setIntPref(pref, 5);
+          Services.prefs.setIntPref(pref, 7);
           Services.prefs.clearUserPref("nyx.toolbar.arranged");
         }
       },
@@ -234,41 +251,7 @@ class nsZenUIMigration {
   }
 
   _migrateV6() {
-    lazy.SessionStore.promiseAllWindowsRestored.then(() => {
-      const win = Services.wm.getMostRecentWindow("navigator:browser");
-      win.setTimeout(async () => {
-        const [title, message, learnMore, accept] =
-          await win.document.l10n.formatMessages([
-            "zen-window-sync-migration-dialog-title",
-            "zen-window-sync-migration-dialog-message",
-            "zen-window-sync-migration-dialog-learn-more",
-            "zen-window-sync-migration-dialog-accept",
-          ]);
-
-        // buttonPressed will be 0 for cancel, 1 for "more info"
-        let buttonPressed = Services.prompt.confirmEx(
-          win,
-          title.value,
-          message.value,
-          Services.prompt.BUTTON_POS_0 *
-            Services.prompt.BUTTON_TITLE_IS_STRING +
-            Services.prompt.BUTTON_POS_1 *
-              Services.prompt.BUTTON_TITLE_IS_STRING,
-          learnMore.value,
-          accept.value,
-          null,
-          null,
-          {}
-        );
-        // User has clicked on "Learn More"
-        if (buttonPressed === 0) {
-          win.openTrustedLinkIn(
-            "https://docs.zen-browser.app/user-manual/window-sync",
-            "tab"
-          );
-        }
-      }, 1000);
-    });
+    // Nyx: Zen's notice about syncing windows, with its link to Zen's docs, isn't Browser's.
   }
 
   _migrateV7() {

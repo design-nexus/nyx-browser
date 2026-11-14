@@ -1,0 +1,26 @@
+diff --git a/browser/locales/en-US/browser/tabContextMenu.ftl b/browser/locales/en-US/browser/tabContextMenu.ftl
+index 9cc0830..57f25c6 100644
+--- a/browser/locales/en-US/browser/tabContextMenu.ftl
++++ b/browser/locales/en-US/browser/tabContextMenu.ftl
+@@ -65,8 +65,8 @@ close-other-tabs =
+ tab-context-unload-n-tabs =
+     .label =
+         { $tabCount ->
+-            [1] Unload Tab
+-           *[other] Unload { $tabCount } Tabs
++            [1] Put to sleep
++           *[other] Put { $tabCount } tabs to sleep
+         }
+     .accesskey = U
+ 
+@@ -147,8 +147,8 @@ tab-context-share-url =
+ tab-context-reopen-closed-tabs =
+     .label =
+         { $tabCount ->
+-            [1] Reopen Closed Tab
+-           *[other] Reopen Closed Tabs
++            [1] Reopen closed tab
++           *[other] Reopen closed tabs
+         }
+     .accesskey = o
+ tab-context-close-n-tabs =

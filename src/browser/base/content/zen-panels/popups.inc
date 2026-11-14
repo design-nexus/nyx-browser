@@ -16,6 +16,9 @@
   <menuseparator id="nyx-workspaces-menu-separator"/>
   <menuitem class="menuitem-iconic nyx-workspaces-menu-new" data-l10n-id="nyx-workspace-menu-new" command="cmd_zenOpenWorkspaceCreation" image="chrome://browser/skin/zen-icons/plus.svg"/>
   <menuitem id="nyx-workspaces-menu-edit" class="menuitem-iconic" command="cmd_nyxEditWorkspace" image="chrome://browser/content/nyx/icons/settings.svg"/>
+  <menu id="nyx-workspaces-menu-move" class="menu-iconic" data-l10n-id="nyx-workspace-menu-move" image="chrome://browser/content/nyx/icons/grid.svg">
+    <menupopup id="nyx-workspaces-menu-move-popup"/>
+  </menu>
 </menupopup>
 
 <menupopup id="zenWorkspaceMoreActions">

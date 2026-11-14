@@ -1,0 +1,15 @@
+diff --git a/browser/locales/en-US/browser/toolbarContextMenu.ftl b/browser/locales/en-US/browser/toolbarContextMenu.ftl
+index d080408..e585015 100644
+--- a/browser/locales/en-US/browser/toolbarContextMenu.ftl
++++ b/browser/locales/en-US/browser/toolbarContextMenu.ftl
+@@ -55,8 +55,8 @@ toolbar-context-menu-report-extension =
+ # ("Menu Bar") and personalbarCmd ("Bookmarks Toolbar"), so they should
+ # have different access keys.
+ toolbar-context-menu-pin-to-overflow-menu =
+-    .label = Pin to Overflow Menu
+-    .accesskey = P
++    .label = Move to More tools
++    .accesskey = l
+ toolbar-context-menu-auto-hide-downloads-button-2 =
+     .label = Hide Button When Empty
+     .accesskey = H

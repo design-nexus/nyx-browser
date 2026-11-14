@@ -1,0 +1,19 @@
+diff --git a/browser/locales/en-US/browser/originControls.ftl b/browser/locales/en-US/browser/originControls.ftl
+index 14b55c3..436a732 100644
+--- a/browser/locales/en-US/browser/originControls.ftl
++++ b/browser/locales/en-US/browser/originControls.ftl
+@@ -37,7 +37,7 @@ origin-controls-option-always-on =
+ 
+ origin-controls-state-no-access = Can’t read and change data on this site
+ 
+-origin-controls-state-quarantined = Not allowed by { -vendor-short-name } on this site
++origin-controls-state-quarantined = Not allowed on this restricted site
+ 
+ origin-controls-state-always-on = Can always read and change data on this site
+ 
+@@ -73,4 +73,4 @@ origin-controls-toolbar-button-quarantined =
+     .label = { $extensionTitle }
+     .tooltiptext =
+         { $extensionTitle }
+-        Not allowed by { -vendor-short-name } on this site
++        Not allowed on this restricted site

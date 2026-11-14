@@ -8,13 +8,6 @@ const lazy = {};
 
 XPCOMUtils.defineLazyPreferenceGetter(
   lazy,
-  "currentTheme",
-  "zen.view.window.scheme",
-  2
-);
-
-XPCOMUtils.defineLazyPreferenceGetter(
-  lazy,
   "libraryEnabled",
   "zen.library.enabled",
   true
@@ -137,11 +130,6 @@ const globalActionsTemplate = [
       const tab = window.gBrowser.selectedTab;
       return !tab.hasAttribute("zen-empty-tab") && tab.pinned;
     },
-  },
-  {
-    l10nId: "zen-action-open-space-routing",
-    command: "cmd_zenOpenSpaceRoutingSettings",
-    icon: "chrome://browser/skin/zen-icons/selectable/airplane.svg",
   },
   {
     l10nId: "zen-action-new-boost",
@@ -305,30 +293,8 @@ const globalActionsTemplate = [
     command: "Tools:Addons",
     icon: "chrome://browser/skin/zen-icons/extension.svg",
   },
-  {
-    l10nId: "zen-action-switch-to-automatic-appearance",
-    command: () => Services.prefs.setIntPref("zen.view.window.scheme", 2),
-    icon: "chrome://browser/skin/zen-icons/sparkles.svg",
-    isAvailable: () => {
-      return lazy.currentTheme !== 2;
-    },
-  },
-  {
-    l10nId: "zen-action-switch-to-light-mode",
-    command: () => Services.prefs.setIntPref("zen.view.window.scheme", 1),
-    icon: "chrome://browser/skin/zen-icons/face-sun.svg",
-    isAvailable: () => {
-      return lazy.currentTheme !== 1;
-    },
-  },
-  {
-    l10nId: "zen-action-switch-to-dark-mode",
-    command: () => Services.prefs.setIntPref("zen.view.window.scheme", 0),
-    icon: "chrome://browser/skin/zen-icons/moon-stars.svg",
-    isAvailable: () => {
-      return lazy.currentTheme !== 0;
-    },
-  },
+  // Nyx: no light, dark or automatic switches, or space routing: the Nyx theme decides light or
+  // dark (Themes), and space routing is in Zen's Library, which Browser doesn't have.
   {
     l10nId: "zen-action-print",
     command: "cmd_print",

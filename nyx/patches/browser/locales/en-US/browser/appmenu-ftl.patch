@@ -1,0 +1,40 @@
+diff --git a/browser/locales/en-US/browser/appmenu.ftl b/browser/locales/en-US/browser/appmenu.ftl
+index 89a89af..a39e868 100644
+--- a/browser/locales/en-US/browser/appmenu.ftl
++++ b/browser/locales/en-US/browser/appmenu.ftl
+@@ -50,7 +50,7 @@ appmenuitem-extensions =
+ appmenuitem-print =
+   .label = Print…
+ appmenuitem-find-in-page =
+-    .label = Find in Page…
++    .label = Find in page…
+ appmenuitem-translate =
+     .label = Translate Page…
+ appmenuitem-zoom =
+@@ -64,7 +64,7 @@ appmenuitem-more-tools =
+     .label = More Tools
+ # Menu combining the previous "Help" menu and report broken site
+ appmenuitem-help-and-report =
+-    .label = Help and Report
++    .label = Help and shortcuts
+ appmenuitem-exit2 =
+     .label =
+         { PLATFORM() ->
+@@ -203,7 +203,7 @@ appmenu-fxa-sign-in-promo-dismiss-button =
+ appmenu-fxa-setup-sync =
+     .label = Turn On Syncing…
+ appmenuitem-save-page =
+-    .label = Save Page As…
++    .label = Save page…
+ 
+ ## The Firefox Profiler – The popup is the UI to turn on the profiler, and record
+ ## performance profiles. To enable it go to profiler.firefox.com and click
+@@ -365,7 +365,7 @@ appmenu-search-history =
+ 
+ # Menu header for combination of "Help" menu and report broken site
+ appmenu-help-and-report-header =
+-    .title = Help and Report
++    .title = Help and shortcuts
+ appmenu-about =
+     .label = About { -brand-shorter-name }
+     .accesskey = A

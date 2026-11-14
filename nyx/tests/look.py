@@ -192,35 +192,44 @@ def appearance_panel(shots):
                 const group = [...document.querySelectorAll("#nyx-appearance-body .nyx-seg")].find(g => g.getAttribute("aria-label") === label);
                 [...group.querySelectorAll("button")].find(b => b.textContent === text).click();
               };
-              press("Tabs", "Horizontal");
+              press("Layout", "Workbench");
               await new Promise(r => setTimeout(r, 900));
-              const horizontal = document.documentElement.hasAttribute("nyx-tabs-horizontal");
+              const horizontal = document.documentElement.hasAttribute("nyx-tabs-horizontal") && document.documentElement.getAttribute("nyx-layout") === "workbench";
               const disabled = [...document.querySelectorAll("#nyx-appearance-body .nyx-seg")].find(g => g.getAttribute("aria-label") === "Sidebar").classList.contains("nyx-disabled");
-              press("Tabs", "Vertical");
+              press("Layout", "Focus");
+              await new Promise(r => setTimeout(r, 900));
+              const focus = document.documentElement.hasAttribute("zen-single-toolbar") && Services.prefs.getStringPref("nyx.layout") === "focus";
+              const noCompact = ![...document.querySelectorAll("#nyx-appearance-body .nyx-seg")].find(g => g.getAttribute("aria-label") === "Sidebar").textContent.includes("Compact");
+              press("Layout", "Studio");
               await new Promise(r => setTimeout(r, 900));
               press("Sidebar", "Compact");
-              press("Theme", "Light");
+              const { NyxTheme, appearanceFile } = ChromeUtils.importESModule("chrome://browser/content/nyx/NyxTheme.sys.mjs");
+              await NyxTheme.choose({ theme: "nyx-light" });
+              await NyxAppearance.load();
+              await new Promise(r => setTimeout(r, 400));
               press("Density", "Relaxed");
               document.querySelector("#nyx-appearance-body .nyx-swatch-green").click();
               document.querySelector("#nyx-appearance-body .nyx-switch-row").click();
               await new Promise(r => setTimeout(r, 700));
               done({
-                state: panel?.state, horizontal, disabled,
+                state: panel?.state, horizontal, disabled, focus, noCompact,
                 vertical: !document.documentElement.hasAttribute("nyx-tabs-horizontal"),
                 sidebar: Services.prefs.getStringPref("nyx.sidebar.mode"),
-                frosted: Services.prefs.getBoolPref("nyx.effects.frosted", false),
-                file: await IOUtils.readJSON(NyxAppearance.file),
+                frosted: Services.prefs.getBoolPref("nyx.effects.frosted"),
+                file: await IOUtils.readJSON(appearanceFile()),
+                theme: document.querySelector("#nyx-appearance-body .nyx-theme-row span")?.textContent,
                 checked: [...document.querySelectorAll("#nyx-appearance-body [aria-checked=true]")].map(e => e.textContent),
               });
             })();
         """
         d = b.js_async(click)
-        check(d["horizontal"] and d["vertical"], "the Tabs control didn't switch orientation", d)
-        check(d["disabled"], "Sidebar stayed enabled with horizontal tabs", d)
+        check(d["horizontal"] and d["focus"] and d["vertical"], "the Layout control didn't switch layouts", d)
+        check(d["disabled"], "Sidebar stayed enabled in Workbench", d)
+        check(d["noCompact"], "Focus offers a compact sidebar", d)
         check(d["sidebar"] == "compact", "the Sidebar control didn't change the mode", d)
-        check(d["frosted"], "the Frosted control didn't apply", d)
+        check(not d["frosted"], "the Frosted control didn't turn frosted menus off (they're on by default)", d)
         check(d["file"] == {"theme": "nyx-light", "accent": "green", "density": "relaxed"}, "the choices weren't saved", d)
-        check("Light" in d["checked"] and "Relaxed" in d["checked"], "controls don't report their state", d)
+        check("Relaxed" in d["checked"] and d["theme"] == "Nyx Light", "controls don't report their state, or the theme row doesn't name the theme", d)
 
         # The bridge turns the panel's file into the theme, end to end.
         env = {**os.environ, "XDG_CONFIG_HOME": str(b.home / ".config")}

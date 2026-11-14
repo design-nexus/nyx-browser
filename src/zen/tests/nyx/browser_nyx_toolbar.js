@@ -9,8 +9,14 @@ add_task(async function test_buttons_without_room_go_into_more_tools() {
   const navBar = document.getElementById("nav-bar");
   const more = document.getElementById("nav-bar-overflow-button");
 
-  // A narrow window: Firefox's own overflow moves the last actions into More tools.
+  // Capture, Assistant, Passwords, VPN and Open in start in More tools. Put in the top bar, as
+  // someone can, a narrow window's overflow moves the last of them back there.
   const { outerWidth, outerHeight } = window;
+  const actions = ["nyx-capture-button", "nyx-assistant-button", "nyx-passwords-button", "nyx-vpn-button", "nyx-openin-button"];
+  for (const id of actions) {
+    is(CustomizableUI.getPlacementOfWidget(id)?.area, CustomizableUI.AREA_FIXED_OVERFLOW_PANEL, `${id} starts in More tools`);
+    CustomizableUI.addWidgetToArea(id, CustomizableUI.AREA_NAVBAR, CustomizableUI.getWidgetIdsInArea("nav-bar").indexOf("downloads-button"));
+  }
   window.resizeTo(800, outerHeight);
   await TestUtils.waitForCondition(() => navBar.hasAttribute("overflowing"), "the top bar overflows");
   ok(overflowList().length, "a button moved into More tools");
@@ -21,8 +27,9 @@ add_task(async function test_buttons_without_room_go_into_more_tools() {
   for (const id of ["nyx-settings-button", "PanelUI-button"]) {
     ok(document.getElementById(id).getBoundingClientRect().width > 0, `${id} stays in the row`);
   }
-  ok(
-    more.getBoundingClientRect().left < document.getElementById("nyx-settings-button").getBoundingClientRect().left,
+  Assert.less(
+    more.getBoundingClientRect().left,
+    document.getElementById("nyx-settings-button").getBoundingClientRect().left,
     "More tools comes before Settings and the menu"
   );
   const placed = CustomizableUI.getWidgetIdsInArea("nav-bar").filter(id => overflowList().includes(id));
@@ -35,6 +42,9 @@ add_task(async function test_buttons_without_room_go_into_more_tools() {
 
   window.resizeTo(outerWidth, outerHeight);
   await TestUtils.waitForCondition(() => !navBar.hasAttribute("overflowing"), "they come back with room");
+  for (const id of actions) {
+    CustomizableUI.addWidgetToArea(id, CustomizableUI.AREA_FIXED_OVERFLOW_PANEL);
+  }
 });
 
 add_task(async function test_icons_only_keeps_folder_names() {

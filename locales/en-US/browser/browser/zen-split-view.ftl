@@ -5,9 +5,9 @@
 tab-zen-split-tabs =
     .label =
         { $tabCount ->
-            [-1] Split Out Tab
-            [1] Add Split View...
-           *[other] Join { $tabCount } Tabs
+            [-1] Take out of the split
+            [1] Split with…
+           *[other] Split these { $tabCount } tabs
         }
     .accesskey = S
 

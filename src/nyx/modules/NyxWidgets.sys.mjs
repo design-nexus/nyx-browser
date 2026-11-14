@@ -38,15 +38,17 @@ const shortcutsInMoreTools = {
 
 const windowOf = event => event.target.documentGlobal;
 
-/** A button's view, made once per window where CustomizableUI looks for it; its module fills it. */
-function simpleView(document, id, title) {
+/** A button's view, made once per window where CustomizableUI looks for it; its module fills it.
+ * Its title is the button's label, read now: More tools titles its header before Fluent would. */
+function simpleView(document, id, l10nId) {
   if (document.getElementById(id)) {
     return;
   }
   const view = document.createXULElement("panelview");
   view.id = id;
   view.className = "PanelUI-subView";
-  view.setAttribute("title", title);
+  const [{ attributes }] = new Localization(["browser/nyx-browser.ftl"], true).formatMessagesSync([{ id: l10nId }]);
+  view.setAttribute("title", attributes.find(a => a.name === "label").value);
   const body = document.createXULElement("vbox");
   body.className = "panel-subview-body";
   view.append(body);
@@ -99,7 +101,7 @@ export const NyxWidgets = {
       l10nId: "nyx-vpn-button",
       type: "view",
       viewId: "PanelUI-nyx-vpn",
-      onBeforeCreated: document => simpleView(document, "PanelUI-nyx-vpn", "VPN"),
+      onBeforeCreated: document => simpleView(document, "PanelUI-nyx-vpn", "nyx-vpn-button"),
       onViewShowing: event => windowOf(event).NyxVpnUI?.show(event.target),
     },
     {
@@ -108,15 +110,15 @@ export const NyxWidgets = {
       l10nId: "nyx-passwords-button",
       type: "view",
       viewId: "PanelUI-nyx-passwords",
-      onBeforeCreated: document => simpleView(document, "PanelUI-nyx-passwords", "Passwords"),
+      onBeforeCreated: document => simpleView(document, "PanelUI-nyx-passwords", "nyx-passwords-button"),
       onViewShowing: event => windowOf(event).NyxPasswordsUI?.popupView(event.target),
     },
   ],
 
   /**
-   * The top bar from the mockups: navigation, the address field, Browser's actions, Nyx
-   * Passwords, Firefox's extensions and downloads. More tools (Firefox's overflow), Settings and
-   * the menu follow on their own (navigator-toolbox.inc.xhtml).
+   * The top bar from the mockups: navigation, the address field, Share, downloads and Firefox's
+   * extensions. More tools (Firefox's overflow), Settings and the menu follow on their own
+   * (navigator-toolbox.inc.xhtml).
    */
   navbarPlacements: [
     "back-button",
@@ -124,20 +126,24 @@ export const NyxWidgets = {
     "stop-reload-button",
     "urlbar-container",
     "nyx-share-button",
+    "downloads-button",
+    "unified-extensions-button",
+  ],
+
+  /** Browser's other actions start in More tools, in this order. */
+  overflowPlacements: [
     "nyx-capture-button",
     "nyx-assistant-button",
     "nyx-passwords-button",
-    "unified-extensions-button",
     "nyx-vpn-button",
     "nyx-openin-button",
-    "downloads-button",
   ],
 
   register(CustomizableUIInternal) {
     for (const definition of this.definitions) {
       CustomizableUIInternal.createBuiltinWidget({
         type: "button",
-        defaultArea: "nav-bar",
+        defaultArea: this.overflowPlacements.includes(definition.id) ? "widget-overflow-fixed-list" : "nav-bar",
         ...definition,
       });
     }

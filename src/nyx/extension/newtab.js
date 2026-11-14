@@ -14,7 +14,7 @@ const RECENT = 5;
 const SECTIONS = {
   favorites: "Favorites",
   frequent: "Frequently visited",
-  recent: "Recent tabs",
+  recent: "Recently closed",
 };
 const DEFAULTS = {
   sections: ["favorites", "frequent", "recent"],
@@ -227,13 +227,16 @@ function openFavoriteDialog(index = -1) {
 /* ---------- Frequently visited and recent tabs ---------- */
 
 async function frequentSection() {
-  const grid = element("div", { class: "tiles" });
+  const list = element("div", { class: "rows card" });
   const sites = await browser.topSites.get({ limit: FREQUENT * 2, includeFavicon: true, onePerDomain: true });
   const favorite = new Set(settings.favorites.map(f => f.url));
   for (const site of sites.filter(s => WEB.test(s.url) && !favorite.has(s.url)).slice(0, FREQUENT)) {
-    grid.append(tile(site.url, site.title, site.favicon));
+    const name = site.title || hostOf(site.url);
+    list.append(element("a", { class: "row", href: site.url, title: site.url },
+      siteIcon(site.favicon, name),
+      element("span", { class: "row-text" }, element("b", {}, name), element("small", {}, hostOf(site.url)))));
   }
-  return grid.childElementCount ? element("section", { "aria-label": SECTIONS.frequent }, heading("frequent"), grid) : null;
+  return list.childElementCount ? element("section", { class: "half", "aria-label": SECTIONS.frequent }, heading("frequent"), list) : null;
 }
 
 function ago(ms) {
@@ -246,7 +249,7 @@ function ago(ms) {
 }
 
 async function recentSection() {
-  const list = element("div", { id: "recent", class: "rows" });
+  const list = element("div", { id: "recent", class: "rows card" });
   let rows = [];
   try {
     const closed = await browser.sessions.getRecentlyClosed({ maxResults: RECENT * 2 });
@@ -265,8 +268,8 @@ async function recentSection() {
   for (const row of rows.slice(0, RECENT)) {
     const link = element("a", { class: "row", href: row.url },
       siteIcon(row.favicon, row.title || hostOf(row.url)),
-      element("span", { class: "row-text" }, row.title || hostOf(row.url)),
-      element("span", { class: "when" }, row.when ? ago(row.when) : ""));
+      element("span", { class: "row-text" }, element("b", {}, row.title || hostOf(row.url)), element("small", {}, row.when ? ago(row.when) : "")),
+      element("span", { class: "reopen" }, row.sessionId ? "Reopen" : ""));
     if (row.sessionId) {
       // A closed tab comes back with its history, as Reopen closed tab (Ctrl+Z) brings it back.
       link.addEventListener("click", event => {
@@ -278,7 +281,7 @@ async function recentSection() {
     }
     list.append(link);
   }
-  return list.childElementCount ? element("section", { "aria-label": SECTIONS.recent }, heading("recent"), list) : null;
+  return list.childElementCount ? element("section", { class: "half", "aria-label": SECTIONS.recent }, heading("recent"), list) : null;
 }
 
 /* ---------- The page ---------- */
@@ -358,7 +361,15 @@ async function showWeather() {
   }
 }
 
+/** Good morning, afternoon or evening, and today's date. */
+function greet() {
+  const hour = new Date().getHours();
+  document.getElementById("greeting").textContent = hour < 5 ? "Good evening" : hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+  document.getElementById("today").textContent = new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
+}
+
 async function start() {
+  greet();
   settings = { ...DEFAULTS, ...(await browser.storage.local.get(DEFAULTS)) };
   settings.sections = [...settings.sections, ...DEFAULTS.sections.filter(k => !settings.sections.includes(k))];
   applyBackground();
