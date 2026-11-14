@@ -35,6 +35,8 @@ class SiteKit {
   #loading = null;
   #saveTask = null;
   #valuesTask = null;
+  // In-flight GM_xmlhttpRequest AbortControllers, keyed by the child's requestId.
+  #requests = new Map();
   // Browser's own styles, compiled for the current theme: [{id, name, hosts, sections, vars}].
   #builtin = [];
   #tokens = "";
@@ -436,6 +438,10 @@ class SiteKit {
       throw new Error(`${new URL(url).hostname} isn't in this script's @connect.`);
     }
     const controller = new AbortController();
+    const requestId = details.requestId;
+    if (requestId != null) {
+      this.#requests.set(requestId, controller);
+    }
     const timer = details.timeout ? lazy.setTimeout(() => controller.abort(), details.timeout) : 0;
     try {
       const response = await fetch(url, {
@@ -462,10 +468,19 @@ class SiteKit {
       }
       return result;
     } finally {
+      if (requestId != null) {
+        this.#requests.delete(requestId);
+      }
       if (timer) {
         lazy.clearTimeout(timer);
       }
     }
+  }
+
+  /** Cancels an in-flight GM_xmlhttpRequest started with `requestId`. */
+  abortRequest(requestId) {
+    this.#requests.get(requestId)?.abort();
+    this.#requests.delete(requestId);
   }
 
   // ---- Updates ----

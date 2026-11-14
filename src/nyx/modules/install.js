@@ -59,10 +59,11 @@
     const body = card().firstElementChild;
     const style = kind === "style";
     const meta = style ? parseUserStyle(text) : parseUserScript(text);
-    const name = meta?.name || (style ? "Untitled style" : "Untitled script");
+    const name = meta?.name || t(style ? "install-untitled-style" : "install-untitled-script");
+    const optionCount = Object.keys(meta?.vars || {}).length;
     const sites = style
-      ? Object.keys(meta?.vars || {}).length
-        ? `${Object.keys(meta.vars).length} options`
+      ? optionCount
+        ? t("install-options", { count: optionCount })
         : ""
       : [...(meta?.match || []), ...(meta?.include || [])].slice(0, 3).join(", ");
     const updateUrl = meta?.updateURL || "";
@@ -82,18 +83,18 @@
 
     const list = el("div", "nyx-ic-list");
     if (style) {
-      list.append(row("globe", sites || pageUrl || "—", "Where it applies"));
-      if (Object.keys(meta?.vars || {}).length) {
-        list.append(row("settings", `${Object.keys(meta.vars).length} options`, "Set them after installing"));
+      list.append(row("globe", sites || pageUrl || "—", t("install-applies")));
+      if (optionCount) {
+        list.append(row("settings", t("install-options", { count: optionCount }), t("install-options-later")));
       }
     } else {
-      list.append(row("globe", sites || "—", "Runs on"));
+      list.append(row("globe", sites || "—", t("install-runs-on")));
       const grants = (meta?.grant || []).filter(g => g !== "none");
       if (grants.length) {
-        list.append(row("warning", grants.slice(0, 3).join(", "), "What it may do"));
+        list.append(row("warning", grants.slice(0, 3).join(", "), t("install-may-do")));
       }
       if ((meta?.connect || []).length) {
-        list.append(row("warning", meta.connect.slice(0, 3).join(", "), "Talks to another site"));
+        list.append(row("warning", meta.connect.slice(0, 3).join(", "), t("install-talks-to")));
       }
     }
     if (updateUrl) {
@@ -105,11 +106,15 @@
     }
 
     const foot = el("div", "nyx-ic-foot");
+    const error = el("span", "nyx-ic-error");
+    error.hidden = true;
     const cancel = el("button", "nyx-ic-btn", t("install-cancel"));
     cancel.addEventListener("click", () => panel.hidePopup());
     const install = el("button", "nyx-ic-btn primary", t("install-button"));
     install.addEventListener("click", async () => {
       const keepUpdates = document.getElementById("nyx-install-updates")?.checked !== false;
+      error.hidden = true;
+      install.disabled = true;
       try {
         if (style) {
           await NyxSiteKit.addStyle(text, {
@@ -123,11 +128,14 @@
           });
         }
         panel.hidePopup();
-      } catch (error) {
-        console.error("Browser: install failed", error);
+      } catch (err) {
+        console.error("Browser: install failed", err);
+        error.textContent = t("install-failed");
+        error.hidden = false;
+        install.disabled = false;
       }
     });
-    foot.append(cancel, install);
+    foot.append(error, cancel, install);
     body.replaceChildren(head, list, foot);
   }
 
@@ -140,6 +148,10 @@
   const observer = {
     observe(subject, topic, data) {
       if (topic !== INSTALL_TOPIC) {
+        return;
+      }
+      // Only the window that owns this tab's browser shows the card.
+      if (subject && !gBrowser.getTabForBrowser?.(subject)) {
         return;
       }
       try {

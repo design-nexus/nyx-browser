@@ -124,7 +124,7 @@ nyx-appearance-density-relaxed =
 nyx-appearance-group-effects = Effects
 nyx-appearance-frosted =
     .label = Frosted menus and panels
-nyx-appearance-frosted-description = Animations follow the system's reduced-motion setting
+nyx-appearance-frosted-description = Soft blur behind menus and panels
 
 ## Tabs & Sidebar
 
@@ -921,6 +921,8 @@ nyx-styles-new =
     .label = New style
 nyx-styles-group-builtin = Browser's styles
 nyx-styles-group-mine = Your styles
+nyx-styles-yours = Your style
+nyx-styles-browser = Browser's style · follows your theme
 nyx-styles-none = None yet. Import a Stylus backup, or write one.
 nyx-styles-back =
     .label = Site styles
@@ -990,6 +992,7 @@ nyx-scripts-import-done =
         [one] Imported 1 script.
        *[other] Imported { $count } scripts.
     }
+nyx-scripts-meta-updates = updates
 nyx-scripts-check-done =
     { $count ->
         [0] Everything is up to date.

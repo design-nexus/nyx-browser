@@ -306,8 +306,8 @@ export class NyxPasswordsChild extends JSWindowActorChild {
     const { accent, onAccent } = this.#accent();
     host.style.cssText = "all: initial; position: fixed; z-index: 2147483647; display: block; margin: 0; padding: 0; border: 0; pointer-events: auto;";
     const button = doc.createElement("button");
-    button.setAttribute("aria-label", "Nyx Passwords");
-    button.setAttribute("title", "Nyx Passwords");
+    button.setAttribute("aria-label", "Passwords");
+    button.setAttribute("title", "Passwords");
     button.style.cssText = `all: initial; box-sizing: border-box; display: grid; place-items: center; width: 100%; height: 100%; border-radius: 6px; background: ${accent}; cursor: pointer;`;
     const svg = doc.createElementNS(SVG, "svg");
     svg.setAttribute("viewBox", "0 0 24 24");

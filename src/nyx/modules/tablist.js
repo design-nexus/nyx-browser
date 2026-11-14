@@ -14,6 +14,8 @@
   const ICONS = "chrome://browser/content/nyx/icons";
   // What a real tab's attributes say that a row shows.
   const WATCHED = ["label", "image", "selected", "visuallyselected", "pending", "soundplaying", "muted", "pinned", "zen-essential", "collapsed", "busy", "zen-workspace-id", "active", "hidden", "multiselected", "split-view"];
+  const strings = new Localization(["browser/nyx-browser.ftl"], true);
+  const t = (id, args) => strings.formatValueSync(`nyx-tablist-${id}`, args);
 
   const el = (tag, cls = "", text = "") => {
     const node = document.createElementNS(HTML, tag);
@@ -30,6 +32,19 @@
     img.src = `${ICONS}/${name}.svg`;
     img.alt = "";
     return img;
+  };
+  /** Icon-only control: focusable button wrapping a glyph. */
+  const iconButton = (name, cls, title, onClick) => {
+    const btn = el("button", `nyx-tl-icon-btn ${cls}`);
+    btn.type = "button";
+    btn.title = title;
+    btn.setAttribute("aria-label", title);
+    btn.append(icon(name));
+    btn.addEventListener("click", event => {
+      event.stopPropagation();
+      onClick(event);
+    });
+    return btn;
   };
 
   const enabled = () => ["studio", "focus"].includes(window.NyxLayout?.current()) && !document.documentElement.hasAttribute("customizing");
@@ -57,6 +72,7 @@
     row.tab = tab;
     row.draggable = true;
     row.setAttribute("role", "option");
+    row.tabIndex = tab.selected ? 0 : -1;
     row.toggleAttribute("selected", tab.selected);
     row.toggleAttribute("multiselected", tab.multiselected);
     row.toggleAttribute("asleep", tab.hasAttribute("pending") && !tab.selected);
@@ -67,25 +83,15 @@
     row.append(favicon(tab), el("span", "nyx-tl-title", tab.label));
     if (tab.hasAttribute("pending") && !tab.selected) {
       const asleep = icon("moon", "nyx-tl-asleep");
-      asleep.title = "Asleep — opens when you choose it";
+      asleep.title = t("asleep");
       row.append(asleep);
     }
     if (tab.soundPlaying || tab.muted) {
-      const sound = icon(tab.muted ? "undo" : "sound", "nyx-tl-sound");
-      sound.title = tab.muted ? "Unmute" : "Mute";
-      sound.addEventListener("click", event => {
-        event.stopPropagation();
-        tab.toggleMuteAudio();
-      });
-      row.append(sound);
+      row.append(
+        iconButton(tab.muted ? "sound-mute" : "sound", "nyx-tl-sound", tab.muted ? t("unmute") : t("mute"), () => tab.toggleMuteAudio())
+      );
     }
-    const close = icon("close", "nyx-tl-close");
-    close.title = "Close tab";
-    close.addEventListener("click", event => {
-      event.stopPropagation();
-      closeTab(tab);
-    });
-    row.append(close);
+    row.append(iconButton("close", "nyx-tl-close", t("close"), () => closeTab(tab)));
     return row;
   }
 
@@ -166,7 +172,9 @@
     tile.textContent = symbol && !symbol.endsWith(".svg") ? symbol : workspace ? gZenWorkspaces.workspaceInitial(workspace) : "";
     box.append(tile, el("b", "nyx-tl-space-name", workspace?.name ?? ""), icon("chevron", "nyx-tl-chevron"), el("span", "nyx-tl-grow"));
     const search = el("button", "nyx-tl-btn nyx-tl-search");
-    search.title = "Search tabs (Ctrl+Shift+E)";
+    search.type = "button";
+    search.title = t("search");
+    search.setAttribute("aria-label", t("search"));
     search.append(icon("search"));
     search.addEventListener("click", event => {
       event.stopPropagation();
@@ -197,10 +205,11 @@
 
   function today(hasTabs) {
     const label = el("div", "nyx-tl-label");
-    label.append(el("i", "nyx-tl-line"), el("span", "", "Today"), el("i", "nyx-tl-line nyx-tl-grow"));
+    label.append(el("i", "nyx-tl-line"), el("span", "", t("today")), el("i", "nyx-tl-line nyx-tl-grow"));
     if (hasTabs) {
-      const clear = el("button", "nyx-tl-clear", "Clear");
-      clear.title = "Close today's tabs";
+      const clear = el("button", "nyx-tl-clear", t("clear"));
+      clear.type = "button";
+      clear.title = t("clear-title");
       clear.addEventListener("click", () => document.getElementById("cmd_zenCloseUnpinnedTabs")?.doCommand());
       label.append(clear);
     }
@@ -209,7 +218,8 @@
 
   function newTabRow() {
     const row = el("div", "nyx-tl-row nyx-tl-new");
-    row.append(icon("plus"), el("span", "nyx-tl-title", "New tab"));
+    row.setAttribute("role", "option");
+    row.append(icon("plus"), el("span", "nyx-tl-title", t("new")));
     const keys = el("span", "nyx-tl-kbd");
     keys.append(el("kbd", "", "Ctrl"), el("kbd", "", "T"));
     row.append(keys);
@@ -241,6 +251,7 @@
     list.addEventListener("auxclick", onAuxClick);
     list.addEventListener("dblclick", onDoubleClick);
     list.addEventListener("contextmenu", onContextMenu);
+    list.addEventListener("keydown", onKeyDown);
     list.addEventListener("dragstart", onDragStart);
     list.addEventListener("dragover", onDragOver);
     list.addEventListener("dragleave", () => clearDrop());
@@ -314,10 +325,15 @@
     if (event.button !== 0) {
       return;
     }
+    if (event.target.closest(".nyx-tl-icon-btn, .nyx-tl-clear, .nyx-tl-search")) {
+      return;
+    }
     const row = rowOf(event);
     if (row?.folder) {
       row.folder.collapsed = !row.folder.collapsed;
       renderSoon();
+    } else if (row?.classList.contains("nyx-tl-new")) {
+      BrowserCommands.openTab();
     } else if (row?.tab) {
       if (event.ctrlKey || event.metaKey) {
         row.tab.multiselected ? gBrowser.removeFromMultiSelectedTabs(row.tab) : gBrowser.addToMultiSelectedTabs(row.tab);
@@ -327,6 +343,53 @@
         gBrowser.clearMultiSelectedTabs();
         gBrowser.selectedTab = row.tab;
       }
+    }
+  }
+
+  function tabOptions() {
+    return [...scroller.querySelectorAll('.nyx-tl-tab[role="option"], .nyx-tl-new[role="option"], .nyx-tl-split[role="option"]')];
+  }
+
+  function onKeyDown(event) {
+    if (!list.contains(document.activeElement) && document.activeElement !== list) {
+      return;
+    }
+    const options = tabOptions();
+    if (!options.length) {
+      return;
+    }
+    const current = document.activeElement?.closest?.('[role="option"]') || options.find(o => o.hasAttribute("selected")) || options[0];
+    const index = Math.max(0, options.indexOf(current));
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+      event.preventDefault();
+      const next = options[(index + (event.key === "ArrowDown" ? 1 : -1) + options.length) % options.length];
+      next.tabIndex = 0;
+      options.forEach(o => {
+        if (o !== next) {
+          o.tabIndex = -1;
+        }
+      });
+      next.focus();
+    } else if (event.key === "Home" || event.key === "End") {
+      event.preventDefault();
+      const next = event.key === "Home" ? options[0] : options.at(-1);
+      next.tabIndex = 0;
+      options.forEach(o => {
+        if (o !== next) {
+          o.tabIndex = -1;
+        }
+      });
+      next.focus();
+    } else if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      if (current.classList.contains("nyx-tl-new")) {
+        BrowserCommands.openTab();
+      } else if (current.tab) {
+        gBrowser.selectedTab = current.tab;
+      }
+    } else if ((event.key === "Delete" || event.key === "Backspace") && current.tab) {
+      event.preventDefault();
+      closeTab(current.tab);
     }
   }
 

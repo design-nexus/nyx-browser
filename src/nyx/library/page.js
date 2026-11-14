@@ -334,7 +334,13 @@ async function showBookmarks(query) {
       return;
     }
     const item = el("button", "tr");
-    item.toggleAttribute("selected", node.guid === folderGuid);
+    const on = node.guid === folderGuid;
+    item.toggleAttribute("selected", on);
+    if (on) {
+      item.setAttribute("aria-current", "page");
+    } else {
+      item.removeAttribute("aria-current");
+    }
     item.style.paddingInlineStart = `${10 + depth * 16}px`;
     const title = el("span");
     if (name) {
@@ -530,7 +536,13 @@ async function show() {
     historyLimit = 300;
     l10n.setAttributes(find, `nyx-library-find-${now}`);
     for (const item of document.querySelectorAll(".nav-item")) {
-      item.toggleAttribute("selected", item.dataset.section === now);
+      const on = item.dataset.section === now;
+      item.toggleAttribute("selected", on);
+      if (on) {
+        item.setAttribute("aria-current", "page");
+      } else {
+        item.removeAttribute("aria-current");
+      }
     }
   }
   await SHOW[now](find.value.trim());

@@ -115,6 +115,11 @@
     &:hover {
       background: var(--nyx-tile);
     }
+
+    &:focus-visible {
+      outline: 2px solid var(--nyx-accent);
+      outline-offset: 1px;
+    }
   }
 
   & menulist {
@@ -369,6 +374,11 @@ checkbox.nyx-switch {
     background-color: color-mix(in srgb, var(--nyx-text) 8%, transparent);
     fill: var(--nyx-text);
   }
+
+  &:focus-visible {
+    outline: 2px solid var(--nyx-accent);
+    outline-offset: 1px;
+  }
 }
 
 /* Selection Search's engines: drag by the grip, switch on or off. */
@@ -440,6 +450,11 @@ button.nyx-primary {
   background: var(--nyx-accent) !important;
   color: var(--nyx-on-accent) !important;
   font-weight: 600;
+
+  &:focus-visible {
+    outline: 2px solid var(--nyx-accent);
+    outline-offset: 2px;
+  }
 }
 
 .nyx-error {
@@ -501,8 +516,9 @@ button.nyx-primary {
     font-size: 13px;
     outline: none;
 
-    &:focus {
-      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--nyx-accent) 60%, transparent);
+    &:focus,
+    &:focus-visible {
+      box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--nyx-accent) 60%, transparent);
     }
   }
 }
@@ -1024,6 +1040,14 @@ mark.nyx-mark {
   & > .nyx-row:nth-child(odd) {
     box-shadow: inset -1px 0 0 var(--nyx-line);
   }
+
+  @media (max-width: 720px) {
+    grid-template-columns: 1fr;
+
+    & > .nyx-row:nth-child(odd) {
+      box-shadow: none;
+    }
+  }
 }
 
 .nyx-style-ico {
@@ -1125,6 +1149,11 @@ mark.nyx-mark {
     color: var(--nyx-text);
     border-bottom-color: var(--nyx-accent);
   }
+
+  &:focus-visible {
+    outline: 2px solid var(--nyx-accent);
+    outline-offset: -2px;
+  }
 }
 
 .nyx-find-field {
@@ -1138,6 +1167,11 @@ mark.nyx-mark {
   box-shadow: inset 0 0 0 1px var(--nyx-line);
   color: var(--nyx-text);
   font: inherit;
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--nyx-accent) 60%, transparent);
+  }
 }
 
 .nyx-mono {
@@ -1167,6 +1201,11 @@ mark.nyx-mark {
   height: 28px;
   margin: 0;
   padding: 0;
+
+  &:focus-visible {
+    outline: 2px solid var(--nyx-accent);
+    outline-offset: 1px;
+  }
 }
 
 /* Design 2.0 Bar slider — filled bar with a slim handle */

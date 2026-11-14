@@ -149,15 +149,18 @@
     head.append(fav, text);
 
     const shield = document.getElementById("nyx-shield-button");
-    const blocked = shield?.querySelector(".nyx-shield-count")?.textContent || "";
+    const countNode = shield?.querySelector(".nyx-shield-count");
+    const blocked = (countNode?.value || countNode?.textContent || "").trim();
     const blocking = shield && !shield.hidden && !shield.hasAttribute("nyx-off");
+    const passwordsBtn = document.getElementById("nyx-passwords-button");
+    const passwordsOn = !!passwordsBtn && !passwordsBtn.hidden && !passwordsBtn.disabled;
     const tiles = el("div", "nyx-sc-tiles");
     tiles.append(
       tile("shield", t("blocking"), blocking ? (blocked ? t("blocked", { count: blocked }) : t("blocked-none")) : t("off"), blocking, () => {
         close();
         shield?.click();
       }),
-      tile("key", t("passwords"), t("passwords-state"), false, () => openView("PanelUI-nyx-passwords", "nyx-passwords-button")),
+      tile("key", t("passwords"), t("passwords-state"), passwordsOn, () => openView("PanelUI-nyx-passwords", "nyx-passwords-button")),
       tile("globe", t("vpn"), document.getElementById("nyx-vpn-button")?.hasAttribute("nyx-on") ? t("vpn-on") : t("off"), document.getElementById("nyx-vpn-button")?.hasAttribute("nyx-on"), () => openView("PanelUI-nyx-vpn", "nyx-vpn-button")),
       tile("browser", t("reader"), browser.isArticle ? t("reader-available") : t("reader-unavailable"), false, () => {
         close();

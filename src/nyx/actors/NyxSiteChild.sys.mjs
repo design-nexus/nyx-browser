@@ -52,6 +52,7 @@ export class NyxSiteChild extends JSWindowActorChild {
   #ran = new Set();
   #menus = new Map();
   #menuId = 0;
+  #requestId = 0;
   #listening = false;
   #valueListeners = new Map();
   #listenerId = 0;
@@ -318,9 +319,10 @@ export class NyxSiteChild extends JSWindowActorChild {
     define("GM_removeValueChangeListener", listenerId => this.#valueListeners.delete(listenerId));
 
     define("GM_addStyle", css => {
-      const utils = window.windowUtils;
-      utils.loadSheetUsingURIString(`data:text/css;charset=utf-8,${encodeURIComponent(String(css))}`, utils.AUTHOR_SHEET);
-      return this.document.createElement("style");
+      const style = this.document.createElement("style");
+      style.textContent = String(css);
+      (this.document.head || this.document.documentElement).append(style);
+      return style;
     });
     define("GM_getResourceText", name => script.resources[name]?.text ?? null);
     define("GM_getResourceURL", name => script.resources[name]?.dataUrl ?? null);
@@ -360,6 +362,7 @@ export class NyxSiteChild extends JSWindowActorChild {
     }
     if (granted("GM_xmlhttpRequest", "GM.xmlHttpRequest", "GM.xmlhttpRequest")) {
       define("GM_xmlhttpRequest", details => {
+        const requestId = ++this.#requestId;
         const request = {
           method: details.method,
           url: String(details.url ?? ""),
@@ -368,6 +371,7 @@ export class NyxSiteChild extends JSWindowActorChild {
           responseType: details.responseType,
           timeout: details.timeout,
           anonymous: !!details.anonymous,
+          requestId,
         };
         const call = (name, value) => {
           const fn = details[name];
@@ -410,11 +414,27 @@ export class NyxSiteChild extends JSWindowActorChild {
           },
           error => {
             const failure = { status: 0, statusText: "", readyState: 4, error: String(error?.message ?? error), finalUrl: request.url };
-            call(/abort/i.test(failure.error) ? "ontimeout" : "onerror", failure);
+            if (/abort/i.test(failure.error)) {
+              call("onabort", failure);
+              if (typeof details.onabort !== "function") {
+                call("onerror", failure);
+              }
+            } else {
+              call("onerror", failure);
+            }
             call("onloadend", failure);
           }
         );
-        return Cu.cloneInto({ abort() {} }, sandbox, { cloneFunctions: true });
+        const actor = this;
+        return Cu.cloneInto(
+          {
+            abort() {
+              actor.sendAsyncMessage("NyxSite:AbortRequest", { requestId });
+            },
+          },
+          sandbox,
+          { cloneFunctions: true }
+        );
       });
     }
   }

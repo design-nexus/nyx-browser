@@ -28,6 +28,7 @@ NYX_GLYPHS = {
     "more": "more-h", "music": "music", "note": "edit", "phone": "phone", "picker": "eyedropper",
     "pin": "pin", "private": "private", "puzzle": "puzzle", "reload": "refresh", "search": "search",
     "settings": "sliders", "share": "share", "shield": "shield", "sidebar": "sidebar", "sound": "vol-high",
+    "sound-mute": "vol-mute",
     "star": "star", "star-filled": "star", "undo": "undo", "warning": "warning",
     "palette": "palette", "layout": "dashboard", "location": "location", "sync": "sync",
     "reader": "list", "file": "documents-page", "pause": "pause", "play": "play",

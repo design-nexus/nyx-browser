@@ -94,8 +94,10 @@
       const button = document.createElementNS(XUL, "menuitem");
       button.className = "menuitem-iconic nyx-menu-strip-item";
       button.setAttribute("image", `${ICONS}/${glyph}.svg`);
-      button.setAttribute("tooltiptext", item.getAttribute("label") ?? "");
-      button.setAttribute("aria-label", item.getAttribute("label") ?? "");
+      // Fluent menus often have no label= attribute yet; prefer the live .label property.
+      const label = item.label || item.getAttribute("label") || item.getAttribute("aria-label") || "";
+      button.setAttribute("tooltiptext", label);
+      button.setAttribute("aria-label", label);
       button.toggleAttribute("disabled", item.disabled);
       button.addEventListener("command", () => item.doCommand());
       buttons.push(button);

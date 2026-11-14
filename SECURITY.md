@@ -1,11 +1,9 @@
-<!--
-   - This Source Code Form is subject to the terms of the Mozilla Public
-   - License, v. 2.0. If a copy of the MPL was not distributed with this
-   - file, You can obtain one at http://mozilla.org/MPL/2.0/.
-   -->
-
 # Security Policy
 
 ## Reporting a Vulnerability
 
-Please report security vulnerabilities [here](https://github.com/zen-browser/desktop/security/advisories/new)
+Please report security vulnerabilities through
+[GitHub Security Advisories for design-nexus/nyx-browser](https://github.com/design-nexus/nyx-browser/security/advisories/new).
+
+For how Browser keeps page content, the extension, the native host and Assistant apart, see
+[nyx/docs/SECURITY.md](nyx/docs/SECURITY.md).

@@ -66,7 +66,7 @@
     const vertical = layout !== "workbench";
     const modes = [["auto", "nyx-appearance-pop-auto"], ["expanded", "nyx-appearance-pop-expanded"], ["compact", "nyx-appearance-pop-compact"], ["hidden", "nyx-appearance-pop-hidden"]].filter(([value]) => layout !== "focus" || value !== "compact");
     const mode = Services.prefs.getStringPref("nyx.sidebar.mode", "auto");
-    const frosted = Services.prefs.getBoolPref("nyx.effects.frosted", false);
+    const frosted = Services.prefs.getBoolPref("nyx.effects.frosted", true);
 
     const swatches = html("div", { class: "nyx-swatches", role: "radiogroup", l10n: "nyx-appearance-pop-accent-group" });
     swatches.append(

@@ -5,35 +5,18 @@
 /* Settings subdialogs (Fonts, Certificates, …). Match Nyx Settings controls —
  * not stock Firefox gray menulists. */
 
+/* Theme Engine / zen-theme supply --nyx-* (and --nyx-scheme). Don't hardcode a dark
+ * palette here — that locked Fonts/Certificates to dark even in a light theme. */
 :root {
-  color-scheme: dark;
+  color-scheme: var(--nyx-scheme, light dark);
 
-  --nyx-bg: #0d0e12;
-  --nyx-panel: #121318;
-  --nyx-card: #191a21;
-  --nyx-raised: #1f2028;
-  --nyx-popover: #1d1e26;
-  --nyx-surface: #1d1e26;
-  --nyx-text: #e7e8ee;
-  --nyx-dim: #a2a5ba;
-  --nyx-tertiary: #8a8ea8;
-  --nyx-border: #2b2d37;
-  --nyx-divider: #1d1e26;
-  --nyx-accent: #3d8ae8;
-  --nyx-on-accent: #0d0e12;
-  --nyx-danger: #f2655f;
-  --nyx-warning: #eeb43f;
-  --nyx-success: #59d45b;
-  --nyx-shadow: #060609;
-  --nyx-hover: 6%;
-  --nyx-selection: 16%;
   --nyx-radius-small: 7px;
   --nyx-radius-card: 11px;
   --nyx-radius-dialog: 15px;
   --nyx-font: "Inter", "Inter Variable", "Inter 18pt", sans-serif;
   --nyx-tile: color-mix(in srgb, var(--nyx-text) 5%, var(--nyx-bg));
-  --nyx-hover-bg: color-mix(in srgb, var(--nyx-accent) var(--nyx-hover), var(--nyx-tile));
-  --nyx-sel-bg: color-mix(in srgb, var(--nyx-accent) calc(var(--nyx-selection) + 2%), var(--nyx-bg));
+  --nyx-hover-bg: color-mix(in srgb, var(--nyx-accent) var(--nyx-hover, 6%), var(--nyx-tile));
+  --nyx-sel-bg: color-mix(in srgb, var(--nyx-accent) calc(var(--nyx-selection, 16%) + 2%), var(--nyx-bg));
   --nyx-line: color-mix(in srgb, var(--nyx-text) 9%, transparent);
 
   --background-color-canvas: var(--nyx-surface);

@@ -10,7 +10,6 @@
 // The proxy is chosen per request, by the tab it's for (a channel filter, as Firefox's own IP
 // Protection does). Logins are kept in the profile's login store, encrypted like saved passwords.
 
-import { setTimeout } from "resource://gre/modules/Timer.sys.mjs";
 import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs";
 
 const lazy = {};
@@ -101,6 +100,25 @@ async function keepLogin(id, username, password) {
 
 // ---- the proxy, per request ----
 
+/** Basic auth header: UTF-8 bytes through btoa so non–Latin-1 logins don't throw. */
+function basicAuthHeader(username, password) {
+  const bytes = new TextEncoder().encode(`${username}:${password}`);
+  let binary = "";
+  for (const byte of bytes) {
+    binary += String.fromCharCode(byte);
+  }
+  return `Basic ${btoa(binary)}`;
+}
+
+/** Unusable proxy: fail closed when a connection is required but can't be built. */
+function blockedProxyInfo() {
+  return lazy.ProxyService.newProxyInfo("socks", "127.0.0.1", 1, "", "nyx-vpn-blocked", 0, 0, null);
+}
+
+function wantsProtection() {
+  return !!state && (state.active || Object.values(state.workspaces).some(v => v && v !== "none"));
+}
+
 function connectionFor(browserId) {
   if (!state) {
     return null;
@@ -140,7 +158,7 @@ function proxyInfoFor(connection) {
         null
       );
     } else {
-      const header = login ? `Basic ${btoa(`${login.username}:${login.password}`)}` : "";
+      const header = login ? basicAuthHeader(login.username, login.password) : "";
       info = lazy.ProxyService.newProxyInfo(connection.type, connection.host, connection.port, header, key, RESOLVES_HOST, 0, null);
     }
     proxyInfos.set(connection.id, info);
@@ -178,12 +196,21 @@ function decide(channel) {
 const filter = {
   QueryInterface: ChromeUtils.generateQI(["nsIProtocolProxyChannelFilter"]),
   applyFilter(channel, defaultProxyInfo, callback) {
+    // Still loading saved state: fail closed when the kill switch is on (default) so a cold
+    // start with VPN left on doesn't leak before init finishes.
+    if (!state) {
+      const closed = Services.prefs.getBoolPref(PREFS.killSwitch, true);
+      callback.onProxyFilterResult(closed ? blockedProxyInfo() : defaultProxyInfo);
+      return;
+    }
+    let connection = null;
     try {
-      const connection = decide(channel);
+      connection = decide(channel);
       callback.onProxyFilterResult(connection ? proxyInfoFor(connection) : defaultProxyInfo);
     } catch (error) {
       console.error("Browser: VPN filter", error);
-      callback.onProxyFilterResult(defaultProxyInfo);
+      // Fail closed when a VPN hop was required; never fall through to direct.
+      callback.onProxyFilterResult(connection || wantsProtection() ? blockedProxyInfo() : defaultProxyInfo);
     }
   },
 };
@@ -198,15 +225,19 @@ const httpLogin = {
       const connection = decide(channel);
       const login = connection?.type === "http" && loginFor(connection.id);
       if (login) {
-        channel.setRequestHeader("Proxy-Authorization", `Basic ${btoa(`${login.username}:${login.password}`)}`, false);
+        channel.setRequestHeader("Proxy-Authorization", basicAuthHeader(login.username, login.password), false);
       }
-    } catch {}
+    } catch (error) {
+      console.error("Browser: VPN HTTP login", error);
+    }
   },
 };
 
 let filtering = false;
 function applyProtection() {
-  const any = !!state && (state.active || Object.values(state.workspaces).some(v => v && v !== "none"));
+  const any = wantsProtection() || !state;
+  // Register as soon as we might need it: before state loads (cold start) and whenever a
+  // connection is active. decide() / the loading branch above choose the hop.
   if (any && !filtering) {
     lazy.ProxyService.registerChannelFilter(filter, 0);
     Services.obs.addObserver(httpLogin, "http-on-modify-request");
@@ -217,9 +248,10 @@ function applyProtection() {
     filtering = false;
   }
   // While a VPN is on: no going around it when it drops, and calls don't show the real address.
+  const protecting = wantsProtection();
   const set = (pref, on, value) => (on ? Services.prefs.setBoolPref(pref, value) : Services.prefs.clearUserPref(pref));
-  set("network.proxy.failover_direct", any && Services.prefs.getBoolPref(PREFS.killSwitch, true), false);
-  const webrtc = any && Services.prefs.getBoolPref(PREFS.webrtc, true);
+  set("network.proxy.failover_direct", protecting && Services.prefs.getBoolPref(PREFS.killSwitch, true), false);
+  const webrtc = protecting && Services.prefs.getBoolPref(PREFS.webrtc, true);
   set("media.peerconnection.ice.proxy_only_if_behind_proxy", webrtc, true);
   set("media.peerconnection.ice.default_address_only", webrtc, true);
 }
@@ -411,4 +443,7 @@ export const NyxVpn = {
   },
 };
 
-setTimeout(() => NyxVpn.init().catch(console.error), 0);
+// Register the filter immediately so cold-start requests see the loading fail-closed path,
+// then load state (and logins) without waiting a turn.
+applyProtection();
+NyxVpn.init().catch(console.error);

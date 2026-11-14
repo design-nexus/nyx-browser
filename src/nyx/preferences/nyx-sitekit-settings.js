@@ -195,7 +195,11 @@ var gNyxStylesPane = {
       el("html:span", { className: "nyx-style-ico", text: letter }),
       el("vbox", { className: "nyx-row-text", flex: "1" },
         el("label", { value: style.name }),
-        el("description", { className: "nyx-row-note", text: (style.hosts || []).join(" · ") || (mine ? "Your style" : "") })
+        el("description", { className: "nyx-row-note", ...( (style.hosts || []).length
+          ? { text: style.hosts.join(" · ") }
+          : mine
+            ? { "data-l10n-id": "nyx-styles-yours" }
+            : {} ) })
       )
     );
     const toggle = el("checkbox", { className: "nyx-switch" });
@@ -246,9 +250,16 @@ var gNyxStylesPane = {
     document.getElementById("nyxStylesEditorName").value = style.name;
     document.getElementById("nyxStylesEditorName").readOnly = !mine;
     document.getElementById("nyxStylesEditorEnabled").checked = style.enabled !== false;
-    document.getElementById("nyxStylesEditorMeta").textContent = mine
-      ? (style.meta?.version ? `v${style.meta.version}` : "Your style")
-      : "Browser's style · follows your theme";
+    const metaEl = document.getElementById("nyxStylesEditorMeta");
+    if (mine) {
+      metaEl.removeAttribute("data-l10n-id");
+      metaEl.textContent = style.meta?.version ? `v${style.meta.version}` : "";
+      if (!style.meta?.version) {
+        document.l10n.setAttributes(metaEl, "nyx-styles-yours");
+      }
+    } else {
+      document.l10n.setAttributes(metaEl, "nyx-styles-browser");
+    }
     document.getElementById("nyxStylesEditorIcon").textContent = style.name.charAt(0).toUpperCase();
     this.showOptions(style);
     this.showApplies(style);
@@ -499,11 +510,18 @@ var gNyxScriptsPane = {
     this.draft = script.source;
     document.getElementById("nyxScriptsEditorName").value = script.meta.name;
     document.getElementById("nyxScriptsEditorEnabled").checked = script.enabled;
-    document.getElementById("nyxScriptsEditorMeta").textContent = [
-      script.meta.version && `v${script.meta.version}`,
-      script.origin,
-      script.updateUrl && "updates",
-    ].filter(Boolean).join(" · ");
+    {
+      const parts = [script.meta.version && `v${script.meta.version}`, script.origin].filter(Boolean);
+      const metaEl = document.getElementById("nyxScriptsEditorMeta");
+      if (script.updateUrl) {
+        document.l10n.formatValue("nyx-scripts-meta-updates").then(word => {
+          metaEl.textContent = [...parts, word].filter(Boolean).join(" · ");
+        });
+      } else {
+        metaEl.removeAttribute("data-l10n-id");
+        metaEl.textContent = parts.join(" · ") || "—";
+      }
+    }
     document.getElementById("nyxScriptsEditorIcon").textContent = script.meta.name.charAt(0).toUpperCase();
     this.showGrants(script);
     this.tab("code");

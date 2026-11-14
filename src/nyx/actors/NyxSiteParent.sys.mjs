@@ -51,6 +51,9 @@ export class NyxSiteParent extends JSWindowActorParent {
           throw new Error("Not allowed.");
         }
         return lazy.NyxSiteKit.request(data.id, this.#pageUrl, data.details);
+      case "NyxSite:AbortRequest":
+        lazy.NyxSiteKit.abortRequest(data.requestId);
+        return null;
       case "NyxSite:OpenInTab": {
         if (!this.#script(data.id, "GM_openInTab", "GM.openInTab")) {
           return null;

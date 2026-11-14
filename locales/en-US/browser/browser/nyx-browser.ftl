@@ -483,6 +483,15 @@ nyx-ext-addons-site = Add-ons site
 
 ## The tab list (src/nyx/modules/tablist.js)
 
+nyx-tablist-asleep = Asleep — opens when you choose it
+nyx-tablist-mute = Mute
+nyx-tablist-unmute = Unmute
+nyx-tablist-close = Close tab
+nyx-tablist-search = Search tabs
+nyx-tablist-today = Today
+nyx-tablist-clear = Clear
+nyx-tablist-clear-title = Close today's tabs
+nyx-tablist-new = New tab
 nyx-tablist =
     .aria-label = Tabs
 # A tab folder that has no name yet
@@ -570,3 +579,12 @@ nyx-site-install-button = Install
 nyx-site-install-cancel = Cancel
 nyx-site-install-updates = Keep up to date
 nyx-site-install-done = Installed.
+nyx-site-install-failed = Couldn't install. Try again.
+nyx-site-install-untitled-style = Untitled style
+nyx-site-install-untitled-script = Untitled script
+nyx-site-install-applies = Where it applies
+nyx-site-install-runs-on = Runs on
+nyx-site-install-may-do = What it may do
+nyx-site-install-talks-to = Talks to another site
+nyx-site-install-options = { $count } options
+nyx-site-install-options-later = Set them after installing

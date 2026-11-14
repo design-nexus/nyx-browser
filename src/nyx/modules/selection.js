@@ -151,8 +151,13 @@
     const line = html("span", "nyx-sel-line");
     icons.replaceChildren(copy, link, line);
     // The engines follow as soon as the search service has them; the popup doesn't wait.
+    // Drop a late reply if show() ran again before this one finished.
+    const generation = (show.generation = (show.generation || 0) + 1);
     popupEngines()
       .then(choices => {
+        if (generation !== show.generation) {
+          return;
+        }
         if (choices[0]) {
           document.l10n.setAttributes(hint, "nyx-selection-enter", { name: choices[0].engine.name });
         }

@@ -180,6 +180,9 @@
   foot.addEventListener("mousedown", event => event.preventDefault());
 
   function fillHints() {
+    if (!words) {
+      return;
+    }
     const [open, newTab, engine, commands] = words.hints;
     const hint = (keys, text) => {
       const node = html("span", "nyx-urlbar-hint");
@@ -196,8 +199,15 @@
 
   let filling = null;
   function fillFoot() {
+    if (!words) {
+      ready.then(fillFoot);
+      return;
+    }
     filling ??= (async () => {
       await storeReady;
+      if (!words) {
+        return;
+      }
       const engines = allEngines().filter(engine => engine.name !== shownEngine()?.name).slice(0, 4);
       const buttons = await Promise.all(
         engines.map(async engine => {

@@ -2589,16 +2589,38 @@
   }
 
   & .nyx-tl-asleep,
-  & .nyx-tl-close,
-  & .nyx-tl-sound {
-    width: 14px;
-    height: 14px;
+  & .nyx-tl-icon-btn {
+    width: 18px;
+    height: 18px;
     color: var(--nyx-tertiary);
   }
 
   & .nyx-tl-asleep {
     flex: none;
+    width: 14px;
+    height: 14px;
     opacity: 0.9;
+  }
+
+  & .nyx-tl-icon-btn {
+    appearance: none;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border: 0;
+    border-radius: 4px;
+    background: transparent;
+    color: inherit;
+
+    & img {
+      width: 14px;
+      height: 14px;
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--nyx-accent);
+      outline-offset: 0;
+    }
   }
 
   & .nyx-tl-sound {
@@ -2607,7 +2629,6 @@
 
   & .nyx-tl-close {
     display: none;
-    border-radius: 4px;
 
     &:hover {
       color: var(--nyx-text);
@@ -2615,8 +2636,8 @@
     }
   }
 
-  &:is(:hover, [selected]) .nyx-tl-close {
-    display: block;
+  &:is(:hover, [selected], :focus-within) .nyx-tl-close {
+    display: grid;
   }
 }
 
@@ -3479,9 +3500,17 @@
 
 .nyx-ic-foot {
   display: flex;
+  flex-wrap: wrap;
   justify-content: flex-end;
+  align-items: center;
   gap: 8px;
   padding-top: 4px;
+}
+
+.nyx-ic-error {
+  flex: 1 1 100%;
+  color: var(--nyx-danger);
+  font-size: 12px;
 }
 
 .nyx-ic-btn {

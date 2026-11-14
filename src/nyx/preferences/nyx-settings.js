@@ -1170,13 +1170,14 @@ var gNyxApps = {
         padding-bottom: 16px;
         overflow-x: hidden !important;
         overflow-y: auto !important;
-        scrollbar-width: none !important;
-      }
-      nav::-webkit-scrollbar { width: 0 !important; height: 0 !important; display: none !important; }`,
+        scrollbar-width: thin !important;
+        scrollbar-color: color-mix(in srgb, var(--nyx-text) 28%, transparent) transparent !important;
+      }`,
     "moz-page-nav-button": `.page-nav-icon { box-sizing: border-box; width: 22px; height: 22px; padding: 4px; border-radius: 6px;
         background: color-mix(in srgb, var(--nyx-nav-tile, #6b6f7e) 20%, transparent);
         fill: var(--nyx-nav-tile, #6b6f7e); -moz-context-properties: fill, fill-opacity; }
       button { min-height: 34px; padding-inline: 8px; border-radius: 8px; gap: 10px; font-size: 13px; color: var(--nyx-text); }
+      button:focus-visible { outline: 2px solid var(--nyx-accent); outline-offset: -2px; }
       button[selected] { color: var(--nyx-text); background-color: var(--nyx-nav-active, color-mix(in srgb, var(--nyx-text) 8%, transparent)); font-weight: 500; }
       button::before, button[selected]::before { display: none; }`,
   };

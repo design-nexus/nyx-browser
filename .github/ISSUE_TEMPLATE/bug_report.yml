@@ -1,135 +1,94 @@
 name: Bug Report
-description: File a bug report
+description: File a bug report for Nyx Browser
 body:
   - type: markdown
     attributes:
       value: |
-        <p align="center">
-          <a href="https://zen-browser.app">
-            <picture>
-              <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/zen-browser/desktop/dev/docs/assets/zen-light.svg">
-              <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/zen-browser/desktop/dev/docs/assets/zen-dark.svg">
-              <img src="https://raw.githubusercontent.com/zen-browser/desktop/dev/docs/assets/zen-light.svg" alt="Zen Logo" width="64" height="64">
-            </picture>
-            <img src="https://raw.githubusercontent.com/zen-browser/desktop/dev/docs/assets/zen-browser.svg" alt="Zen Browser Text" width="156" height="64">
-          </a>
-        </p>
-
-        <p align="center"><em>Thank you for filing a bug report!</em></p>
+        Thank you for filing a bug report.
 
         > [!IMPORTANT]
-        > - Please provide descriptive titles. Bad titles do more harm than good.
-        > - Please search existing issues to avoid creating duplicates.
-        > - For enhancement requests, please use GitHub Discussions.
-        > - Please fill out the template below to the best of your ability.
-        > - Please describe the issue as much as possible and provide steps to reproduce it along with visual aids if possible.
+        > - Use a descriptive title.
+        > - Search existing issues first to avoid duplicates.
+        > - Feature requests belong in a separate issue or discussion, not this template.
+        > - Describe what happened, what you expected, and steps to reproduce.
   - type: checkboxes
-    id: captchas
+    id: checks
     attributes:
-      label: Preliminary Checks
-      description: Please confirm the following before submitting a bug report. This helps us triage and resolve issues more efficiently.
+      label: Preliminary checks
       options:
-        - label: I have read and understood the important section above.
+        - label: I have searched existing issues and this is not a duplicate.
           required: true
-        - label: I have searched existing issues and avoided creating duplicates.
-          required: true
-        - label: I am not filing an enhancement request.
-          required: true
-        - label: I have checked that this issue cannot be reproduced on Mozilla Firefox.
-          required: true
-        - label: I have checked that this issue can be reproduced once I removed all my Mods and Custom CSS.
+        - label: This is a bug report, not a feature request.
           required: true
   - type: textarea
     id: what-happened
     attributes:
       label: What happened?
       description: Describe the bug clearly and concisely.
-      placeholder: Tell us what you see!
-    validations:
-      required: true
-  - type: input
-    id: expected-behavior
-    attributes:
-      label: Expected behavior
-      description: Please write a description of what was supposed to happen.
-    validations:
-      required: true
-  - type: input
-    id: actual-behavior
-    attributes:
-      label: Actual behavior
-      description: Please write a description of what actually happened.
     validations:
       required: true
   - type: textarea
-    id: how-to-reproduce
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: steps
     attributes:
       label: Steps to reproduce
-      description: Please Provide numbered steps to reproduce this issue so developers can replicate them easily.
+      description: Numbered steps so the issue can be reproduced.
     validations:
       required: true
   - type: textarea
     id: screenshots
     attributes:
       label: Screenshots and videos
-      description: |
-        If applicable, add screenshots or videos to help explain your problem.
+      description: Optional. Attach anything that helps explain the problem.
   - type: input
     id: version
     attributes:
       label: Version
-      description: What version of our software are you running? Please do not use "latest" or "newest" as version numbers. Go to `Help -> About Zen` to find the version number.
-      placeholder: 1.0.0b
+      description: Help → About Browser (not “latest”).
+      placeholder: 1.24.2b-2
     validations:
       required: true
   - type: dropdown
     id: platform
     attributes:
-      label: What platform are you seeing the problem on?
+      label: Platform
       multiple: true
       options:
-        - Linux (AppImage)
-        - Linux (Flatpak)
-        - Linux (Tarball)
-        - macOS - aarch64
-        - macOS - Intel
-        - Windows - aarch64
-        - Windows - x64
+        - Linux (NyxOS / package)
+        - Linux (installer / tarball)
         - Other
     validations:
       required: true
   - type: dropdown
     id: component
     attributes:
-      label: What component is this issue related to?
+      label: Area
       options:
-        - Other
-        - Bookmarks
-        - Compact Mode
-        - Customizable UI / Toolbars
-        - Extensions
-        - Glance
-        - Keyboard Shortcuts
-        - Localization
-        - Media Controler
-        - Mods / Themes
-        - Performance
-        - Privacy
-        - Security
+        - Tabs / layouts
+        - Sidebar
+        - Address bar
         - Settings
-        - Split View
-        - Sync
-        - Tab Folders
-        - Tab unloading
-        - Tabs
-        - URL Bar
-        - Workspaces
+        - Library / Extensions
+        - Site styles / Scripts
+        - Shield / Blocking
+        - VPN
+        - Passwords
+        - Share / Capture / Assistant
+        - Theme / Appearance
+        - New tab
+        - Performance
+        - Privacy / Security
+        - Other
     validations:
       required: true
-
   - type: textarea
     id: logs
     attributes:
-      label: Relevant log output if applicable
-      description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
+      label: Relevant log output
+      description: Optional. Pasted as a code block automatically.
       render: shell
