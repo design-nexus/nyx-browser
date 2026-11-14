@@ -21,13 +21,15 @@ import look  # noqa: E402
 from marionette import Browser  # noqa: E402
 
 # The mockup's top bar, left to right. Ids are Firefox's or this browser's own.
-PASSWORDS = "nyx-passwords_design-nexus_github_io-browser-action"
+PASSWORDS = "nyx-passwords-button"
 ACTIONS = [
     "nyx-share-button",
     "nyx-capture-button",
     "nyx-assistant-button",
     PASSWORDS,
     "unified-extensions-button",
+    "nyx-vpn-button",
+    "nyx-openin-button",
     "downloads-button",
     "nyx-settings-button",
     "PanelUI-button",
@@ -142,8 +144,8 @@ def page_buttons(b, horizontal):
 
 
 def extensions_panel(b, horizontal):
-    """The Extensions button lists what's installed, without Browser's own parts; with nothing to
-    list it opens the Add-ons page, as Firefox does."""
+    """The Extensions button lists what's installed, without Browser's own parts but for uBlock
+    Origin, whose own button waits there behind the shield."""
     d = b.js_async(r"""
         const done = arguments[arguments.length - 1];
         const show = async () => {
@@ -182,9 +184,8 @@ def extensions_panel(b, horizontal):
         })().catch(e => done({ error: String(e) }));
     """, timeout=40)
     check("error" not in d, "the extensions panel test threw", d)
-    # Passwords, when it's installed, is pinned to the bar and so isn't listed.
-    check(not d["before"]["open"] and (d["before"]["page"] or "").startswith("about:addons"), "with nothing to list, the button didn't open the Add-ons page", d)
-    check(d["after"]["open"] and d["after"]["names"] == ["Parity Extension"], "the panel doesn't list the extension, or lists Browser's own", d)
+    check(d["before"]["open"] and d["before"]["names"] == ["uBlock Origin"], "the panel doesn't list uBlock Origin alone, or lists Browser's own", d)
+    check(d["after"]["open"] and d["after"]["names"] == ["uBlock Origin", "Parity Extension"], "the panel doesn't list the extension, or lists Browser's own", d)
 
 
 def dropdowns(b, horizontal):
@@ -259,8 +260,12 @@ OPEN_SHARE = r"""
       const panel = view?.closest("panel");
       done({
         open: panel?.state === "open",
-        title: view?.querySelector(".panel-header h1")?.textContent,
-        rows: [...(view?.querySelectorAll(".nyx-share-destination") ?? [])].map(r => ({ name: r.getAttribute("label"), off: r.disabled, status: r.getAttribute("nyx-status"), icon: r.getAttribute("image") })),
+        title: view?.getAttribute("title"),
+        page: view?.querySelector(".nyx-share-page b")?.textContent ?? null,
+        rows: [
+          ...[...(view?.querySelectorAll(".nyx-share-tile") ?? [])].map(r => ({ name: r.querySelector(".nyx-share-label").textContent, off: r.disabled, status: null, icon: r.querySelector("img").getAttribute("src") })),
+          ...[...(view?.querySelectorAll(".nyx-share-device") ?? [])].map(r => ({ name: r.querySelector("b").textContent, off: r.disabled, status: r.querySelector("small").textContent, icon: r.querySelector("img").getAttribute("src") })),
+        ],
         note: view?.querySelector(".nyx-share-note")?.textContent ?? null,
         more: !!view?.querySelector("#nyx-share-more"),
       });
@@ -280,14 +285,15 @@ def share_menu(b, horizontal):
         d = b.js_async(OPEN_SHARE, timeout=20)
         check("error" not in d and d["open"], "the Share button didn't open its dropdown", d)
         check(d["title"] == "Share" and d["more"], "the dropdown's title or its More in Share row is missing", d)
-        check([r["name"] for r in d["rows"]] == ["Copy", "Mail", "Phone"], "the dropdown doesn't list Share's destinations", d)
-        phone = d["rows"][2]
+        check([r["name"] for r in d["rows"]] == ["QR code", "Copy", "Mail", "Phone"], "the dropdown doesn't list Share's destinations", d)
+        check(bool(d["page"]), "the dropdown doesn't show the page", d)
+        phone = d["rows"][3]
         check(phone["off"] and phone["status"] == "Not connected", "an unavailable destination isn't greyed out with its reason", d)
-        check(d["rows"][0]["icon"].endswith("/copy.svg") and d["rows"][1]["icon"].endswith("/mail.svg"), "the destinations don't have Browser's icons", d)
+        check(d["rows"][1]["icon"].endswith("/copy.svg") and d["rows"][2]["icon"].endswith("/mail.svg"), "the destinations don't have Browser's icons", d)
         picked = b.js_async(r"""
             const done = arguments[arguments.length - 1];
-            const row = [...document.querySelectorAll("#PanelUI-nyx-share .nyx-share-destination")].find(r => r.getAttribute("label") === "Mail");
-            row.doCommand();
+            const row = [...document.querySelectorAll("#PanelUI-nyx-share .nyx-share-tile")].find(r => r.querySelector(".nyx-share-label").textContent === "Mail");
+            row.click();
             // A closed panel gives its view back to the view cache.
             setTimeout(() => done({ open: document.getElementById("PanelUI-nyx-share").closest("panel")?.state ?? "closed" }), 1500);
         """, timeout=15)
@@ -692,27 +698,14 @@ def popups(b, horizontal):
           done({
             more: await open("PanelUI-menu-button", "appMenu-popup"),
             downloads: await open("downloads-button", "downloadsPanel"),
-            passwords: await (async () => {
-              const item = document.getElementById("nyx-passwords_design-nexus_github_io-browser-action");
-              if (!item) {
-                return null;
-              }
-              const button = item.querySelector(".unified-extensions-item-action-button") || item;
-              button.click();
-              await new Promise(r => setTimeout(r, 2000));
-              const panel = [...document.querySelectorAll("panel")].find(p => p.state === "open" || p.state === "showing");
-              const state = panel?.state;
-              panel?.hidePopup?.();
-              return { state };
-            })(),
+            passwords: await open("nyx-passwords-button", "customizationui-widget-panel"),
+            vpn: await open("nyx-vpn-button", "customizationui-widget-panel"),
           });
         })().catch(e => done({ error: String(e) }));
     """, timeout=30)
     check("error" not in d, "opening a panel threw", d)
     # The Extensions button has its own test (extensions_panel).
-    for name in ("more", "downloads", "passwords"):
-        if name == "passwords" and PASSWORDS not in ACTIONS:
-            continue
+    for name in ("more", "downloads", "passwords", "vpn"):
         check(d[name] and d[name]["state"] in ("open", "showing"), f"the {name} button didn't open its panel", d)
 
 
@@ -732,9 +725,6 @@ def main():
         ("horizontal", True, {"zen.tabs.vertical": False}),
     ):
         with Browser(prefs, tokens=tokens, width=1700, height=1000, passwords=True) as b:
-            if not b.passwords and PASSWORDS in ACTIONS:
-                print("Nyx Passwords isn't installed here: its button isn't checked", flush=True)
-                ACTIONS.remove(PASSWORDS)
             b.js("window.resizeTo(1500, 900)")
             time.sleep(2.5)
             if opts.shots:

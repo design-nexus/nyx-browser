@@ -5,14 +5,18 @@
 //! `nyx-browser-bridge theme [--watch]` is Browser's theme instead; see `theme`.
 //! `nyx-browser-bridge actions` serves Browser's Nyx actions on D-Bus; see `actions`. And
 //! `share-destinations` and `share-to` are the Share button's dropdown; see `share_menu`.
+//! `browsers` and `open-in` are Open in, for other browsers; see `browsers`.
+//! `video-info`, `video-download` and `video-version` are video downloads, with yt-dlp; see `video`.
 
 mod actions;
 mod appearance;
 mod assistant;
+mod browsers;
 mod protocol;
 mod share_menu;
 mod theme;
 mod tokens;
+mod video;
 
 use std::io::{Read, Write};
 use std::path::{Path, PathBuf};
@@ -41,6 +45,11 @@ fn main() -> std::process::ExitCode {
         Some("actions") => return actions::run(&args[1..]),
         Some("share-destinations") => return share_menu::run_destinations(),
         Some("share-to") => return share_menu::run_share_to(&args[1..]),
+        Some("browsers") => return browsers::run_list(),
+        Some("open-in") => return browsers::run_open(&args[1..]),
+        Some("video-info") => return video::run_info(&args[1..]),
+        Some("video-download") => return video::run_download(&args[1..]),
+        Some("video-version") => return video::run_version(),
         _ => {}
     }
     if !caller_allowed(&args) {

@@ -34,3 +34,126 @@
 # Settings › Tabs & Sidebar: the workspace icons at the sidebar's foot.
 - name: nyx.sidebar.foot-spaces
   value: true
+
+# Settings › Tabs & Sidebar: closing a tab selects the one to its left. The other choices are
+# Firefox's and Zen's own (browser.tabs.selectOwnerOnClose, zen.tabs.select-recently-used-on-close).
+- name: nyx.tabs.select-left-on-close
+  value: false
+
+# What a double click on a tab does when it isn't Zen's renaming or Firefox's closing: pin or
+# unload, or nothing. Empty leaves it to those two.
+- name: nyx.tabs.double-click
+  value: ""
+
+# Tabs' close buttons: always, hover or active.
+- name: nyx.tabs.close-buttons
+  value: hover
+
+# Tabs in a row that don't fit: "shrink" them down to their icons, or "scroll" the row with
+# them at their size. Pinned tabs stay at the row's start either way.
+- name: nyx.tabs.overflow
+  value: shrink
+
+# Background tabs unload after this many minutes; 0 never. Tabs playing sound stay loaded.
+- name: nyx.tabs.unload-after
+  value: 0
+
+# Selection search: when the popup shows (selection, alt, middle or off), the text box above the
+# icons, the icons' size (small, medium, large), where results open (tab, background, current),
+# engines left out and their order (engine ids, comma-separated), and sites it's off on (hosts).
+- name: nyx.selection.mode
+  value: selection
+
+- name: nyx.selection.textbox
+  value: true
+
+- name: nyx.selection.icon-size
+  value: medium
+
+- name: nyx.selection.open
+  value: tab
+
+- name: nyx.selection.hidden-engines
+  value: ""
+
+- name: nyx.selection.order
+  value: ""
+
+- name: nyx.selection.off-sites
+  value: ""
+
+# Whether pinned and Essentials tabs unload with the rest.
+- name: nyx.tabs.unload-pinned
+  value: false
+
+# Nyx Passwords, built in: what Settings › Passwords and the popup's settings choose.
+- name: nyx.passwords.fill-on-load
+  value: true
+
+- name: nyx.passwords.inline-menu
+  value: true
+
+- name: nyx.passwords.field-icons
+  value: true
+
+- name: nyx.passwords.copy-totp
+  value: true
+
+- name: nyx.passwords.offer-save
+  value: true
+
+- name: nyx.passwords.passkeys
+  value: true
+
+- name: nyx.passwords.passkey-auto
+  value: true
+
+- name: nyx.passwords.remember-sign-in
+  value: true
+
+# The key in pages' login fields, in the theme's accent and its text colour (passwords.js).
+- name: nyx.passwords.accent
+  value: "#3d8ae8 #0d0e12"
+
+# Video downloads (yt-dlp): the button in the address field, the quality it starts on (best,
+# 2160p, 1440p, 1080p, 720p, 480p, or audio), sound alone as opus, m4a or mp3, the folder ("" is the
+# XDG Videos folder), file names (title, title-channel, channel-title, date-title), subtitles,
+# chapters and the thumbnail in the file, and Browser's sign-ins for videos that need them.
+- name: nyx.video.offer
+  value: true
+
+- name: nyx.video.quality
+  value: 1080p
+
+- name: nyx.video.audio-format
+  value: opus
+
+- name: nyx.video.folder
+  value: ""
+
+- name: nyx.video.names
+  value: title-channel
+
+- name: nyx.video.embed
+  value: true
+
+- name: nyx.video.cookies
+  value: true
+
+# Browser's VPN: no going around it when it drops (network.proxy.failover_direct off while one is
+# on), addresses looked up through it, calls kept to it (WebRTC), sites that skip it (hosts,
+# *.example for a whole domain), and where NordVPN's server list is (tests point it elsewhere).
+- name: nyx.vpn.kill-switch
+  value: true
+
+- name: nyx.vpn.remote-dns
+  value: true
+
+- name: nyx.vpn.webrtc
+  value: true
+
+- name: nyx.vpn.bypass
+  value: ""
+
+- name: nyx.vpn.nordvpn-api
+  value: https://api.nordvpn.com/v1

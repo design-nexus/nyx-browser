@@ -1,0 +1,137 @@
+diff -ruN '--exclude=META-INF' a/js/commands.js b/js/commands.js
+--- a/js/commands.js	1979-12-31 00:00:00.000000000 -0600
++++ b/js/commands.js	2026-11-13 14:35:38.857960137 -0600
+@@ -168,12 +168,45 @@
+         });
+         break;
+     case 'toggle-javascript':
++    case 'nyx-toggle-scripts':
+         µb.toggleHostnameSwitch({
+             name: 'no-scripting',
+             hostname: hostnameFromURI(µb.normalizeTabURL(tab.id, tab.url)),
+         });
+         vAPI.tabs.reload(tab.id);
+         break;
++    // Nyx Browser's shield: blocking on or off for the site, and the site's switches.
++    case 'nyx-toggle-site': {
++        // As the popup's big switch: on for the whole site, or off (trusted).
++        const pageStore = µb.pageStoreFromTabId(tab.id);
++        if ( pageStore === null ) { break; }
++        pageStore.toggleTrustedStatus(
++            µb.normalizeTabURL(tab.id, tab.url),
++            '',
++            pageStore.isTrusted() === false
++        );
++        µb.updateToolbarIcon(tab.id, 0b111);
++        vAPI.tabs.reload(tab.id);
++        break;
++    }
++    case 'nyx-toggle-popups':
++    case 'nyx-toggle-large-media':
++    case 'nyx-toggle-cosmetic':
++    case 'nyx-toggle-fonts': {
++        const name = {
++            'nyx-toggle-popups': 'no-popups',
++            'nyx-toggle-large-media': 'no-large-media',
++            'nyx-toggle-cosmetic': 'no-cosmetic-filtering',
++            'nyx-toggle-fonts': 'no-remote-fonts',
++        }[command];
++        µb.toggleHostnameSwitch({
++            name,
++            hostname: hostnameFromURI(µb.normalizeTabURL(tab.id, tab.url)),
++        });
++        µb.updateToolbarIcon(tab.id, 0b111);
++        if ( name !== 'no-cosmetic-filtering' ) { vAPI.tabs.reload(tab.id); }
++        break;
++    }
+     default:
+         break;
+     }
+diff -ruN '--exclude=META-INF' a/js/tab.js b/js/tab.js
+--- a/js/tab.js	1979-12-31 00:00:00.000000000 -0600
++++ b/js/tab.js	2026-11-13 14:41:09.422745706 -0600
+@@ -1083,7 +1083,25 @@
+             parts |= 0b1000;
+         }
+ 
+-        vAPI.setIcon(tabId, { parts, state, badge, color });
++        // Nyx Browser: the page's state, for Browser's shield, which reads the title.
++        let nyx;
++        if ( pageStore !== null ) {
++            const hn = pageStore.tabHostname;
++            const on = name => sessionSwitches.evaluateZ(name, hn);
++            nyx = 'NYX' + JSON.stringify({
++                host: hn,
++                on: state === 1,
++                blocked: pageStore.counts.blocked.any,
++                allowed: pageStore.counts.allowed.any,
++                popups: on('no-popups'),
++                largeMedia: on('no-large-media'),
++                cosmetic: on('no-cosmetic-filtering'),
++                fonts: on('no-remote-fonts'),
++                scripts: on('no-scripting'),
++            });
++        }
++
++        vAPI.setIcon(tabId, { parts, state, badge, color, nyx });
+     };
+ 
+     // parts: bit 0 = icon
+diff -ruN '--exclude=META-INF' a/js/vapi-background.js b/js/vapi-background.js
+--- a/js/vapi-background.js	1979-12-31 00:00:00.000000000 -0600
++++ b/js/vapi-background.js	2026-11-13 14:35:11.806558807 -0600
+@@ -879,7 +879,7 @@
+         // - the platform does not support browserAction.setIcon(); OR
+         // - the rendering of the badge is disabled
+         if ( browserAction.setTitle !== undefined ) {
+-            const title = titleTemplate.replace('{badge}',
++            const title = details.nyx || titleTemplate.replace('{badge}',
+                 state === 1 ? (badge !== '' ? badge : '0') : 'off'
+             );
+             browserAction.setTitle({ tabId: tab.id, title });
+diff -ruN '--exclude=META-INF' a/manifest.json b/manifest.json
+--- a/manifest.json	1979-12-31 00:00:00.000000000 -0600
++++ b/manifest.json	2026-11-13 14:36:24.270218047 -0600
+@@ -5,7 +5,7 @@
+   },
+   "browser_action": {
+     "browser_style": false,
+-    "default_area": "navbar",
++    "default_area": "menupanel",
+     "default_icon": {
+       "16": "img/icon_16.png",
+       "32": "img/icon_32.png",
+@@ -50,6 +50,24 @@
+     },
+     "toggle-javascript": {
+       "description": "__MSG_toggleJavascript__"
++    },
++    "nyx-toggle-site": {
++      "description": "Nyx Browser: blocking on or off for the site"
++    },
++    "nyx-toggle-popups": {
++      "description": "Nyx Browser: pop-ups for the site"
++    },
++    "nyx-toggle-large-media": {
++      "description": "Nyx Browser: large media for the site"
++    },
++    "nyx-toggle-cosmetic": {
++      "description": "Nyx Browser: cosmetic filtering for the site"
++    },
++    "nyx-toggle-fonts": {
++      "description": "Nyx Browser: web fonts for the site"
++    },
++    "nyx-toggle-scripts": {
++      "description": "Nyx Browser: JavaScript for the site"
+     }
+   },
+   "content_scripts": [
+@@ -126,7 +144,7 @@
+     "webRequestBlocking",
+     "<all_urls>"
+   ],
+-  "short_name": "uBlock\u2080",
++  "short_name": "uBlock₀",
+   "version": "1.76.0",
+   "web_accessible_resources": [
+     "/web_accessible_resources/*"

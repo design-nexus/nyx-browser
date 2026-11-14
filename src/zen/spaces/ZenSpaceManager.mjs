@@ -1448,13 +1448,10 @@ class nsZenWorkspaces {
     const themePicker = document.getElementById(
       "context_zenChangeWorkspaceTheme"
     );
-    /* We can't show the rename input properly in collapsed state,
-    so hide the workspace edit input */
-    const isCollapsed = !gZenVerticalTabsManager._prefsSidebarExpanded;
+    /* Nyx: renaming works collapsed too, in a field of its own (renameActiveWorkspace). */
     workspaceName.hidden =
-      isCollapsed ||
-      (this.#contextMenuData.workspaceId &&
-        this.#contextMenuData.workspaceId !== this.activeWorkspace);
+      this.#contextMenuData.workspaceId &&
+      this.#contextMenuData.workspaceId !== this.activeWorkspace;
     themePicker.hidden =
       this.#contextMenuData.workspaceId &&
       this.#contextMenuData.workspaceId !== this.activeWorkspace;
@@ -2425,12 +2422,87 @@ class nsZenWorkspaces {
     menu.openPopup(anchor, "after_start", 8, 0);
   }
 
-  /** Nyx: "Edit <space>…" opens the space's own menu (name, icon, theme and the rest). */
+  /** Nyx: what the space's menus hang from: its chip with tabs in a row, else its row. */
+  get workspaceMenuAnchor() {
+    return Services.prefs.getBoolPref("zen.tabs.vertical", true)
+      ? this.activeWorkspaceIndicator
+      : document.getElementById("nyx-workspace-chip");
+  }
+
+  /**
+   * Nyx: "Edit <space>…" opens the space's own menu (name, icon, theme and the rest). The
+   * workspaces menu it's chosen from closes first: Firefox closes a command's whole menu chain
+   * after the command, a menu opened during it included.
+   */
   openWorkspaceSettingsMenu() {
-    const anchor = this.activeWorkspaceIndicator;
-    document
-      .getElementById("zenWorkspaceMoreActions")
-      .openPopup(anchor, "after_start", 8, 0, true);
+    const open = () => {
+      const anchor = this.workspaceMenuAnchor;
+      const popup = document.getElementById("zenWorkspaceMoreActions");
+      anchor.setAttribute("open", "true");
+      popup.addEventListener(
+        "popuphidden",
+        event => event.target === popup && anchor.removeAttribute("open"),
+        { once: true }
+      );
+      popup.openPopup(anchor, "after_start", 8, 0, true);
+    };
+    const menu = document.getElementById("nyx-workspaces-menu");
+    if (menu.state === "closed") {
+      setTimeout(open, 0);
+    } else {
+      menu.addEventListener("popuphidden", () => setTimeout(open, 0), {
+        once: true,
+      });
+    }
+  }
+
+  /**
+   * Nyx: Rename. The space's name is edited where it shows (the sidebar's row); with the
+   * sidebar narrowed or tabs in a row it isn't shown, so a small field opens under the space.
+   */
+  renameActiveWorkspace() {
+    const name = this.activeWorkspaceIndicator?.querySelector(
+      ".zen-current-workspace-indicator-name"
+    );
+    if (name?.checkVisibility()) {
+      gZenTabRenamer.start({ target: name });
+      return;
+    }
+    let panel = document.getElementById("nyx-workspace-rename");
+    if (!panel) {
+      panel = document.createXULElement("panel");
+      panel.id = "nyx-workspace-rename";
+      panel.setAttribute("type", "arrow");
+      panel.setAttribute("role", "dialog");
+      const input = document.createElementNS(
+        "http://www.w3.org/1999/xhtml",
+        "input"
+      );
+      input.className = "nyx-workspace-rename-input";
+      document.l10n.setAttributes(input, "nyx-workspace-rename");
+      input.addEventListener("keydown", event => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          const value = input.value.trim();
+          panel.hidePopup();
+          if (value) {
+            this.activeWorkspaceElement
+              ?.onIndicatorRenameFinished(value)
+              .then(() => this.updateWorkspaceChip());
+          }
+        } else if (event.key === "Escape") {
+          panel.hidePopup();
+        }
+      });
+      panel.append(input);
+      document.getElementById("mainPopupSet").append(panel);
+      panel.addEventListener("popupshown", () => {
+        input.focus();
+        input.select();
+      });
+    }
+    panel.querySelector("input").value = this.getActiveWorkspace()?.name ?? "";
+    panel.openPopup(this.workspaceMenuAnchor, "after_start", 0, 4);
   }
 
   _fixIndicatorsNames(workspaces) {

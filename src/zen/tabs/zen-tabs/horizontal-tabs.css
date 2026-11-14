@@ -227,9 +227,15 @@
     padding: 0;
   }
 
+  /* Pinned tabs stay at the row's start while the day's tabs scroll under them. */
   & .zen-workspace-pinned-tabs-section {
     flex: none;
-    margin-inline-end: 2px;
+    position: sticky;
+    inset-inline-start: 0;
+    z-index: 2;
+    margin-inline-end: 0;
+    padding-inline-end: 2px !important;
+    background: var(--nyx-tabs-row-bg, var(--nyx-bg));
   }
 
   /* The day's tabs share what's left of the row, and narrow to their least before it scrolls,
@@ -289,6 +295,43 @@
 
     &:is(:hover, [visuallyselected]) .tab-close-button {
       visibility: visible;
+    }
+  }
+
+  /* Settings › Tabs › When tabs don't fit (tabs.js). Shrink: the day's tabs narrow down to
+   * their icons, so they all stay in sight; the row scrolls only once even those don't fit. A
+   * narrow tab drops its title, and its close button unless it's the one you're on. */
+  &[nyx-tab-overflow="shrink"] #tabbrowser-tabs .tabbrowser-tab:not([zen-essential], [pinned]) {
+    min-width: 36px;
+    container-type: inline-size;
+
+    @container (max-width: 72px) {
+      & .tab-content {
+        justify-content: center;
+        padding-inline: 0;
+      }
+
+      & .tab-label-container {
+        display: none;
+      }
+
+      &:not([visuallyselected]) .tab-close-button {
+        display: none;
+      }
+    }
+  }
+
+  /* Scroll: tabs keep their size, and the row has arrows at its ends while it scrolls. */
+  &[nyx-tab-overflow="scroll"] zen-workspace > arrowscrollbox[overflowing] {
+    &::part(scrollbutton-up),
+    &::part(scrollbutton-down) {
+      display: flex;
+      flex: none;
+      width: 24px;
+      height: 30px;
+      padding: 0;
+      border-radius: var(--nyx-radius-small);
+      color: var(--nyx-dim);
     }
   }
 
@@ -400,11 +443,16 @@
     }
   }
 
+  /* New tab stays at the row's end while the tabs scroll under it, as pinned tabs at its start. */
   & #tabbrowser-arrowscrollbox-periphery {
     flex: none;
+    position: sticky;
+    inset-inline-end: 0;
+    z-index: 2;
     width: 34px;
     height: 30px;
     margin: 0;
+    background: var(--nyx-tabs-row-bg, var(--nyx-bg));
 
     & #tabs-newtab-button {
       width: 34px;

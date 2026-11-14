@@ -26,4 +26,5 @@ for patch in "${patches[@]}"; do
   git -C engine apply "$root/$patch"
 done
 cp nyx/branding/firefox-branding.js engine/browser/branding/nyx/pref/firefox-branding.js
+nyx/tools/vendor-ublock.sh
 printf 'Applied %d Nyx patches\n' "${#patches[@]}"

@@ -71,3 +71,43 @@
 # Capture takes the screenshots (the Capture button and the page's menu), so Firefox's own is off.
 - name: screenshots.browser.component.enabled
   value: false
+
+# Bookmarks open in a new tab, as Vivaldi has them.
+- name: browser.tabs.loadBookmarksInTabs
+  value: true
+
+# Settings › Tabs & Sidebar names the choice for links from other apps; -1 would follow
+# browser.link.open_newwindow, which is a new tab too.
+- name: browser.link.open_newwindow.override.external
+  value: 3
+
+# Passwords come from Nyx Passwords, built in; Firefox's own saving and filling are off, and so
+# are its cards and addresses.
+- name: signon.rememberSignons
+  value: false
+
+- name: signon.autofillForms
+  value: false
+
+- name: signon.generation.enabled
+  value: false
+
+- name: extensions.formautofill.addresses.enabled
+  value: false
+
+- name: extensions.formautofill.creditCards.enabled
+  value: false
+
+# Content blocking: Firefox answers cookie banners (refusing), and strips tracking from links,
+# beside uBlock Origin's filters.
+- name: cookiebanners.service.mode
+  value: 1
+
+- name: cookiebanners.service.mode.privateBrowsing
+  value: 1
+
+- name: privacy.query_stripping.enabled
+  value: true
+
+- name: privacy.query_stripping.enabled.pbmode
+  value: true

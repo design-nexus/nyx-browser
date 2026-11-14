@@ -60,16 +60,23 @@ class nsZenUIMigration {
   /**
    * Nyx: profiles from before Browser's own top bar get its buttons where the mockups have them,
    * once. Extensions' buttons stay where they are. Profiles already arranged only gain buttons
-   * that aren't anywhere yet (Passwords', from version 3) and lose the ones Browser no longer has
-   * (the shortcuts hint in the sidebar's foot, from version 4).
+   * that aren't anywhere yet (Passwords', from version 3; VPN's and Open in's, from version 5)
+   * and lose the ones Browser no longer has (the shortcuts hint in the sidebar's foot, from
+   * version 4).
    */
   #migrateNyxToolbars() {
     const pref = "nyx.ui.migration.toolbars";
     const version = Services.prefs.getIntPref(pref, 0);
-    if (version >= 4) {
+    if (version >= 5) {
       return;
     }
     const RETIRED = ["nyx-shortcuts-button"];
+    // From version 5: Passwords' extension button gives its place to the built-in one, and uBlock
+    // Origin's goes to the extensions panel (its shield is in the address field).
+    const REPLACED = new Map([
+      ["nyx-passwords_design-nexus_github_io-browser-action", "nyx-passwords-button"],
+      ["ublock0_raymondhill_net-browser-action", null],
+    ]);
     const CUI = lazy.CustomizableUI;
     const areas = new Map([
       [CUI.AREA_NAVBAR, lazy.NyxWidgets.navbarPlacements],
@@ -89,6 +96,19 @@ class nsZenUIMigration {
             CUI.removeWidgetFromArea(id);
           }
         }
+        for (const [old, id] of REPLACED) {
+          const placement = CUI.getPlacementOfWidget(old, false, true);
+          if (placement?.area === area) {
+            if (!id) {
+              CUI.addWidgetToArea(old, CUI.AREA_ADDONS);
+              continue;
+            }
+            CUI.removeWidgetFromArea(old);
+            if (!CUI.getPlacementOfWidget(id, false)) {
+              CUI.addWidgetToArea(id, area, placement.position);
+            }
+          }
+        }
         if (version < 2) {
           for (const id of CUI.getWidgetIdsInArea(area)) {
             if (
@@ -106,7 +126,7 @@ class nsZenUIMigration {
         });
         if (!areas.size) {
           CUI.removeListener(listener);
-          Services.prefs.setIntPref(pref, 4);
+          Services.prefs.setIntPref(pref, 5);
           Services.prefs.clearUserPref("nyx.toolbar.arranged");
         }
       },

@@ -7,7 +7,9 @@ the folder named by NYX_BROWSER_DIR (an installed copy, a release tarball).
 Its theme comes from a stand-in for `nyx-browser-bridge theme --watch` that serves whatever the
 test last wrote with write_tokens(), so tests can set any theme and change it live. The stand-in
 also answers the Share dropdown's `share-destinations`, from share-destinations.json in the home
-folder (Share is unavailable without it), and logs each `share-to` to share-sent.log there.
+folder (Share is unavailable without it), and logs each `share-to` to share-sent.log there. Open
+in's `browsers` come from browsers.json there (none without it), and each `open-in` goes to
+openin-sent.log.
 """
 
 import base64
@@ -49,6 +51,38 @@ if args[:1] == ["share-to"]:
     with open(os.path.join(home, "share-sent.log"), "a") as log:
         log.write(" ".join(args[1:]) + "\\n")
     print("{}")
+    sys.exit(0)
+if args[:1] == ["browsers"]:
+    try:
+        print(open(os.path.join(home, "browsers.json")).read())
+    except OSError:
+        print("[]")
+    sys.exit(0)
+if args[:1] == ["open-in"]:
+    with open(os.path.join(home, "openin-sent.log"), "a") as log:
+        log.write(" ".join(args[1:]) + "\\n")
+    print("{}")
+    sys.exit(0)
+if args[:1] == ["video-version"]:
+    print(json.dumps({"version": "2026.08.19", "path": "/usr/bin/yt-dlp"}))
+    sys.exit(0)
+if args[:1] == ["video-info"]:
+    print(json.dumps({"title": "Ridge loop in 4K: Calera to the saddle", "channel": "Trail Days", "site": "Youtube", "duration": 1122,
+        "thumbnail": None, "qualities": [{"height": 2160, "size": 1900000000}, {"height": 1080, "size": 620000000}, {"height": 720, "size": 310000000}],
+        "audio_size": 18000000, "subtitles": True}))
+    sys.exit(0)
+if args[:1] == ["video-download"]:
+    with open(os.path.join(home, "video-sent.log"), "a") as log:
+        log.write(" ".join(args[1:]) + "\\n")
+    folder = args[args.index("--folder") + 1]
+    for done in (100, 300, 620):
+        print(json.dumps({"t": "progress", "downloaded": done * 1000000, "total": 620000000, "speed": 48000000, "eta": 5, "status": "downloading"}), flush=True)
+        time.sleep(0.6)
+    print(json.dumps({"t": "stage", "stage": "merging"}), flush=True)
+    time.sleep(0.6)
+    path = os.path.join(folder, "Ridge loop in 4K [Trail Days].webm")
+    open(path, "wb").write(b"video")
+    print(json.dumps({"t": "done", "file": path}))
     sys.exit(0)
 def eof():
     sys.stdin.read()

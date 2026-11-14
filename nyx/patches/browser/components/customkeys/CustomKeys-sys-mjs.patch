@@ -1,0 +1,64 @@
+diff --git a/browser/components/customkeys/CustomKeys.sys.mjs b/browser/components/customkeys/CustomKeys.sys.mjs
+index 070518c..40ba746 100644
+--- a/browser/components/customkeys/CustomKeys.sys.mjs
++++ b/browser/components/customkeys/CustomKeys.sys.mjs
+@@ -17,6 +17,43 @@ ChromeUtils.defineESModuleGetters(lazy, {
+ // otherwise, Fluent would overwrite the customization.
+ const ATTRS = ["data-l10n-id", "key", "keycode", "modifiers"];
+ 
++// Nyx: Firefox's internal keys only label the Edit menu; their keys work in text fields and pages
++// through ShortcutKeyDefinitions.cpp, which a change can't reach. A changed one stops being
++// internal and runs its command itself, while the original key goes on working where it did.
++const INTERNAL_COMMANDS = {
++  key_undo: "cmd_undo",
++  key_redo: "cmd_redo",
++  key_cut: "cmd_cut",
++  key_copy: "cmd_copy",
++  key_paste: "cmd_paste",
++  key_selectAll: "cmd_selectAll",
++};
++const runsCommand = new WeakSet();
++
++function makeExecutable(window, keyEl) {
++  const command = INTERNAL_COMMANDS[keyEl.id];
++  if (!command || keyEl.getAttribute("internal") != "true") {
++    return;
++  }
++  keyEl.removeAttribute("internal");
++  keyEl.setAttribute("nyx-internal", "true");
++  if (!runsCommand.has(keyEl)) {
++    runsCommand.add(keyEl);
++    keyEl.addEventListener("command", () => {
++      if (keyEl.hasAttribute("nyx-internal")) {
++        window.goDoCommand(command);
++      }
++    });
++  }
++}
++
++function makeInternalAgain(keyEl) {
++  if (keyEl.hasAttribute("nyx-internal")) {
++    keyEl.removeAttribute("nyx-internal");
++    keyEl.setAttribute("internal", "true");
++  }
++}
++
+ // The original keys for any shortcuts that have been customized. This is used
+ // to identify whether a shortcut has been customized, as well as to reset a
+ // shortcut.
+@@ -63,6 +100,7 @@ function applyToKeyEl(window, keyId, keysets) {
+       keyEl.setAttribute(attr, val);
+     }
+   }
++  makeExecutable(window, keyEl);
+   keysets.add(keyEl.parentElement);
+ }
+ 
+@@ -79,6 +117,7 @@ function resetKeyEl(window, keyId, keysets) {
+       keyEl.setAttribute(attr, val);
+     }
+   }
++  makeInternalAgain(keyEl);
+   keysets.add(keyEl.parentElement);
+ }
+ 

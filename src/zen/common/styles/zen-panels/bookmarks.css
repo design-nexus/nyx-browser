@@ -79,6 +79,35 @@ hbox.editBMPanel_folderRow {
     padding: 0 8px 4px !important;
   }
 
+  /* Bookmarks keep their size: what doesn't fit goes to the chevron at the bar's end, as
+   * Firefox's overflow does once the bar is full. */
+  & #PlacesToolbarItems > :is(.bookmark-item, toolbarseparator) {
+    flex-shrink: 0;
+  }
+
+  & #PlacesChevron {
+    flex: none;
+    width: 28px;
+    height: 26px;
+    margin: 0 0 0 2px !important;
+    padding: 0 !important;
+    justify-content: center;
+    border-radius: var(--nyx-radius-small);
+    color: var(--nyx-dim);
+
+    &:hover,
+    &[open] {
+      background: var(--nyx-hover-bg);
+      color: var(--nyx-text);
+    }
+
+    & > .toolbarbutton-icon {
+      width: 14px;
+      height: 14px;
+      margin: 0 !important;
+    }
+  }
+
   & .bookmark-item:not(toolbarseparator) {
     height: 26px;
     margin: 0 1px !important;

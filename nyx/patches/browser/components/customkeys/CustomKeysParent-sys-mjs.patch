@@ -1,0 +1,15 @@
+diff --git a/browser/components/customkeys/CustomKeysParent.sys.mjs b/browser/components/customkeys/CustomKeysParent.sys.mjs
+index ff432fa..c09e1b7 100644
+--- a/browser/components/customkeys/CustomKeysParent.sys.mjs
++++ b/browser/components/customkeys/CustomKeysParent.sys.mjs
+@@ -75,7 +75,9 @@ export class CustomKeysParent extends JSWindowActorParent {
+           ? ShortcutUtils.prettifyShortcut(keyEl)
+           : "",
+       isCustomized: !!CustomKeys.getDefaultKey(id),
+-      internal: keyEl.getAttribute("internal") == "true",
++      // Nyx: every shortcut can be changed, Firefox's internal ones too (CustomKeys gives an
++      // internal key its command once it's changed).
++      internal: false,
+     };
+   }
+ 

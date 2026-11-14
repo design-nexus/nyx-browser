@@ -268,7 +268,7 @@ async function recentSection() {
       element("span", { class: "row-text" }, row.title || hostOf(row.url)),
       element("span", { class: "when" }, row.when ? ago(row.when) : ""));
     if (row.sessionId) {
-      // A closed tab comes back with its history, the way Ctrl+Shift+T brings it back.
+      // A closed tab comes back with its history, as Reopen closed tab (Ctrl+Z) brings it back.
       link.addEventListener("click", event => {
         if (event.button === 0 && !event.ctrlKey && !event.metaKey && !event.shiftKey) {
           event.preventDefault();

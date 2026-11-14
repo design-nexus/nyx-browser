@@ -51,13 +51,9 @@
 %include sidebar.inc.css
   }
 
+  /* Nyx: compact mode is for the sidebar; with tabs in rows it's off (sidebar.js). */
   @media -moz-pref('zen.view.compact.hide-toolbar') {
-%include toolbar.inc.css
-  }
-
-  /* Nyx: with tabs in rows, the rows are the toolbar compact mode hides. */
-  @media not -moz-pref('zen.view.compact.hide-toolbar') {
-    &[nyx-tabs-horizontal] {
+    &:not([nyx-tabs-horizontal]) {
 %include toolbar.inc.css
     }
   }

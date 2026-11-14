@@ -847,6 +847,10 @@ zen-library {
       display: none;
     }
 
+    &::before {
+      inset-inline-end: 0;
+    }
+
     & .zen-workspaces-actions {
       position: absolute;
       width: 100%;

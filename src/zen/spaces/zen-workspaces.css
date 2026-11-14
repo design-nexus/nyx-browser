@@ -209,7 +209,8 @@
     position: absolute;
     top: 2px;
     bottom: 6px;
-    inset-inline: 0;
+    /* Nyx: the selector's own part of the row; tab search has its own hover. */
+    inset-inline: 0 38px;
   }
 
   :root[zen-private-window] & {
@@ -217,7 +218,7 @@
   }
 
   :root:not([zen-unsynced-window]) & {
-    &:hover,
+    &:hover:not(:has(.nyx-tab-search-button:hover)),
     &[open='true'] {
       &::before {
         background: var(--nyx-hover-bg);

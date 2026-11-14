@@ -63,15 +63,16 @@
    * "start" sets the window's first state, and "leave" doesn't touch it yet.
    */
   function apply({ compact = "change" } = {}) {
+    // Compact mode is for the sidebar: with tabs in rows it isn't offered (its menu entry is
+    // hidden in nyx.css) and its command and key do nothing.
+    document.getElementById("cmd_zenCompactModeToggle")?.toggleAttribute("disabled", !vertical());
     if (!vertical()) {
-      const wasHidden = shown === "hidden";
       shown = "row";
       gZenVerticalTabsManager.nyxSidebarExpanded = null;
       document.documentElement.setAttribute("nyx-sidebar", "row");
       if (compact === "start") {
-        gZenCompactModeManager.startIn(gZenCompactModeManager.startsCompact);
-      } else if (compact === "change" && wasHidden && gZenCompactModeManager.preference) {
-        // Hidden mode's compact mode doesn't come along to the rows.
+        gZenCompactModeManager.startIn(false);
+      } else if (compact === "change" && gZenCompactModeManager.preference) {
         expected = false;
         gZenCompactModeManager.preference = false;
       }
@@ -117,7 +118,15 @@
       expected = null;
       return;
     }
-    if (!vertical() || compact === (effective() === "hidden")) {
+    if (!vertical()) {
+      // Turned on some other way (a pref, another window): tabs in rows have no compact mode.
+      if (compact) {
+        expected = false;
+        gZenCompactModeManager.preference = false;
+      }
+      return;
+    }
+    if (compact === (effective() === "hidden")) {
       return;
     }
     if (compact) {

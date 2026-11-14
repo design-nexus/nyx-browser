@@ -1,5 +1,5 @@
 diff --git a/toolkit/mozapps/extensions/internal/XPIProvider.sys.mjs b/toolkit/mozapps/extensions/internal/XPIProvider.sys.mjs
-index f448b25..6f486d5 100644
+index f448b25..320870d 100644
 --- a/toolkit/mozapps/extensions/internal/XPIProvider.sys.mjs
 +++ b/toolkit/mozapps/extensions/internal/XPIProvider.sys.mjs
 @@ -33,6 +33,7 @@ ChromeUtils.defineESModuleGetters(lazy, {
@@ -10,7 +10,7 @@ index f448b25..6f486d5 100644
    TelemetrySession: "resource://gre/modules/TelemetrySession.sys.mjs",
  });
  
-@@ -2791,6 +2792,17 @@ export var XPIProvider = {
+@@ -2791,6 +2792,22 @@ export var XPIProvider = {
          );
        }
  
@@ -24,6 +24,11 @@ index f448b25..6f486d5 100644
 +          );
 +        }
 +      }
++      // Nyx: once they're installed, a profile's copy of one gives way to it.
++      Promise.all(this.startupPromises)
++        .then(() => this.databaseReady)
++        .then(() => lazy.NyxAddons.settle())
++        .catch(console.error);
 +
        resolveProviderReady(Promise.all(this.startupPromises));
  

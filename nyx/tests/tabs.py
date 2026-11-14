@@ -549,6 +549,23 @@ def drag_between_sections(b, horizontal):
 
 
 def compact_mode(b, horizontal):
+    if horizontal:
+        # Compact mode is for the sidebar: with tabs in rows it isn't offered, and turned on some
+        # other way it goes straight off, the rows left as they are.
+        d = run(
+            b,
+            """
+            const bar = document.getElementById("zen-appcontent-navbar-wrapper");
+            const before = box(bar);
+            const disabled = document.getElementById("cmd_zenCompactModeToggle").hasAttribute("disabled");
+            gZenCompactModeManager.preference = true;
+            await sleep(1500);
+            return { before, after: box(bar), on: gZenCompactModeManager.preference, disabled };
+            """,
+        )
+        check(d["disabled"] and not d["on"], "compact mode can be turned on with tabs in rows", d)
+        check(abs(d["after"]["h"] - d["before"]["h"]) <= 2, "the rows moved", d)
+        return
     d = run(
         b,
         """

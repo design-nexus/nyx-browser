@@ -12,6 +12,14 @@
     "appearance.js",
     "urlbar.js",
     "home.js",
+    "tabs.js",
+    "openin.js",
+    "selection.js",
+    "passwords.js",
+    "video.js",
+    "vpn.js",
+    "shield.js",
+    "commands.js",
   ];
 
   const beforeShow = subject => {

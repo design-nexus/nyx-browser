@@ -85,8 +85,9 @@ rm -rf "$app.old"
 [[ -d $app ]] && mv "$app" "$app.old"
 mv "$unpacked" "$app"
 rm -rf "$app.old"
-# A local build keeps the build ID of the last full build, so Firefox would go on running the
-# scripts it cached from the previous install. This marker has it drop its caches at next start.
+# A local build keeps the build ID of the last full build (it's compiled in), so Firefox would go
+# on running the scripts it cached from the previous install. This marker has it drop its caches
+# at next start, but only for the first profile to start; purge-caches.sh below marks each one.
 touch "$app/browser/.purgecaches"
 
 mkdir -p "$bin"
@@ -131,6 +132,7 @@ StartWithLastProfile=1
 Version=2
 EOF
 fi
+bash "$src/tools/purge-caches.sh" "$config/nyx-browser"
 rm -rf "$share/nyx-browser/runtime" "${XDG_STATE_HOME:-$HOME/.local/state}/nyx-browser/tokens.css"
 
 command -v update-desktop-database >/dev/null && update-desktop-database -q "$share/applications" || true
