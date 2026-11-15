@@ -21,9 +21,19 @@ const ICONS_PREF = "nyx.passwords.field-icons";
 const PASSKEYS_PREF = "nyx.passwords.passkeys";
 const ACCENT_PREF = "nyx.passwords.accent";
 
-const textLike = el => ["text", "email", "tel", ""].includes(el.type);
-const describe = el => `${el.name} ${el.id} ${el.placeholder ?? ""} ${el.getAttribute("aria-label") ?? ""} ${el.autocomplete ?? ""}`.toLowerCase();
-const USERNAME_WORDS = /user|login|e.?mail|account|identifier|signin|sign.?in|session.?key|loginfmt|member/;
+const textLike = el => ["text", "email", "tel", "number", ""].includes(el.type);
+/** Name, id, placeholder, aria-label, autocomplete, and associated <label> text. */
+function describe(el) {
+  let labels = "";
+  try {
+    labels = [...(el.labels ?? [])].map(l => l.textContent ?? "").join(" ");
+  } catch {}
+  return `${el.name} ${el.id} ${el.placeholder ?? ""} ${el.getAttribute("aria-label") ?? ""} ${el.autocomplete ?? ""} ${labels}`.toLowerCase();
+}
+// Username cues. Bare "account" is omitted: checkout forms use it for payment, not sign-in.
+const USERNAME_WORDS = /user.?name|user|login|e.?mail|identifier|signin|sign.?in|session.?key|loginfmt|member/;
+const CARD_WORDS =
+  /(?:^|[^a-z])(?:pan|cardnum|card.?no|cc.?num)|card.?number|credit.?card|payment.?card|card.?holder|name.?on.?card|cvc|cvv|csc|security.?code|expir|exp.?date|mm.?yy/;
 
 /** Every input under `root`, inside shadow roots (open or closed) too, in document order. */
 function deepInputs(root) {
@@ -151,6 +161,31 @@ export class NyxPasswordsChild extends JSWindowActorChild {
     return event.composedTarget ?? event.originalTarget ?? event.target;
   }
 
+  /** True when autocomplete marks a payment field (cc-number, section-billing cc-csc, …). */
+  #ccAutocomplete(ac) {
+    return ac.split(/\s+/).some(token => token === "cc" || token.startsWith("cc-") || token.includes("cc-"));
+  }
+
+  /** A numeric keypad field that belongs with other card fields, or has a PAN-length max. */
+  #paymentKeypad(el, scope) {
+    const numeric = el.type === "tel" || el.type === "number" || (el.getAttribute("inputmode") || "").toLowerCase() === "numeric";
+    if (!numeric) {
+      return false;
+    }
+    const max = el.maxLength > 0 ? el.maxLength : 0;
+    const withCard = deepInputs(scope).some(
+      i => i !== el && visible(i) && (this.#ccAutocomplete((i.autocomplete || "").toLowerCase()) || CARD_WORDS.test(describe(i)))
+    );
+    // CVV (3–4) or expiry beside a card field; or a 13–19 digit box (PAN) even alone.
+    if (withCard && max >= 3 && max <= 19) {
+      return true;
+    }
+    if (withCard && !max) {
+      return true;
+    }
+    return max >= 13 && max <= 19;
+  }
+
   /** What a field is for, or null. */
   #kindOf(el) {
     if (el?.localName !== "input" || !visible(el)) {
@@ -161,10 +196,10 @@ export class NyxPasswordsChild extends JSWindowActorChild {
     if (ac.includes("one-time-code") || /(^|[^a-z])(otp|totp|2fa|mfa)|one.?time|verification.?code|auth.?code/.test(t)) {
       return "otp";
     }
-    if (ac.startsWith("cc-") || /card.?number|cc.?num|cvc|cvv|csc|card.?holder|expir/.test(t)) {
+    const scope = scopeOf(el);
+    if (this.#ccAutocomplete(ac) || CARD_WORDS.test(t) || this.#paymentKeypad(el, scope)) {
       return "card";
     }
-    const scope = scopeOf(el);
     if (el.type === "password") {
       const passwords = deepInputs(scope).filter(i => i.type === "password" && visible(i));
       return ac.includes("new-password") || passwords.length > 1 || /new|confirm|repeat|create/.test(t) ? "new-password" : "login";
@@ -173,16 +208,22 @@ export class NyxPasswordsChild extends JSWindowActorChild {
       if (ac.includes("username") || ac === "webauthn") {
         return "login";
       }
-      if (/email|tel/.test(ac) || USERNAME_WORDS.test(t) || el.type === "email") {
-        // A username with a password near it (in its form or dialog, else on the page), or a
-        // sign-in's first step: one or two fields and a Next or Sign in button.
+      // email / username words only — bare "tel" is often a card keypad or phone, not a login.
+      const usernameCue = /\bemail\b/.test(ac) || ac.includes("username") || USERNAME_WORDS.test(t) || el.type === "email";
+      if (usernameCue) {
+        // Password nearby in this form/dialog, or a sign-in's first step. A password elsewhere
+        // on the page (e.g. a login still open behind checkout) must not turn card/identity
+        // fields into login menus.
         const near = deepInputs(scope).some(i => i.type === "password" && visible(i));
-        const page = near || (scope === el.ownerDocument ? false : deepInputs(el.ownerDocument).some(i => i.type === "password" && visible(i)));
-        if (near || page || this.#signInStep(scope)) {
+        if (near || this.#signInStep(scope)) {
           return "login";
         }
       }
       if (/given-name|family-name|street-address|address-line|postal-code|country/.test(ac) || /first.?name|last.?name|address|postal|zip|city/.test(t)) {
+        return "identity";
+      }
+      // Phone number on an identity form (autocomplete tel without a nearby password).
+      if (/\btel\b/.test(ac) || (el.type === "tel" && /phone|mobile|tel/.test(t))) {
         return "identity";
       }
     }
@@ -591,7 +632,7 @@ export class NyxPasswordsChild extends JSWindowActorChild {
       kind === "card"
         ? [
             ["cc-name", /card.?holder|name.?on.?card|cc.?name/i, values.cardholderName],
-            ["cc-number", /card.?number|cc.?num|cardnum/i, values.number],
+            ["cc-number", /card.?number|cc.?num|cardnum|(?:^|[^a-z])pan(?:[^a-z]|$)|card.?no/i, values.number],
             ["cc-exp-month", /exp.*month|month/i, values.expMonth],
             ["cc-exp-year", /exp.*year|year/i, values.expYear],
             ["cc-exp", /expir|exp.?date|mm.?yy/i, values.expMonth && values.expYear ? `${values.expMonth.padStart(2, "0")}/${values.expYear.slice(-2)}` : ""],
