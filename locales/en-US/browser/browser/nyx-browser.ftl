@@ -207,6 +207,7 @@ nyx-vpn-use-for = Use it for
 nyx-vpn-every = Every workspace
 # $name (String) - The workspace's name
 nyx-vpn-only = { $name } only
+nyx-vpn-only-note = Covers this workspace’s tabs. Background requests that belong to no tab, such as service workers, follow the setting for every workspace.
 nyx-vpn-settings = VPN settings
 
 ## Video downloads, with yt-dlp.

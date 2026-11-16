@@ -24,6 +24,9 @@ const PREFS = {
   webrtc: "nyx.vpn.webrtc",
   bypass: "nyx.vpn.bypass",
   nordApi: "nyx.vpn.nordvpn-api",
+  // Whether a VPN was on when the state was last saved: only then are requests held back
+  // while it loads at start.
+  inUse: "nyx.vpn.in-use",
 };
 const RESOLVES_HOST = Ci.nsIProxyInfo.TRANSPARENT_PROXY_RESOLVES_HOST;
 
@@ -49,6 +52,7 @@ async function load() {
     state.favorites ??= [];
     delete state.recent;
     await readLogins().catch(error => console.error("Browser: VPN logins", error));
+    markInUse();
   }
   return state;
 }
@@ -59,6 +63,7 @@ let writing = Promise.resolve();
 async function save() {
   writing = writing.then(() => IOUtils.writeJSON(STORE(), state, { tmpPath: `${STORE()}.tmp` }));
   await writing;
+  markInUse();
   proxyInfos.clear();
   applyProtection();
   for (const listener of listeners) {
@@ -116,6 +121,12 @@ function blockedProxyInfo() {
 
 function wantsProtection() {
   return !!state && (state.active || Object.values(state.workspaces).some(v => v && v !== "none"));
+}
+
+function markInUse() {
+  try {
+    Services.prefs.setBoolPref(PREFS.inUse, !!wantsProtection());
+  } catch {}
 }
 
 function connectionFor(browserId) {
@@ -197,10 +208,11 @@ function decide(channel) {
 const filter = {
   QueryInterface: ChromeUtils.generateQI(["nsIProtocolProxyChannelFilter"]),
   applyFilter(channel, defaultProxyInfo, callback) {
-    // Still loading saved state: fail closed when the kill switch is on (default) so a cold
-    // start with VPN left on doesn't leak before init finishes.
+    // Still loading saved state: fail closed when the kill switch is on (default) and a VPN
+    // was on last time, so a cold start with it left on doesn't leak before init finishes;
+    // people without a VPN aren't held back.
     if (!state) {
-      const closed = Services.prefs.getBoolPref(PREFS.killSwitch, true);
+      const closed = Services.prefs.getBoolPref(PREFS.killSwitch, true) && Services.prefs.getBoolPref(PREFS.inUse, false);
       callback.onProxyFilterResult(closed ? blockedProxyInfo() : defaultProxyInfo);
       return;
     }

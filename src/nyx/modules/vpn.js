@@ -326,6 +326,11 @@
     });
     seg.append(every, only);
     body.append(seg);
+    if (scoped) {
+      // Requests that belong to no tab (service workers, prefetches) follow the switch for
+      // every workspace, not this one's choice.
+      body.append(l10n(html("div", "nyx-vpn-note"), "nyx-vpn-only-note"));
+    }
 
     const settings = l10n(html("button", "nyx-vpn-settings"), "nyx-vpn-settings");
     settings.addEventListener("click", () => {
