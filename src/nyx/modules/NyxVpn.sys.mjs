@@ -11,6 +11,7 @@
 // Protection does). Logins are kept in the profile's login store, encrypted like saved passwords.
 
 import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs";
+import { isLocalHost } from "chrome://browser/content/nyx/NyxLocalHosts.sys.mjs";
 
 const lazy = {};
 XPCOMUtils.defineLazyServiceGetter(lazy, "ProxyService", "@mozilla.org/network/protocol-proxy-service;1", Ci.nsIProtocolProxyService);
@@ -25,8 +26,6 @@ const PREFS = {
   nordApi: "nyx.vpn.nordvpn-api",
 };
 const RESOLVES_HOST = Ci.nsIProxyInfo.TRANSPARENT_PROXY_RESOLVES_HOST;
-// Addresses that never go through the VPN: this computer and the network it's on.
-const LOCAL = /^(localhost|127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|\[?::1\]?$|.*\.local$|.*\.localhost$)/;
 
 export const PROVIDERS = {
   nordvpn: { name: "NordVPN", type: "https", port: 89, locations: true },
@@ -166,8 +165,10 @@ function proxyInfoFor(connection) {
   return proxyInfos.get(connection.id);
 }
 
+// Addresses that never go through the VPN: this computer and the network it's on
+// (NyxLocalHosts), and the hosts listed in the bypass pref.
 function bypassed(host) {
-  if (LOCAL.test(host)) {
+  if (isLocalHost(host)) {
     return true;
   }
   const list = Services.prefs.getStringPref(PREFS.bypass, "").split(",").map(s => s.trim().toLowerCase()).filter(Boolean);
