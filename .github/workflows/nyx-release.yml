@@ -80,7 +80,11 @@ jobs:
           nyx/tools/import.sh
 
       - name: Bootstrap
-        run: cd engine && ./mach --no-interactive bootstrap --application-choice browser
+        # mach reads the checkout's last commit time; surfer's engine/ has no commit in CI.
+        run: |
+          git -C engine rev-parse -q --verify HEAD >/dev/null ||
+            git -C engine -c user.name=ci -c user.email=ci@localhost commit -q --allow-empty -m "Firefox source"
+          cd engine && ./mach --no-interactive bootstrap --application-choice browser
 
       - name: Build
         run: |
