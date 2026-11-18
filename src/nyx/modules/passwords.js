@@ -42,22 +42,41 @@
   const go = (host, url) =>
     host.fixupAndLoadURIString(url, { triggeringPrincipal: Services.scriptSecurityManager.getSystemPrincipal() });
 
+  const pending = new WeakMap();
+  let loadSerial = 0;
+
   /** Loads a page into a panel's frame: now if the panel is showing, else once it is (a closed
-   * panel's frame isn't there to load into). */
+   * panel's frame isn't there to load into). A fresh query before `#` forces a full document load
+   * even when the frame already holds the same page with another token in its fragment. */
   function load(node, host, url) {
+    const at = url.indexOf("#");
+    const fresh = at >= 0 ? `${url.slice(0, at)}?${++loadSerial}${url.slice(at)}` : url;
     if (node.state === "open") {
-      go(host, url);
+      pending.delete(node);
+      go(host, fresh);
     } else {
-      node.addEventListener("popupshown", () => go(host, url), { once: true });
+      pending.set(node, fresh);
     }
   }
 
-  function panel(id) {
+  function panel(id, host) {
     const node = document.createXULElement("panel");
     node.id = id;
     node.className = "nyx-passwords-panel";
     node.setAttribute("noautofocus", "true");
     node.setAttribute("consumeoutsideclicks", "false");
+    node.append(host);
+    node.addEventListener("popupshown", () => {
+      const url = pending.get(node);
+      pending.delete(node);
+      if (url) {
+        go(host, url);
+      }
+    });
+    node.addEventListener("popuphidden", () => {
+      pending.delete(node);
+      go(host, "about:blank");
+    });
     document.getElementById("mainPopupSet").append(node);
     return node;
   }
@@ -179,9 +198,8 @@
       return;
     }
     if (!menu) {
-      menu = panel("nyx-passwords-menu");
       menuFrame = frame("menu", 340, 220);
-      menu.append(menuFrame);
+      menu = panel("nyx-passwords-menu", menuFrame);
     }
     const scale = window.devicePixelRatio;
     const width = Math.min(380, Math.max(300, (rect.right - rect.left) / scale));
@@ -233,9 +251,8 @@
       return;
     }
     if (!bar) {
-      bar = panel("nyx-passwords-bar");
       barFrame = frame("bar", 400, 152);
-      bar.append(barFrame);
+      bar = panel("nyx-passwords-bar", barFrame);
     }
     load(bar, barFrame, `${PAGES}bar.html#${token}`);
     bar.openPopup(anchorFor(), "bottomright topright", 0, 4);
@@ -250,10 +267,9 @@
       return false;
     }
     if (!card) {
-      card = panel("nyx-passwords-passkey");
-      card.setAttribute("noautohide", "true");
       cardFrame = frame("passkey", 400, 180);
-      card.append(cardFrame);
+      card = panel("nyx-passwords-passkey", cardFrame);
+      card.setAttribute("noautohide", "true");
     }
     load(card, cardFrame, `${PAGES}passkey.html#${token}`);
     card.openPopup(document.getElementById("identity-icon-box") ?? gURLBar.textbox, "bottomleft topleft", 0, 4);

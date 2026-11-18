@@ -61,9 +61,9 @@ class QuietHandler(http.server.SimpleHTTPRequestHandler):
         pass
 
 
-def serve(folder):
+def serve(folder, host="127.0.0.1"):
     handler = functools.partial(QuietHandler, directory=str(folder))
-    server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), handler)
+    server = http.server.ThreadingHTTPServer((host, 0), handler)
     threading.Thread(target=server.serve_forever, daemon=True).start()
     return server
 
@@ -93,7 +93,9 @@ def main():
     site.mkdir()
     (site / "login.html").write_text(PAGE)
     server = serve(site)
+    other = serve(site, "127.0.0.2")
     url = f"http://127.0.0.1:{server.server_address[1]}/login.html"
+    other_url = f"http://127.0.0.2:{other.server_address[1]}/login.html"
     host = home / "bin/fake-passwords-host.mjs"
     host.parent.mkdir(parents=True)
     shutil.copy(ROOT / "tools/fake-passwords-host.mjs", host)
@@ -166,8 +168,27 @@ def main():
             check(popup and popup["panes"] and popup["rows"] >= 2, "the button opens Passwords' popup, with the vault", popup)
             log = requests.read_text() if requests.exists() else ""
             check('"r":"check"' in log and "brand-new-pw" in log, "the submitted login is checked before the bar asks")
+
+            b.js("document.getElementById('PanelUI-nyx-passwords')?.closest('panel')?.hidePopup()")
+            b.js("BrowserCommands.openTab({ url: arguments[0] })", other_url)
+            time.sleep(1.5)
+            handles = b.call("WebDriver:GetWindowHandles", {})
+            b.call("WebDriver:SwitchToWindow", {"handle": handles[-1]})
+            b.call("Marionette:SetContext", {"value": "content"})
+            pointer(b, *center(b, "document.getElementById('open')"))
+            time.sleep(1)
+            pointer(b, *center(b, "window.__root.getElementById('u')"))
+            time.sleep(0.5)
+            pointer(b, *center(b, "document.querySelector('nyx-passwords-key')"))
+            time.sleep(1.5)
+            b.call("Marionette:SetContext", {"value": "chrome"})
+            second = b.js("""const p = document.getElementById('nyx-passwords-menu'); const d = p?.querySelector('browser')?.contentDocument;
+              return p && { state: p.state, host: d?.getElementById('host')?.textContent, rows: d?.querySelectorAll('.row').length ?? 0, note: d?.querySelector('.note')?.textContent }""")
+            check(second and second["state"] == "open" and second["host"] == f"127.0.0.2:{other.server_address[1]}" and second["rows"] == 0,
+                  "the menu reloads for a second tab instead of showing the first tab's logins", second)
     finally:
         server.shutdown()
+        other.shutdown()
         shutil.rmtree(home, ignore_errors=True)
 
 
