@@ -12,6 +12,7 @@
 
 import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs";
 import { isLocalHost } from "chrome://browser/content/nyx/NyxLocalHosts.sys.mjs";
+import { normalizeNordProxyHost, nordProxyHost } from "chrome://browser/content/nyx/NyxNordHost.sys.mjs";
 
 const lazy = {};
 XPCOMUtils.defineLazyServiceGetter(lazy, "ProxyService", "@mozilla.org/network/protocol-proxy-service;1", Ci.nsIProtocolProxyService);
@@ -51,6 +52,20 @@ async function load() {
     state.workspaces ??= {};
     state.favorites ??= [];
     delete state.recent;
+    let migrated = false;
+    for (const connection of state.connections) {
+      if (connection.provider === "nordvpn") {
+        const nextHost = normalizeNordProxyHost(connection.host);
+        if (nextHost && nextHost !== connection.host) {
+          connection.host = nextHost;
+          migrated = true;
+        }
+      }
+    }
+    if (migrated) {
+      writing = writing.then(() => IOUtils.writeJSON(STORE(), state, { tmpPath: `${STORE()}.tmp` }));
+      await writing;
+    }
     await readLogins().catch(error => console.error("Browser: VPN logins", error));
     markInUse();
   }
@@ -419,7 +434,7 @@ export const NyxVpn = {
     }
     const found = server.locations?.[0]?.country;
     return {
-      host: server.hostname,
+      host: nordProxyHost(server),
       port: PROVIDERS.nordvpn.port,
       server: server.name ?? server.hostname,
       place: place ? { kind: place.kind, id: place.id } : null,

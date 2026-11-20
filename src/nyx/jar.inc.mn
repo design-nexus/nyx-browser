@@ -15,6 +15,7 @@
         content/browser/nyx/NyxPasswords.sys.mjs             (../../nyx/modules/NyxPasswords.sys.mjs)
         content/browser/nyx/NyxVideo.sys.mjs                 (../../nyx/modules/NyxVideo.sys.mjs)
         content/browser/nyx/NyxVpn.sys.mjs                   (../../nyx/modules/NyxVpn.sys.mjs)
+        content/browser/nyx/NyxNordHost.sys.mjs              (../../nyx/modules/NyxNordHost.sys.mjs)
         content/browser/nyx/NyxLocalHosts.sys.mjs            (../../nyx/modules/NyxLocalHosts.sys.mjs)
         content/browser/nyx/NyxSiteKit.sys.mjs               (../../nyx/modules/NyxSiteKit.sys.mjs)
         content/browser/nyx/NyxSelectionImport.sys.mjs       (../../nyx/modules/NyxSelectionImport.sys.mjs)
